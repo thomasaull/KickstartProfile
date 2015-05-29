@@ -1,0 +1,88 @@
+.chosen-container{
+  font-size: 1em;
+}
+
+.chosen-container .chosen-drop {
+  border: 1px solid;
+  border-color: #b1c3d4 #cbd7e3 #cbd7e3 #cbd7e3;
+  border-top: 0;
+}
+.chosen-container .chosen-results li{
+  line-height: 1.3;
+}
+.chosen-container .chosen-results li.highlighted {
+  background-color: #e83561;
+  background-image: none;
+}
+
+/* @end */
+/* @group Multi Chosen */
+.chosen-container-multi .chosen-choices {
+  border: 1px solid #aaa;
+  border-color: #b1c3d4 #cbd7e3 #cbd7e3 #cbd7e3;
+  background-color: #f0f3f7;
+  background-image: none;
+}
+.chosen-container-multi .chosen-choices li.search-choice  {
+  padding: 6px 24px 6px 10px;
+  border: 1px solid #ddd;
+  background-color: #fff;
+  background-image: none;
+}
+.chosen-container-multi .chosen-choices li.search-choice .search-choice-close {
+  top: 7px;
+}
+.chosen-container-multi .chosen-choices li.search-field {
+  margin: 3px 0 3px 0;
+  padding: 0;
+  white-space: nowrap;
+}
+.chosen-container-multi .chosen-choices li.search-field input[type="text"] {
+  font-size: 100%;
+}
+
+/* @end */
+/* @group Active  */
+
+.chosen-container-active .chosen-choices.chosen-choices {
+  border: 1px solid;
+  border-color: #b1c3d4 #cbd7e3 #cbd7e3 #cbd7e3;
+  box-shadow: none;
+}
+
+/* @end */
+
+.chosen-container-single .chosen-single {
+  padding: .4em;
+  font-size: 1em;
+  border-color: #b1c3d4 #cbd7e3 #cbd7e3 #cbd7e3;
+  background: #f0f3f7;
+  height: 35px;
+  border-radius: 0px;
+  box-shadow: none;
+  line-height: 1.3;
+}
+.chosen-container-single .chosen-single abbr {
+  top: 11px;
+}
+.chosen-container-single .chosen-single div {
+  padding-top: 5px;
+}
+.chosen-container-single .chosen-search input[type="text"] {
+  margin: 5px 0 1px;
+  border-color: #b1c3d4 #cbd7e3 #cbd7e3 #cbd7e3;
+  background: #f0f3f7;
+}
+.chosen-container-single .chosen-drop {
+  border-radius: 0;
+  margin-top:0;
+}
+.chosen-container-active .chosen-single {
+  border-color: #b1c3d4 #cbd7e3 #cbd7e3 #cbd7e3;
+  box-shadow: none;
+}
+.chosen-container-active.chosen-with-drop .chosen-single {
+  border-color: #b1c3d4 #cbd7e3 #cbd7e3 #cbd7e3;
+  background: #f0f3f7;
+  box-shadow: none;
+}

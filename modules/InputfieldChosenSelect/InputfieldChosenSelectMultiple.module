@@ -1,0 +1,117 @@
+<?php
+
+/**
+ * InputfieldChosenSelect module
+ *
+ * Inputfield for the ProcessWire FieldtypePage. Provides an alternative
+ * tagging interface.
+ *
+ * Copyright (C) 2015 Benjamin Milde
+ * Licensed under MIT License, see LICENSE.md
+ * 
+ * http://www.kobrakai.de
+ *
+ * http://www.processwire.com
+ * http://www.ryancramer.com
+ *
+ */
+
+class InputfieldChosenSelectMultiple extends InputfieldSelectMultiple implements InputfieldHasArrayValue{
+
+	protected $chosenOptions = array();
+	protected $supportedAdminThemes = array(
+		"AdminThemeReno", 
+		"AdminThemeDefault"
+	);
+
+	public static function getModuleInfo() {
+		return array(
+			'title' => __('Inputfield Chosen Select Multiple', __FILE__), // Module Title
+			'summary' => __('Inputfield for the ProcessWire FieldtypePage. Provides an alternative tagging interface.', __FILE__), // Module Summary
+			'version' => 118, 
+			);
+	}
+
+	public function init() {
+		parent::init();
+		wire('modules')->get('JqueryCore'); // required by jQuery UI
+		wire('modules')->get('JqueryUI');
+
+		$this->setChosenOption('width', "100%");
+		$this->setChosenOption('search_contains', 'true');
+		$this->setChosenOption('no_results_text_addable', "No results match! Create");
+	}
+
+	public function setChosenOption($key, $value) {
+		$this->chosenOptions[$key] = $value; 
+	}
+
+	public function ___render() {
+		$class = $this->className(); 
+		$info = self::getModuleInfo();
+		$ver = $info['version'];
+
+		$this->config->scripts->add($this->config->urls->$class . "chosen/chosen.jquery.min.js?v=$ver");
+		$this->config->styles->add($this->config->urls->$class . "chosen/chosen.min.css?v=$ver");
+
+		// Special styles per admin theme
+		if(in_array($this->adminTheme, $this->supportedAdminThemes)){
+			$this->config->styles->add($this->config->urls->$class . $this->adminTheme . ".css?v=$ver");
+		}
+		
+		if($this->placeholder) $this->setChosenOption('placeholder_text_multiple', $this->placeholder);
+
+		$selectedOptions = $this->attr('value');
+
+		foreach($selectedOptions as $id) {
+			if(!isset($this->options[$id])) continue; 
+			$label = $this->options[$id]; 
+			unset($this->options[$id]); 	
+			$this->addOption($id, $label); 
+		}
+
+		$this->config->js($this->id, $this->chosenOptions);
+
+		return parent::___render();
+	}
+
+	public function ___install() {
+		$data = $this->modules->getModuleConfigData("InputfieldPage");
+		array_push($data["inputfieldClasses"], $this->className());
+		$this->modules->saveModuleConfigData("InputfieldPage", $data);
+	}
+
+	public function ___uninstall() {
+		$fields = wire('fields')->find("type=FieldtypePage");
+
+		foreach($fields as $field){
+			if($field->inputfield !== $this->className()) $fields->remove($field);
+		}
+
+		$this->warning($this->className()." was used in following fields: ".$fields->implode(", ", "name"));
+
+		$data = $this->modules->getModuleConfigData("InputfieldPage");
+
+		if(in_array($this->className(), $data["inputfieldClasses"])){
+			$key = array_search($this->className(), $data["inputfieldClasses"]);
+			unset($data["inputfieldClasses"][$key]);
+
+			$this->modules->saveModuleConfigData("InputfieldPage", $data);
+		}
+	}
+
+	public function ___getConfigInputfields() {
+
+		$inputfields = parent::___getConfigInputfields();
+
+		$f = wire('modules')->get('InputfieldText');
+		$f->attr('name', 'placeholder');
+		$f->attr('value', $this->placeholder);
+		$f->label = $this->_('Placeholder Text');
+		$f->description = $this->_('Placeholder-text to be displayed in empty field.'); 
+		$inputfields->add($f);
+
+		return $inputfields;
+	}
+	
+}

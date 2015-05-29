@@ -1,0 +1,81 @@
+/* highlight used selector */
+span.selectortest-used-selector {
+	padding-left: 0.5em;
+	font-weight: bold;
+}
+
+/* specify a width for the first column holding page id's */
+table.AdminDataList tr td:first-child {
+	width: 3em;
+	padding-right: 1em;
+}
+
+/* constant widths for columns from 3rd column (if there are more than two) */
+table.AdminDataList tr th:nth-child(n+3),
+table.AdminDataList tr td:nth-child(n+3) {
+	width: 2em;
+	text-align: center;
+}
+
+/* a bit deeper indentation from the default (14px) */
+div.selectortest-tree ul.jqtree-tree ul {
+	margin-left: 20px;
+}
+
+/* underline links when hovered */
+div.selectortest-tree a:hover {
+	text-decoration: underline;
+	background-color: inherit;
+	color: inherit;
+}
+
+/* remove excess whitespace */
+div.selectortest-tree li {
+	margin: 0;
+}
+
+/* highlight output lines when hovered (folders a bit differently) */
+div.selectortest-tree div:hover {
+	background-color: #f6f6f6;
+}
+div.selectortest-tree li.jqtree-folder > div:hover {
+	background-color: #e6f6e6;
+}
+
+/* keep action links dim until the corresponding output line is being hovered */
+div.selectortest-tree span.actions {
+	opacity: 0.2;
+}
+div.selectortest-tree div:hover span.actions {
+	opacity: 1;
+}
+
+/* formats for different types of spans */
+div.selectortest-tree span.value,
+div.selectortest-tree span.status,
+div.selectortest-tree span.more-label {
+	color: #777;
+	font-style: italic;
+}
+div.selectortest-tree span.value,
+div.selectortest-tree span.status {
+	padding-left: 0.5em;
+}
+div.selectortest-tree span.group-label {
+	font-weight: bold;
+	text-transform: uppercase;
+	text-decoration: underline;
+	font-size: smaller;
+}
+
+/* show hidden and unpublished like they're shown in the default admin theme */
+div.selectortest-tree span.jqtree-title.hidden {
+	color: #ac6186;
+}
+div.selectortest-tree span.jqtree-title.unpublished {
+	text-decoration: line-through;
+}
+div.selectortest-tree span.jqtree-title.trash {
+	color: #999;
+	font-style: italic;
+}

@@ -1,0 +1,17 @@
+input:focus,
+textarea:focus
+{
+	outline: none;
+}
+
+html, body {
+    height: 100%;
+}
+
+body 
+{
+	font: $font-size-default $font-stack-default;
+	color: $color-text-default;
+	min-height: 100%;
+	min-width: 100%;
+}

@@ -1,0 +1,18 @@
+.chosen-ghost.chosen-ghost  {
+  display: inline-block;
+  top: 0;
+  margin: 3px 5px 3px 0;
+  padding: 0;
+  width: 100px;
+  padding: 6px 24px 6px 10px;
+  line-height: 13px;
+  border: 1px solid #ddd;
+  background-color: #fafafa;
+  background-image: none;
+  border-radius: 3px;
+  height: 25px;
+}
+
+.InputfieldChosenSelectMultiple .InputfieldPageAdd{
+  display: none;
+}

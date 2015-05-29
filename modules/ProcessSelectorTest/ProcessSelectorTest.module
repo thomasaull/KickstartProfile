@@ -1,0 +1,897 @@
+<?php
+
+/**
+ * ProcessWire Selector Test
+ *
+ * ProcessSelectorTest is an admin module to help building selectors that return what's expected
+ * and explore the data and properties within pages.
+ *
+ * During installation this module creates a page in the ProcessWire admin to run itself from.
+ *
+ * @copyright Copyright (c) 2012, Niklas Lakanen
+ *
+ */
+
+class ProcessSelectorTest extends Process {
+
+	// The name that will be used for the page this module creates
+	const pageName = 'selector-test';
+
+	// Default limit for finding pages
+	// Also used to limit children
+	const defaultLimit = 25;
+
+	// Default selector (if an empty selector is given) - select root page
+	const defaultSelector = "/";
+
+	// View (TemplateFile)
+	private $view;
+
+	// LanguageSupportFields instance for handling language alternate fields
+	// (Existence of this also determines if language support for fields is installed)
+	private $LanguageSupportFields;
+	// default language will be needed here and there with language alternate fields
+	private $DefaultLanguage;
+
+	/**
+	 * Return information about this module (required)
+	 *
+	 * @return array
+	 *
+	 */
+	static public function getModuleInfo() {
+		return array(
+			'title'   => 'Selector test',
+			'summary' => 'Test selectors and explore page data and properties without editing a template file',
+			'version' => 113,
+			'author'  => 'Niklas Lakanen'
+		);
+	}
+
+	/**
+	 * Initialization (called before any execute functions)
+	 *
+	 */
+	public function init() {
+		 // call parent's init (required)
+		parent::init();
+
+		// load jqTree
+		$this->config->scripts->add($this->config->urls->{$this->className} . 'tree.jquery.js');
+		$this->config->styles->add($this->config->urls->{$this->className} . 'jqtree.css');
+
+		// load view template
+		$this->view = new TemplateFile($this->config->paths->{$this->className} . "view.php");
+
+		// init some vars (so that view may print them out as is)
+		$this->view->usedSelector = '';
+		$this->view->pager = '';
+		$this->view->fakeRole = '';
+
+		// init language support (if exists)
+		if(wire('modules')->isInstalled('LanguageSupportFields')) {
+			$this->LanguageSupportFields = wire('modules')->get('LanguageSupportFields');
+			$this->DefaultLanguage = wire('languages')->get('default');
+		}
+	}
+
+	/**
+	 * Render input form
+	 *
+	 * Previous selections are preserved.
+	 *
+	 */
+	public function renderInputForm() {
+
+		// Form for input fields
+		$form = $this->modules->get("InputfieldForm");
+		$form->attr('id', 'selectortest_input_form');
+		$form->attr('method', 'post');
+		$form->attr('action', './');
+
+		// Textarea for selector string
+		$field = $this->modules->get("InputfieldTextarea");
+		$field->attr('id+name', 'selectortest_selector');
+		$field->attr('rows', 2);
+		$field->label = $this->_("Selector to test");
+		$field->value = wire('session')->get('selectortest_selector');
+		$form->add($field);
+
+		// Textfield for limit
+		$field = $this->modules->get("InputfieldInteger");
+		$field->attr('id+name', 'selectortest_limit');
+		$field->label = $this->_("Limit results");
+		$field->description = $this->_("Adds 'limit=<nn>' to the selector string. Leave empty or use '0' (zero) to go without any additional limit. NOTE: This will override any previous limit given in the selector.");
+		$field->value = wire('session')->get('selectortest_limit');
+		$field->columnWidth = 50;
+		$form->add($field);
+
+		// Dropdown for role selection
+		$field = $this->modules->get("InputfieldSelect");
+		$field->attr('id+name', 'selectortest_role');
+		$field->label = $this->_("Show page permissions for role");
+		$field->description = $this->_("Different page permissions are shown from the perspective of the chosen role for each listed page.");
+		foreach(wire('roles') as $role) $field->addOption($role->name);
+		$field->value = wire('session')->get('selectortest_role');
+		$field->columnWidth = 50;
+		$form->add($field);
+
+		// Submit button
+		$field = $this->modules->get("InputfieldButton");
+		$field->type = 'submit';
+		$field->name = 'selectortest_submit';
+		$field->value = $this->_("Run test");
+		$field->columnWidth = 99;
+		$form->add($field);
+
+		$this->view->inputForm = $form->render();
+	}
+
+	/**
+	 * TODO: make these translatable!
+	 */
+	private function renderPermission($page, $permission) {
+		return '<span title="Page ' . ($page->$permission() ? 'is ':'is not ') . $permission . ' by a user with role ' . wire('session')->get('selectortest_role') . '">' .
+				($page->$permission() ? 'yes':'no') .
+				'</span>';
+	}
+
+	/**
+	 * Main entry point
+	 *
+	 */
+	public function ___execute() {
+
+		// save selector and limit to session
+		// (don't want to use GET parameters for selector string anyway)
+		$this->saveFormValuesToSession();
+
+		// always show the input form
+		$this->renderInputForm();
+
+		// input is passed forward *intentionally* as-is
+		// --> validation errors are supposed to arise at this point (errors are catched and displayed)
+		try {
+			$selector = wire('session')->get('selectortest_selector');
+
+			// ..well, almost as-is: add limit if specified
+			// ..and with limit + pagination additional offset may be added while building the query (at core, that is)
+			if(wire('session')->get('selectortest_limit')) {
+				// display a warning if limit was specified by hand in the selector string as well
+				if(preg_match("/\blimit\s*=\s*(\d+)/", $selector, $matches)) {
+					$this->message(
+						sprintf($this->_('Given limit (%1$d) overrides limit in selector string (%2$d)'),
+								wire('session')->get('selectortest_limit'), $matches[1])
+					);
+				}
+				$selector = "$selector, limit=" . wire('session')->get('selectortest_limit');
+			}
+
+			// try to fetch results (exceptions are welcome and catched below)
+			$results = wire('pages')->find($selector);
+			// run selector through satinizer for viewing purposes
+			$this->view->usedSelector = wire('sanitizer')->entities($selector);
+
+			// generate the results table
+			$cnt = $results->getTotal();
+			$this->view->resultCount = $cnt;
+			$initialData = array();
+			if($cnt) {
+				// pager, if needed
+				if($cnt > $results->count()) $this->view->pager = $results->renderPager();
+
+				$table = $this->modules->get("MarkupAdminDataTable");
+				$table->setEncodeEntities(false);
+				$hdr = array(
+					$this->_('Id'),
+					$this->_('Data')
+				);
+
+				// if a role has been given, set up a fake user with the chosen role and create some columns
+				$pagePermissions = array('publishable', 'viewable', 'listable', 'deleteable', 'addable', 'moveable', 'sortable');
+				$fakeRole = wire('session')->get('selectortest_role');
+				if($fakeRole) {
+					$this->view->fakeRole = $fakeRole;
+
+					$currentUser = wire('users')->getCurrentUser();
+					$fakeUser = new User();
+					$fakeUser->addRole($fakeRole);
+					wire('users')->setCurrentUser($fakeUser);
+
+					foreach($pagePermissions as $p) {
+						$hdr[] = $p[0];
+					}
+				}
+				$table->headerRow($hdr);
+				foreach($results as $row) {
+					$vals = array($row->id);
+					$vals[] = '<div class="selectortest-tree" data-id="' . $row->id . '"></div>';
+					if($fakeRole) {
+						foreach($pagePermissions as $p) {
+							$vals[] = $this->renderPermission($row, $p);
+						}
+					}
+					$table->row($vals);
+
+					$initialData[$row->id] = $this->getPage($row);
+				}
+				// restore original user right away
+				if($fakeRole) {
+					wire('users')->setCurrentUser($currentUser);
+				}
+				$this->view->resultTable = $table->render();
+				$this->view->initialData = json_encode($initialData);
+			}
+
+		} catch (WireException $e) {
+			// did not succeed, show error message to the user
+			$this->error($e->getMessage());
+		}
+
+		return $this->view->render();
+	}
+
+	/**
+	 * Save submitted values, or default values, to session.
+	 * This way values may be more complex than is suitable for get-variables
+	 * and paging works nicely.
+	 *
+	 */
+	private function saveFormValuesToSession() {
+		// preserve previous values even if they're empty,
+		// but use default values at the very first time
+		$selector = wire('session')->get('selectortest_selector');
+		if(is_null($selector)) $selector = self::defaultSelector;
+
+		$limit = wire('session')->get('selectortest_limit');
+		if(is_null($limit)) $limit = self::defaultLimit;
+
+		$role = wire('session')->get('selectortest_role');
+		if(is_null($role)) $role = '';
+
+		// and always use posted values (trimmed), if there is any
+		if($this->input->post->selectortest_submit) {
+			$selector = trim($this->input->post->selectortest_selector);
+			$limit = trim($this->input->post->selectortest_limit);
+			$role = trim($this->input->post->selectortest_role);
+		}
+
+		// some get variables (parent_id, template) will override selector
+		if($this->input->get->parent_id) {
+			$selector = "parent_id={$this->input->get->parent_id}, include=all";
+		} elseif($this->input->get->template) {
+			$selector = "template={$this->input->get->template}, include=all";
+		}
+
+		wire('session')->set('selectortest_selector', $selector);
+		wire('session')->set('selectortest_limit', $limit);
+		wire('session')->set('selectortest_role', $role);
+	}
+
+	/**
+	 * Handle retrieval of more data, urls like ./load?node=<node-id>
+	 *
+	 * node-id can be one of:
+	 *  - p-123 --> contents (field values & page properties) of page id 123
+	 *  - c-123 --> children of page id 123
+	 *
+	 */
+	public function ___executeLoad() {
+
+		// sanitize parameter 'node'
+		if(preg_match("/^([pc])-(\d+)\z/", $this->input->get('node'), $matches)) {
+			$type = $matches[1];
+			$id = (int) $matches[2];
+		}
+
+		if(!$id) throw WireException("Invalid id");
+
+		$value = array();
+		if ($type == 'p') {
+			$value = $this->getPageContents($id);
+		} elseif ($type == 'c') {
+			$value = $this->getPageChildren($id);
+		}
+		return json_encode($value);
+	}
+
+	/**
+	 * Get all page data
+	 *
+	 * @param Page $page Page object
+	 * @return array Array of data
+	 *
+	 */
+	private function getPage($page) {
+		$data = array();
+		if($page instanceof Page && $page->id) {
+			$data = $this->getPageLabel($page);
+			$data['children'] = $this->getPageContents($page);
+		}
+		return $data;
+	}
+
+	/**
+	 * Get page for ajax-loader
+	 *
+	 * @param Page $page Page object
+	 * @param string $key Key part of the label (index of a page reference)
+	 * @return array Array of data
+	 *
+	 */
+	private function getPageLoader($page, $key) {
+		$data = array();
+		if($page instanceof Page && $page->id) {
+			$data = $this->getPageLabel($page);
+			// reconstruct the label to include given key
+			$data['key'] = $key;
+			$data['value'] = $data['label'];
+			unset($data['label']);
+
+			$data['id'] = "p-{$page->id}";
+			$data['load_on_demand'] = true;
+		}
+		return $data;
+	}
+
+	/**
+	 * Get a label for a page
+	 *
+	 * @param Page $page Page object
+	 * @return array Array of data
+	 *
+	 */
+	private function getPageLabel($page) {
+		return array(
+			// force title value into string context to get the default language value of a multilang title
+			// use name as a fallback when title hasn't got anything to say
+			'label'   => "$page->title" ? "$page->title" : $page->name,
+			'status'  => $this->flagsToStringArray($page->status, $this->getPageStatusMap()),
+			'actions' => array(
+				$this->_('view') => $page->url,
+				$this->_('edit') => $this->config->urls->admin . "page/edit/?id={$page->id}"
+			)
+		);
+	}
+
+	/**
+	 * Get page contents, displayed as its child nodes
+	 *
+	 * @param Page|int $page Page object or a page id
+	 * @return array Array of data
+	 *
+	 */
+	private function getPageContents($page) {
+		$data = array();
+		if(!$page instanceof Page) $page = wire('pages')->get($page);
+		if($page->id) {
+			$data = array_merge(
+				array(array('label' => $this->_('Field values'), 'class' => 'group-label')),
+				$this->getPageFieldValues($page),
+				array(array('label' => $this->_('Properties'),   'class' => 'group-label')),
+				$this->getPageProperties($page)
+			);
+		}
+		return $data;
+	}
+
+	/**
+	 * Format all field values for display. Handles language-alternate and multi-language fields.
+	 *
+	 * @param Page $page Page object
+	 * @return array Array of displayable data
+	 *
+	 */
+	private function getPageFieldValues($page) {
+		// each array in data array represents a 'level' of fields (root / fieldsets)
+		$data = array(array());
+		// ensure output formatting is off (we want values as is and getting multilang values requires this)
+		$page->setOutputFormatting(false);
+		foreach($page->fields as $f) {
+			$item = null;
+			if($this->LanguageSupportFields) {
+				// language support installed, so we must check for various language options here
+
+				// skip alt-fields that are not default (those that have a parent field defined)
+				if($this->LanguageSupportFields->getAlternateFieldParent($f->name) != '') continue;
+
+				$altFields = $this->LanguageSupportFields->getAlternateFields($f->name);
+				if(count($altFields)) {
+					// possible alternative fields found, wrap valid fields
+
+					$altItem = array(
+						'key'      => $f->name,
+						'value'    => $this->_('[language-alternates]'),
+						'tooltip'  => "{$f->type}",
+						'children' => array()
+					);
+					foreach($altFields as $af) {
+						// take the alternate into account only if it exists on this page (based on the template, of course)
+						if($page->fields->has($af)) {
+							$lang = $this->LanguageSupportFields->getAlternateFieldLanguage($af);
+							$altItem['children'][] = $this->getPageFieldValue($f, "{$lang->title} / $af", $page->$af);
+						}
+					}
+					// if there were valid alternative items, unshift default value first and use the constructed item
+					if(count($altItem['children'])) {
+						$lang = $this->DefaultLanguage;
+						array_unshift($altItem['children'],
+									  $this->getPageFieldValue($f, "{$lang->title} / $f", $page->$f));
+						$item = $altItem;
+					}
+
+				} elseif(preg_match("/Language\z/", $f->type)) {
+					// multi-language fieldtype, wrap all languages
+
+					$item = array(
+						'key'      => $f->name,
+						'value'    => $this->_('[multi-language]'),
+						'tooltip'  => "{$f->type}",
+						'children' => array()
+					);
+					foreach(wire('languages') as $lang) {
+						$item['children'][] = $this->getPageFieldValue($f,
+																	   "{$lang->title} / {$lang->name}",
+																	   $page->$f->getLanguageValue($lang->id));
+					}
+				}
+			}
+
+			// default: format the value here if this wasn't a multilang case of some sort
+			if(!$item) $item = $this->getPageFieldValue($f, $f->name, $page->$f);
+
+			// end subtree if this was a FieldsetClose
+			if(preg_match('/FieldtypeFieldsetClose/', $f->type)) {
+				$children = array_pop($data);
+
+				// pop the opening item, adjust children and value and let the $item to be added again
+				$item = array_pop($data[count($data)-1]);
+				$item['children'] = $children;
+				$item['value'] = count($children);
+			}
+
+			// add the item to the tree
+			$data[count($data)-1][] = $item;
+
+			// create a new subtree if this was a FieldsetOpen of some sort
+			if(preg_match('/FieldtypeFieldset(Tab)?Open/', $f->type)) {
+				array_push($data, array());
+			}
+		}
+
+		// first item is the 'root level'
+		// NOTE: if the template data is broken, this will be too (fieldset open/close pairs not matching)
+		return $data[0];
+	}
+
+	/*
+	 * Format single value for display
+	 *
+	 * @param Field $field Field object
+	 * @param string $key String to use as a key (usually field name)
+	 * @param mixed $value Value to format for display. Formatting depends on fieldtype.
+	 *
+	 */
+	private function getPageFieldValue($field, $key, $value) {
+		// by default get the string representation
+		$item = array('key' => $key, 'value' => "{$value}", 'tooltip' => "{$field->type}");
+		$children = array();
+		// handle some fieldtypes separately
+		switch($field->type) {
+			case 'FieldtypeImage':
+			case 'FieldtypeFile':
+				$n = 0;
+				foreach($value as $file) {
+					$fileEntry = array(
+						'key'      => "$n",
+						'value'    => $file->name,
+						'actions'  => array($this->_('open') => $file->url),
+						'children' => array(
+							array('key' => 'filename',    'value' => $file->filename),
+							array('key' => 'filesize',    'value' => $file->filesize),
+							array('key' => 'url',         'value' => $file->url),
+							array('key' => 'description', 'value' => $file->description),
+							array('key' => 'tags',        'value' => $file->tags),
+						)
+					);
+					// date properties only if core version in use supports them
+					if(defined('FieldtypeFile::fileSchemaDate')) {
+						$fileEntry['children'][] = array('key' => 'created',  'value' => $this->formatDate($file->created));
+						$fileEntry['children'][] = array('key' => 'modified', 'value' => $this->formatDate($file->modified));
+					}
+					// some more properties if it was an image
+					if($field->type == 'FieldtypeImage') {
+						// just for clarity...
+						$image = $file;
+						$fileEntry['children'][] = array('key' => 'width',  'value' => $image->width);
+						$fileEntry['children'][] = array('key' => 'height', 'value' => $image->height);
+						$variations = $image->getVariations();
+						if(count($variations)) {
+							$variationsEntry = array(
+								'key'      => $this->_('Variations'),
+								'value'    => count($variations),
+								'class'    => 'group-label',
+								'children' => array()
+							);
+							$v = 0;
+							foreach($variations as $variation) {
+								$variationsEntry['children'][] = array(
+									'key'      => "$v",
+									'value'    => $variation->name,
+									'actions'  => array($this->_('open') => $variation->url),
+									'children' => array(
+										array('key' => 'filename', 'value' => $variation->filename),
+										array('key' => 'filesize', 'value' => $variation->filesize),
+										array('key' => 'url',      'value' => $variation->url),
+										array('key' => 'width',    'value' => $variation->width),
+										array('key' => 'height',   'value' => $variation->height),
+									)
+								);
+								$v++;
+							}
+							$fileEntry['children'][] = $variationsEntry;
+						}
+					}
+					$children[] = $fileEntry;
+					$n++;
+				}
+				$item['value'] = count($children);
+				break;
+			case 'FieldtypeTextarea':
+			case 'FieldtypeTextareaLanguage':
+				if(strlen($value)) {
+					$item['label'] = $item['key'];
+					$children[] = array('value' => $value);
+				} else {
+					$item['value'] = '[empty]';
+				}
+				break;
+			case 'FieldtypePage':
+				$n = 0;
+				// single page field value may be boolean false of NullPage (id=0) when no page is selected
+				if($value && $value instanceof Page && $value->id) {
+					$children[] = $this->getPageLoader($value, (string)$n++);
+				} else if($value instanceof PageArray) {
+					foreach($value as $p) {
+						$children[] = $this->getPageLoader($p, (string)$n++);
+					}
+				}
+				$item['value'] = count($children);
+				break;
+			case 'FieldtypeRepeater':
+				$n = 0;
+				foreach($value as $r) {
+					// skip unpublished repeater values
+					// (placeholders, visible here because of output formatting being intentionally off)
+					if($r->status & Page::statusUnpublished) continue;
+					// label as a string to get 0 displayed as well
+					$children[] = array('label' => (string)$n++, 'children' => $this->getPageFieldValues($r));
+				}
+				$item['value'] = count($children);
+				break;
+		}
+		if(count($children)) $item['children'] = $children;
+
+		return $item;
+	}
+
+	/**
+	 * Get properties of a page
+	 *
+	 * @param Page $page Page object
+	 * @return array Array of data
+	 *
+	 */
+	private function getPageProperties($page) {
+		$data = array();
+		if($page->id) {
+			$data = array(
+				array('key' => 'id',        'value' => $page->id),
+				array('key' => 'parent_id', 'value' => $page->parent_id),
+				array('key' => 'name',      'value' => $page->name),
+				array('key' => 'title',     'value' => $page->title),
+				array('key' => 'status',    'value' => $this->flagsToString($page->status, $this->getPageStatusMap())),
+				array(
+					'key'      => 'template',
+					'value'    => $page->template->name . ($page->template->flags & Template::flagSystem ? ' [system]' : ''),
+					'actions'  => array(
+						$this->_('edit')         => $this->config->urls->admin . "setup/template/edit/?id={$page->template->id}",
+						$this->_('new selector') => $this->page->url . "?template={$page->template->name}"
+					),
+					'children' => $this->getTemplateProperties($page->template)
+				),
+				array('key' => 'modified',  'value' => $this->formatDate($page->modified) . " ({$page->modifiedUser->name})"),
+				array('key' => 'created',   'value' => $this->formatDate($page->created) . " ({$page->createdUser->name})"),
+				array('key' => 'path',      'value' => $page->path),
+				array(
+					'key'            => 'children',
+					'value'          => $page->numChildren,
+					'id'             => "c-{$page->id}",
+					'load_on_demand' => ($page->numChildren ? true : false),
+					'actions'        => ($page->numChildren ? array('new selector' => $this->page->url . "?parent_id={$page->id}") : null)
+				),
+			);
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Get data for children of given page
+	 *
+	 * @param int $parentId Parent's id
+	 * @return array Array of arrays of data for each of the child pages
+	 *
+	 */
+	private function getPageChildren($parentId) {
+		$data = array();
+		$children = wire('pages')->find("parent=$parentId, include=all, limit=" . self::defaultLimit);
+		foreach($children as $c) {
+			$data[] = $this->getPage($c);
+		}
+		// would there have been more data without limit?
+		if($children->getTotal() > $children->count()) {
+			// yep, let the user know about it
+			$data[] = array(
+				'label'   => $this->_("...and more."),
+				'class'   => 'more-label',
+				'actions' => array('new selector' => $this->page->url . "?parent_id={$parentId}")
+			);
+		}
+		return $data;
+	}
+
+	/**
+	 *	Get data for a given template.
+	 *	Formed data is cached to boost things up as it's not that uncommon to hit several pages with the same template.
+	 *
+	 *	@param Template $tpl
+	 *	@return array Array of data for the template
+	 *
+	 */
+	private function getTemplateProperties($tpl) {
+		static $cache = array();
+
+		$data = array();
+		if($tpl->id) {
+			// was data for this template already formed? if so, use it!
+			if(array_key_exists($tpl->id, $cache)) return $cache[$tpl->id];
+
+			$fieldCount = count($tpl->fields);
+			$data = array(
+				array('key' => 'id',         'value' => $tpl->id),
+				array('key' => 'numPages',   'value' => $tpl->getNumPages()),
+				array('key' => 'flags',      'value' => $this->flagsToString($tpl->flags, $this->getTemplateFlagMap())),
+				array('key' => 'cache_time', 'value' => $tpl->cache_time),
+				$this->arrayToTreeNode('data', $tpl->getArray())
+			);
+			$fieldsNode = array('key' => 'fields', 'value' => $fieldCount);
+			if($fieldCount) {
+				$fieldsNode['children'] = array();
+				foreach($tpl->fields as $f) {
+					$fieldsNode['children'][] = array(
+						'key'      => $f->name,
+						'value'    => "{$f->type}",
+						'children' => $this->getTemplateFieldProperties($f)
+					);
+				}
+			}
+			$data[] = $fieldsNode;
+
+			// cache the result
+			$cache[$tpl->id] = $data;
+		}
+		return $data;
+	}
+
+	/**
+	 * Get data for a given field
+	 *
+	 * @param Field $field
+	 * @return array Array of data for one field
+	 *
+	 */
+	private function getTemplateFieldProperties($field) {
+		$data = array(
+			array('key' => 'label',    'value' => $field->label),
+			array('key' => 'type',     'value' => "{$field->type}"),
+			array('key' => 'required', 'value' => $field->required),
+			array('key' => 'flags',    'value' => $this->flagsToString($field->flags, $this->getFieldFlagMap())),
+			$this->arrayToTreeNode('data', $field->getArray())
+		);
+
+		// show fields inside repeater fields as well
+		// NOTE: this could end up in a neverending loop if a repeater was included inside itself
+		//       however, including a page type with a template with this same repeater IS ok
+		//       (requires user interaction on each iteration, so wont kill server on its own)
+		if($field->type == 'FieldtypeRepeater') {
+			$data[] = array('label' => $this->_('Repeater fields'), 'class' => 'group-label');
+			foreach($field->repeaterFields as $repeaterFieldId) {
+				$rf = wire('fields')->get($repeaterFieldId);
+				$data[] = array(
+					'key'      => $rf->name,
+					'value'    => "{$rf->type}",
+					'children' => $this->getTemplateFieldProperties($rf)
+				);
+			}
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Formats associative array for display with jqTree
+	 *
+	 * @param string $label Node label
+	 * @param array $data Associative array to format
+	 * @return array Node with given data
+	 *
+	 */
+	private function arrayToTreeNode($label, $data) {
+		$tree = array();
+		ksort($data);
+		foreach($data as $key => $value) {
+			$tree[] = array(
+				'key'   => $key,
+				'value' => $value
+			);
+		}
+
+		// constuct the node based on the count on keys in data array
+		// the same amount of items will be in the tree array
+		$ret = array(
+			'key' => $label,
+			'value' => sprintf($this->_n('[%d key]', '[%d keys]', count($tree)), count($tree))
+		);
+		if(count($tree)) $ret['children'] = $tree;
+
+		return $ret;
+	}
+
+	/**
+	 * Parses flags to string representation.
+	 * Returns stringified flags concatenated with ', '.
+	 *
+	 * @param int $flags Flags to parse
+	 * @param array $map Map from flag to string
+	 * @return string Stringified flags in one string
+	 *
+	 */
+	private function flagsToString($flags, $map) {
+
+		$stringFlags = $this->flagsToStringArray($flags, $map);
+
+		if(count($stringFlags) == 0) {
+			return $this->_('[none]');
+		}
+		return implode(', ', $stringFlags);
+	}
+
+	/**
+	 * Parses flags to string representation.
+	 * Returns array of strings.
+	 *
+	 * @param int $flags Flags to parse
+	 * @param array $map Map from flag to string
+	 * @return array Array of stringified flags
+	 *
+	 */
+	private function flagsToStringArray($flags, $map) {
+
+		$stringFlagArray = array();
+		foreach($map as $flag => $name) {
+			if($flags & $flag) $stringFlagArray[] = $name;
+		}
+
+		return $stringFlagArray;
+	}
+
+	/**
+	 * Returns a mapping from page status codes to string representations
+	 *
+	 * @return array
+	 *
+	 */
+	private function getPageStatusMap() {
+		return array(
+			Page::statusLocked      => 'locked',
+			Page::statusSystemID    => 'systemid',
+			Page::statusSystem      => 'system',
+			Page::statusHidden      => 'hidden',
+			Page::statusUnpublished => 'unpublished',
+			Page::statusTrash       => 'trash'
+		);
+	}
+
+	/**
+	 * Returns a mapping from template flag values to string representations
+	 *
+	 * @return array
+	 *
+	 */
+	private function getTemplateFlagMap() {
+		return array(
+			Template::flagSystem => 'system'
+		);
+	}
+
+	/**
+	 * Returns a mapping from field flag values to string representations
+	 *
+	 * @return array
+	 *
+	 */
+	private function getFieldFlagMap() {
+		return array(
+			Field::flagAutojoin  => 'autojoin',
+			Field::flagGlobal    => 'global',
+			Field::flagSystem    => 'system',
+			Field::flagPermanent => 'permanent'
+		);
+	}
+
+	/**
+	 * Format date (uses config, handles invalid ones)
+	 *
+	 * @param int $timestamp
+	 *
+	 */
+	private function formatDate($timestamp) {
+		if($timestamp < 0) return $this->_('(unknown)');
+		return date($this->config->dateFormat, $timestamp);
+	}
+
+	/**
+	 * Module installation
+	 *
+	 * Create a page under admin "Setup" page and attach this process to it
+	 *
+	 */
+	public function ___install() {
+
+		// create the page our module will be assigned to
+		$page = new Page();
+		$page->template = 'admin';
+		$page->name = self::pageName;
+
+		// installs to the admin "Setup" menu
+		$page->parent = $this->pages->get($this->config->adminRootPageID)->child('name=setup');
+		// check if the page already exists (--> throw an exception if it does)
+		$existingPage = $page->parent->child("name={$page->name}, include=all");
+		if($existingPage->id) {
+			$this->error(sprintf($this->_("There is already a page at %s - maybe a previous installation?"), $existingPage->path));
+			throw new WireException($this->_("Page already exists"));
+		}
+		$page->process = $this;
+
+		// page title from module info
+		$info = self::getModuleInfo();
+		$page->title = $info['title'];
+
+		// save the page
+		$page->save();
+
+		// tell the user we created this page
+		$this->message(sprintf($this->_("Created page: %s - check it out!"), $page->path));
+	}
+
+	/**
+	 * Module uninstallation
+	 *
+	 * Remove the installed page
+	 *
+	 */
+	public function ___uninstall() {
+
+		// find the page we installed, locating it by the process field (which has the module ID)
+		// it would probably be sufficient just to locate by name, but this is just to be extra sure.
+		$moduleID = $this->modules->getModuleID($this);
+		$page = $this->pages->get("template=admin, process=$moduleID, name=" . self::pageName);
+
+		if($page->id) {
+			// if we found the page, let the user know and delete it
+			$this->message(sprintf($this->_("Deleted page: %s"), $page->path));
+			$page->delete();
+		}
+	}
+}
