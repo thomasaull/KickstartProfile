@@ -3,6 +3,14 @@
 **Disclaimer**
 This is mainly a personal site profile to kickstart my own ProcessWire Projects. Nevertheless, Feel free to dig around and copy whatever you find useful.
 
+### Features
+- easy deployment process (all sources outside of processwire)
+- module based approach for templates/js/scss
+- Vue Single File Components
+- minification of css and js resources
+- optimized webfont loading with https://github.com/typekit/webfontloader
+- automated generation of critical css
+
 ### Install
 
 - create vhost
@@ -12,6 +20,7 @@ This is mainly a personal site profile to kickstart my own ProcessWire Projects.
 Grab a copy of processwire and place the contents of this repository in the root of your ProcessWire directory. Install ProcessWire as usual (don’t forget to pick the site profile).
 
 - create .gitkeep in site/assets/ cache, files, logs, sessions
+- adjust .htaccess settings to your needs
 
 Install the composer modules:
 
