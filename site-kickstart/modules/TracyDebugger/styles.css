@@ -1,0 +1,921 @@
+/* for hiding the server type indicator bar */
+body.hidden:before {
+    display: none;
+}
+
+#tracy-debug-bar {
+    background: #F0F3F7 !important;
+    border: 1px solid #DDDDDD !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+}
+
+#tracy-debug-bar li > a:hover {
+    color: black !important;
+    background: #F0F3F7 !important;
+}
+
+#tracy-debug-bar li > a {
+    transition: transform 0.12s;
+}
+#tracy-debug-bar li > a:hover svg {
+    transform: scale(1.2);
+}
+
+.tracy-panel a:link {
+    color: #125EAE !important;
+    background-color: transparent !important;
+}
+.tracy-panel a:focus {
+    color: #125EAE !important;
+}
+.tracy-panel a:hover {
+    color: #FFFFFF !important;
+    background-color: #125EAE !important;
+}
+
+.tracy-panel fieldset {
+    border: 0 !important;
+}
+
+.tracy-panel h3 {
+    display: block !important;
+    font-size: 1.17em !important;
+    font-weight: bold !important;
+    border: none !important;
+    padding-top: 1em !important;
+    color: #444444 !important;
+    text-transform: none !important;
+}
+
+#tracy-debug form label {
+    font-family: sans-serif !important;
+    font-size: 13px !important;
+    text-transform: none !important;
+    display: inline !important;
+}
+
+#tracy-debug ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+    color:#9aa3a6 !important;
+    text-transform: none !important;
+}
+#tracy-debug ::-moz-placeholder { /* Firefox 19+ */
+    color:#9aa3a6 !important;
+    text-transform: none !important;
+}
+#tracy-debug :-ms-input-placeholder { /* IE 10+ */
+    color:#9aa3a6 !important;
+    text-transform: none !important;
+}
+#tracy-debug :-moz-placeholder { /* Firefox 18- */
+    color:#9aa3a6 !important;
+    text-transform: none !important;
+}
+
+
+#tracy-debug h1 {
+    max-width: calc(100vw - 40px) !important;
+    padding-right: 35px !important;
+    color: #444444 !important;
+    text-transform: none !important;
+}
+
+#tracy-debug input {
+    height: 18px !important;
+}
+
+#tracy-debug input[type="checkbox"],
+#tracy-debug input[type="radio"] {
+    width: 12px !important;
+    height: 12px !important;
+    position: static !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+#tracy-debug input[type="text"], #tracy-debug input[type="number"] {
+    font-family: sans-serif !important;
+    height: 30px !important;
+    width: initial !important;
+    display: inline-block !important;
+    padding: 0 0 0 5px !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+}
+
+#tracy-debug, #tracy-debug h2, #tracy-debug legend {
+    font-family: sans-serif !important;
+    font-weight: normal !important;
+    color: #333333 !important;
+    text-transform: none !important;
+}
+
+#tracy-debug, #tracy-debug legend, #tracy-debug p, #tracy-debug legend li, #tracy-debug select {
+    font-family: sans-serif !important;
+    font-weight: normal !important;
+    color: #333333 !important;
+    font-size: 12px !important;
+}
+
+#tracy-debug textarea:focus, #tracy-debug input:focus, #tracy-debug select:focus {
+    border-color: #EEEEEE !important;
+}
+
+#tracy-debug select {
+    height: 30px !important;
+    width: initial !important;
+    border-radius: 5px !important;
+    margin: 0 !important;
+    display: inline-block !important;
+    padding: 3px 3px 3px 10px !important;
+
+}
+
+#tracy-debug select:not([multiple]):not([size]) {
+    -webkit-appearance: menulist !important;
+    -moz-appearance: menulist !important;
+    appearance: menulist !important;
+    background: none !important;
+}
+
+#tracy-debug textarea, #tracy-debug input, #tracy-debug select {
+    background-color: #FFFFFF !importantt;
+    border: 1px solid #D2D2D2 !important;
+    padding: initial !important;
+    font-size: 12px !important;
+}
+
+#tracy-debug label {
+    margin:0 !important;
+    font-size: 12px !important;
+    color: #444444 !important;
+    font-weight: normal !important;
+    user-select: none !important;
+}
+
+#tracy-debug small {
+    font-size:80% !important;
+}
+
+#tracy-debug a {
+    border: none !important;
+}
+
+#tracy-debug table {
+    width: 100% !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    background: #FFFFFF !important;
+}
+
+#tracy-debug table tbody tr {
+    height:25px !important;
+}
+
+#tracy-debug .tracy-panel tr:hover td {
+    background: #E2E9EF !important;
+}
+
+#tracy-debug .tracy-panel td,
+#tracy-debug .tracy-panel th {
+    font-family: sans-serif !important;
+    font-weight: normal !important;
+    font-size: 12px !important;
+    color: #444444 !important;
+    padding: 4px !important;
+    border: 1px solid #C9D4E1 !important;
+}
+
+#tracy-debug tr:nth-child(2n) td {
+    background: #F0F3F7 !important;
+}
+
+
+#tracy-debug th {
+    background: #F4F3F1;
+    color: #655E5E;
+    font-size: 90%;
+    font-weight: bold;
+}
+
+
+table.captainHookTable td:first-child, table.captainHookTable th:first-child {
+    width: 40% !important;
+}
+
+table.captainHookTable td:nth-child(2), table.captainHookTable th:nth-child(2) {
+    width: 5% !important;
+}
+
+table.captainHookTable td:nth-child(3), table.captainHookTable th:nth-child(3) {
+    width:65% !important;
+}
+
+
+#tracy-debug input[type="submit"], .tracyCopyBtn {
+    width: initial !important;
+    height: initial !important;
+    display: inline-block !important;
+    background: #FFFFFF !important;
+    margin: 0 !important;
+    padding: 3px !important;
+    border: 1px solid #D2D2D2 !important;
+    -webkit-border-radius: 5px !important;
+    -moz-border-radius: 5px !important;
+    border-radius: 5px !important;
+    cursor: pointer !important;
+    text-transform: none !important;
+    font: normal normal 12px/1.5 sans-serif;
+    color: #444444;
+}
+
+
+#tracy-debug .tracyLinkBtn {
+    background: #F0F3F7 !important;
+    border: 1px solid #D2D2D2 !important;
+    border-radius: 0 !important;
+    padding: 5px 8px !important;
+    color: #2C3E50 !important;
+    transition: all 0.12s;
+}
+
+#tracy-debug .tracyLinkBtn:hover {
+    background: #fff !important;
+    color: #2C3E50 !important;
+    border-color: #b8c7d8 !important;
+}
+
+
+#tracy-debug fieldset {
+    all: initial !important;
+    font: inherit !important;
+    color: inherit !important;
+    border: 0 !important;
+}
+
+.tracy-panel h2 {
+    font-size: 20px !important;
+}
+
+.tracy-inner {
+    max-height: calc(100vh - 85px) !important;
+    max-width: calc(100vw - 40px) !important;
+}
+
+.tracy-inner fieldset label {
+    display: block !important;
+}
+
+.tracy-inner p {
+    font-size:12px !important;
+}
+
+#tracy-debug pre.tracy-dump {
+    background: transparent !important;
+    padding: .4em 2em .4em .7em !important;
+    margin: 0 0 20px 0 !important;
+}
+
+.tracy-inner td {
+    word-wrap: break-word !important;
+}
+
+.tracy-inner td.tracy-force-no-wrap {
+    white-space:nowrap !important;
+}
+
+.tracy-inner td.tracy-force-break {
+    /*overflow-wrap: break-word;*/
+    /*-ms-word-break: break-all;*/
+    /* This is the dangerous one in WebKit, as it breaks things wherever */
+    /*word-break: break-all;*/
+    /* Instead use this non-standard one: */
+    /*word-break: break-word;*/
+    white-space: pre;           /* CSS 2.0 */
+    white-space: pre-wrap;      /* CSS 2.1 */
+    white-space: pre-line;      /* CSS 3.0 */
+    white-space: -pre-wrap;     /* Opera 4-6 */
+    white-space: -o-pre-wrap;   /* Opera 7 */
+    white-space: -moz-pre-wrap; /* Mozilla */
+    white-space: -hp-pre-wrap;  /* HP Printers */
+    word-wrap: break-word;      /* IE 5+ */
+}
+
+.tracy-inner a {
+    display: inline-block;
+}
+
+#tracy-debug-panel-PanelSelectorPanel fieldset div label {
+    width: 300px !important;
+    border-bottom: 1px solid #e4e4e4;
+    -webkit-column-break-inside: avoid;
+    page-break-inside: avoid;
+    break-inside: avoid-column;
+}
+
+#tracy-debug-panel-PanelSelectorPanel fieldset div label > span:last-child {
+    position: relative;
+    top: 5px;
+}
+
+#tracy-debug-panel-PanelSelectorPanel fieldset div label:hover {
+    background: #E2E9EF !important;
+}
+
+#tracy-debug #tracy-debug-panel-Tracy-errors pre {
+    white-space: inherit;
+    margin: 0 !important;
+}
+
+.tracy-section {
+    padding: 10px 0;
+    border-top: 1px dotted #CCCCCC;
+}
+
+.tracy-toggle {
+    font-size: 12px !important;
+}
+
+ul.pw-info-links {
+    border-top: 1px solid #CCCCCC !important;
+    margin: 10px 0 0 0 !important;
+    padding:10px 0 0 0 !important;
+}
+
+.pw-info-links li {
+    display: inline-block !important;
+}
+
+.pw-info-links li.with-labels {
+    display: block !important;
+    padding: 0 0 5px 0 !important;
+    line-height: 0.7 !important;
+}
+
+.pw-info-links a {
+    font-family: sans-serif !important;
+    font-size: 12px !important;
+    transition: transform 0.12s;
+}
+.pw-info-links a svg {
+    margin-right: 5px !important;
+}
+.pw-info-links a:hover svg, .pw-info-links a:hover .fa {
+    transform: scale(1.2);
+}
+.pw-info-links a:hover, .pw-info-links a:active, .pw-info-links a:focus {
+    background-color: transparent !important;
+    color: #125EAE !important;
+}
+
+#tracy-debug input[type="text"]#tracySnippetName {
+    padding: 4px 30px 4px 8px !important;
+    margin: 0 !important;
+    height: 29px !important;
+    width: 289px !important;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;         /* Opera/IE 8+ */
+}
+
+/* not sure why these need to be different in popup window, but they do :) */
+#tracy-debug [id^="tracy-debug-panel-"][class*="tracy-mode-window"] input[type="text"]#tracySnippetName {
+    height: 20px !important;
+    width: 210px !important;
+}
+
+#snippetTrash {
+    visibility:hidden;
+}
+
+#tracySnippets, #tracyRunnerSnippets {
+    padding: 0 !important;
+    border: none !important;
+}
+
+#tracySnippets {
+    margin: 5px 0 0 0 !important;
+    width: 290px !important;
+    padding: 0 !important;
+    min-height: 115px !important;
+    max-height: 187px !important;
+    overflow:auto !important;
+}
+
+#tracySnippets ul, #tracyRunnerSnippets ul {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+#tracySnippets li, #tracyRunnerSnippets li {
+    display: block;
+    padding: 0 !important;
+    border-top: 1px solid #ddd;
+    font-family: sans-serif !important;
+    line-height: 18px !important;
+    font-size: 12px !important;
+    position:relative !important;
+}
+
+#tracySnippets li:first-child, #tracyRunnerSnippets li:first-child {
+    border-top: none;
+}
+
+#tracySnippets li svg, #tracyRunnerSnippets li svg {
+    width: 100% !important;
+}
+
+#tracySnippets li > span, #tracyRunnerSnippets li > span {
+    display: block;
+    padding: 5px 5px 5px 9px !important;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+#tracySnippets li > span:not(.trashIcon):active, #tracyRunnerSnippets li > span:not(.trashIcon):active,
+.activeSnippet {
+    background: #ebeef0 !important;
+}
+
+#tracySnippets li:hover span:not(.activeSnippet), #tracyRunnerSnippets li:hover span:not(.activeSnippet) {
+    background: #F5F8F9;
+}
+
+#tracySnippets li .trashIcon:active + span {
+    color: #fff !important;
+    background: #EA2262 !important;
+}
+
+#tracySnippets .trashIcon {
+    visibility: hidden;
+    background: transparent !important;
+    position: absolute !important;
+    padding: 5px !important;
+    top: 1px !important;
+    right: 5px !important;
+    cursor: pointer !important;
+}
+
+#tracySnippets .trashIcon:active {
+    color: #fff !important;
+}
+
+#tracySnippets .trashIcon:hover {
+    color: #EA2262 !important;
+}
+
+#tracySnippets .trashIcon:not(:hover) {
+    color: #a8bdc8 !important;
+}
+
+#tracySnippets li:hover .trashIcon {
+    visibility: visible !important;
+}
+
+#tracy-debug #saveSnippet {
+    padding: 2px 6px !important;
+    margin: 0 !important;
+    position: absolute !important;
+    font-size: 15px !important;
+    right: 3px !important;
+    top: 2px !important;
+    border-color: transparent !important;
+    background: transparent !important;
+}
+
+#tracy-debug #runCode,
+#tracy-debug #clearResults,
+#tracy-debug #historyBack,
+#tracy-debug #historyForward {
+    padding: 3px 10px !important;
+    margin-right: 5px !important;
+}
+
+#tracy-debug #runCode:hover,
+/*#tracy-debug #clearResults:hover,*/
+#tracy-debug #historyBack:hover,
+#tracy-debug #historyForward:hover {
+    background: #F5F8F9 !important;
+}
+
+#tracy-debug #historyForward {
+    margin-left: -11px !important;
+    border-right-color: transparent !important;
+}
+
+#tracy-debug #historyBack,
+#tracy-debug #historyForward {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+
+#tracy-debug #clearResults {
+    border-color: transparent !important;
+    /*float: right !important;*/
+    /*padding-right: 0 !important;*/
+    /*margin-left: 8px !important;*/
+}
+
+#clearResults:hover {
+    text-decoration: underline;
+}
+.arrowRight {
+    transform: scaleX(-1);
+    filter: flipH;
+    -ms-filter: flipH;
+    display: inline-block;
+}
+
+#tracyConsoleStatus {
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.disabledButton {
+    opacity: 0.5;
+    cursor: default !important;
+}
+
+#hide-button {
+    cursor: pointer !important;
+    padding: 0 5px 0 3px !important;
+}
+
+#show-button {
+    bottom: 0 !important;
+    right: 0 !important;
+    z-index: 99999 !important;
+    position: fixed !important;
+    width: 16px !important;
+    margin: 0 !important;
+    padding: 4px 15px 2px 6px !important;
+    background: #FFFFFF !important;
+    border: 1px solid #DDDDDD !important;
+    font-size: 12px !important;
+    cursor: pointer;
+    box-sizing: border-box !important;
+    line-height: normal !important;
+    height: 22px !important;
+}
+
+#tracy-debug input[type="submit"][disabled] {
+    cursor: default !important;
+}
+
+#tracy-debug-panel-ConsolePanel {
+    width: calc(100vw - 40px) !important;
+    padding: 0px !important;
+    margin: 0px !important;
+}
+
+#tracy-debug-panel-ConsolePanel.tracy-mode-window {
+    width: 100% !important;
+}
+
+#tracy-debug [id^="tracy-debug-panel-"][class*="tracy-mode-"] #tracyConsoleContainer {
+    float: left;
+    width: calc(100vw - 370px) !important;
+}
+
+#tracy-debug [id^="tracy-debug-panel-"][class*="tracy-mode-window"] #tracyConsoleContainer {
+    float: left;
+    width: calc(100vw - 330px) !important;
+}
+
+#tracy-debug [id^="tracy-debug-panel-"][class*="tracy-mode-"] {
+    padding: 0;
+    /*border: 4px solid rgba(44, 62, 80, 0.2);*/
+    border: 4px solid rgba(0,0,0, 0.18);
+    border-radius: 0;
+    box-shadow: none;
+    background-clip: padding-box;
+}
+
+#tracy-debug [id^="tracy-debug-panel-"][class*="tracy-mode-window"] {
+    border: none !important;
+}
+
+#tracy-debug [id^="tracy-debug-panel-"][class*="tracy-mode-"] > * {
+    padding: 10px 12px 11px;
+    margin: 0;
+}
+
+#tracy-debug [id^="tracy-debug-panel-"][class*="tracy-mode-"] > .tracy-inner {
+    min-width: 400px !important;
+    padding-right: 12px !important;
+    margin: 0 !important;
+}
+
+#tracy-debug [id^="tracy-debug-panel-"][class*="tracy-mode-window"] > .tracy-inner {
+    min-width: 0 !important;
+}
+
+#tracy-debug [id^="tracy-debug-panel-"][class*="tracy-mode-"] > .tracy-icons {
+    padding: 0;
+    margin-right: -5px;
+}
+#tracy-debug [id^="tracy-debug-panel-"][class*="tracy-mode-"] > .tracy-icons a {
+    color: #2C3E50 !important;
+    padding: 6px 12px;
+    /*margin-left: 1px;*/
+    /*position: relative;*/
+    /*top: 1px;*/
+    /*right: 1px;*/
+    display: inline-block;
+    transition: all 0.1s;
+}
+
+/*
+#tracy-debug [id^="tracy-debug-panel-"][class*="tracy-mode-"] > .tracy-icons a:first-child {
+    display:none !important;
+}
+*/
+
+/* Remove the open in popup window button from certain panels that don't work properly in popup */
+#tracy-debug-panel-TemplatePathPanel > .tracy-icons a:first-child,
+#tracy-debug-panel-TemplateEditorPanel > .tracy-icons a:first-child,
+#tracy-debug-panel-EventInterceptorPanel > .tracy-icons a:first-child,
+#tracy-debug-panel-ModuleDisablerPanel > .tracy-icons a:first-child,
+#tracy-debug-panel-PageRecorderPanel > .tracy-icons a:first-child,
+#tracy-debug-panel-DumpsRecorderPanel > .tracy-icons a:first-child,
+#tracy-debug-panel-Tracy-info > .tracy-icons a:first-child,
+#tracy-debug-panel-Zarganwar-PerformancePanel-Panel > .tracy-icons a:first-child,
+#tracy-debug-panel-Tracy-dumps > .tracy-icons a:first-child,
+#tracy-debug-panel-ProcesswireVersionPanel > .tracy-icons a:first-child,
+#tracy-debug-panel-UserSwitcherPanel > .tracy-icons a:first-child,
+#tracy-debug-panel-PanelSelectorPanel > .tracy-icons a:first-child,
+#tracy-debug-panel-Tracy-errors > .tracy-icons a:first-child {
+    display:none !important;
+}
+
+
+#tracy-debug [id^="tracy-debug-panel-"][class*="tracy-mode-"] > .tracy-icons a[rel="close"] {
+    float: right;
+}
+
+#tracy-debug [id^="tracy-debug-panel-"][class*="tracy-mode-"] > .tracy-icons a:hover {
+    background: #e6e8eb !important;
+}
+
+#tracy-debug [id^="tracy-debug-panel-"][class*="tracy-mode-"] > h1 {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    font-size: 17px;
+    color: #2C3E50 !important;
+    text-transform: uppercase;
+    background: #F0F3F7 !important;
+    /*border: 1px solid rgba(255, 255, 255, 0.3);*/
+    border-bottom: 1px solid #c9d4e1 !important;
+}
+
+#tracy-debug [id^="tracy-debug-panel-"][class*="tracy-mode-"] > h1 > svg {
+    display: inline-block;
+    vertical-align: text-bottom;
+    margin-right: 3px;
+    position: relative;
+    top: -2px;
+}
+
+#tracy-debug [id^="tracy-debug-panel-"][class*="tracy-mode-"] input[type="submit"],
+  #tracy-debug [id^="tracy-debug-panel-"][class*="tracy-mode-"] .tracyCopyBtn {
+    border-radius: 0 !important;
+    padding: 5px 8px !important;
+    border-color: rgba(44, 62, 80, 0.2) !important;
+    color: #2C3E50;
+    transition: all 0.12s;
+}
+
+#tracy-debug [id^="tracy-debug-panel-"][class*="tracy-mode-"] input[type="submit"]:not([disabled="true"]),
+    #tracy-debug [id^="tracy-debug-panel-"][class*="tracy-mode-"] .tracyCopyBtn:not([disabled="true"]) {
+    background: #F0F3F7 !important;
+}
+
+#tracy-debug [id^="tracy-debug-panel-"][class*="tracy-mode-"] input[type="submit"]:hover,
+    #tracy-debug [id^="tracy-debug-panel-"][class*="tracy-mode-"] .tracyCopyBtn:hover {
+    background: #fff !important;
+    border-color: #b8c7d8 !important;
+}
+
+#tracy-debug [id^="tracy-debug-panel-"][class*="tracy-mode-"] #clearResults {
+    background: transparent !important;
+}
+
+#tracy-debug [id^="tracy-debug-panel-"][class*="tracy-mode-"] label:hover {
+    cursor: pointer;
+}
+
+.tracy-panel svg {
+    width: 16px !important;
+    height: 16px !important;
+}
+
+
+#tracy-debug .tracy-DumpPanel h2, #tracyConsoleResult h2, #tracySnippetRunnerResult h2 {
+    font: 11pt/1.5 sans-serif;
+    font-size: 14px !important;
+    margin: 0;
+    padding: 2px 8px;
+    background: #EAF0F2 !important;
+    border: 1px solid #D2D2D2 !important;
+    border-bottom: 0 !important;
+}
+
+#tracy-debug-panel-templateEditorPanel  {
+    width: calc(100vw - 40px) !important;
+}
+
+
+/* clipboardjs "Copied!" tooltip */
+.tooltipped {
+    position:relative !important;
+}
+.tooltipped:after {
+    position:absolute !important;
+    z-index:1000000 !important;
+    display:none !important;
+    padding:5px 8px !important;
+    font:normal normal 11px/1.5 Helvetica,arial,nimbussansl,liberationsans,freesans,clean,sans-serif,"Segoe UI Emoji","Segoe UI Symbol" !important;
+    color:#fff !important;
+    text-align:center !important;
+    text-decoration:none !important;
+    text-shadow:none !important;
+    text-transform:none !important;
+    letter-spacing:normal !important;
+    word-wrap:break-word !important;
+    white-space:pre !important;
+    pointer-events:none !important;
+    content:attr(aria-label) !important;
+    background:rgba(0,0,0,0.8) !important;
+    border-radius:3px !important;
+    -webkit-font-smoothing:subpixel-antialiased !important;
+}
+.tooltipped:before {
+    position:absolute !important;
+    z-index:1000001 !important;
+    display:none !important;
+    width:0 !important;
+    height:0 !important;
+    color:rgba(0,0,0,0.8) !important;
+    pointer-events:none !important;
+    content:"" !important;
+    border:5px solid transparent !important;
+}
+.tooltipped:hover:before,.tooltipped:hover:after,.tooltipped:active:before,.tooltipped:active:after,.tooltipped:focus:before,.tooltipped:focus:after {
+    display:inline-block !important;
+    text-decoration:none !important;
+}
+.tooltipped-multiline:hover:after,.tooltipped-multiline:active:after,.tooltipped-multiline:focus:after {
+    display:table-cell !important;
+}
+.tooltipped-s:after,.tooltipped-se:after,.tooltipped-sw:after {
+    top:100% !important;
+    right:50% !important;
+    margin-top:5px !important;
+}
+.tooltipped-s:before,.tooltipped-se:before,.tooltipped-sw:before {
+    top:auto !important;
+    right:50% !important;
+    bottom:-5px !important;
+    margin-right:-5px !important;
+    border-bottom-color:rgba(0,0,0,0.8) !important;
+}
+.tooltipped-se:after {
+    right:auto !important;
+    left:50% !important;
+    margin-left:-15px !important;
+}
+.tooltipped-sw:after{
+    margin-right:-15px !important;
+}
+.tooltipped-n:after,.tooltipped-ne:after,.tooltipped-nw:after {
+    right:50% !important;
+    bottom:100% !important;
+    margin-bottom:5px !important;
+}.tooltipped-n:before,.tooltipped-ne:before,.tooltipped-nw:before {
+    top:-5px !important;
+    right:50% !important;
+    bottom:auto !important;
+    margin-right:-5px !important;
+    border-top-color:rgba(0,0,0,0.8) !important;
+}
+.tooltipped-ne:after {
+    right:auto !important;
+    left:50% !important;
+    margin-left:-15px !important;
+}
+.tooltipped-nw:after {
+    margin-right:-15px !important;
+}
+.tooltipped-s:after,.tooltipped-n:after {
+    -webkit-transform:translateX(50%) !important;
+    -ms-transform:translateX(50%) !important;
+    transform:translateX(50%) !important;
+}
+.tooltipped-w:after {
+    right:100% !important;
+    bottom:50% !important;
+    margin-right:5px !important;
+    -webkit-transform:translateY(50%) !important;
+    -ms-transform:translateY(50%);transform:translateY(50%) !important;
+}
+.tooltipped-w:before {
+    top:50% !important;
+    bottom:50% !important;
+    left:-5px !important;
+    margin-top:-5px !important;
+    border-left-color:rgba(0,0,0,0.8) !important;
+}
+.tooltipped-e:after {
+    bottom:50% !important;
+    left:100% !important;
+    margin-left:5px !important;
+    -webkit-transform:translateY(50%) !important;
+    -ms-transform:translateY(50%) !important;
+    transform:translateY(50%) !important;
+}
+.tooltipped-e:before {
+    top:50% !important;
+    right:-5px !important;
+    bottom:50% !important;
+    margin-top:-5px !important;
+    border-right-color:rgba(0,0,0,0.8) !important;
+}
+.tooltipped-multiline:after {
+    width:-webkit-max-content !important;
+    width:-moz-max-content !important;
+    width:max-content !important;
+    max-width:250px !important;
+    word-break:break-word !important;
+    word-wrap:normal !important;
+    white-space:pre-line !important;
+    border-collapse:separate !important;
+}
+.tooltipped-multiline.tooltipped-s:after,.tooltipped-multiline.tooltipped-n:after {
+    right:auto !important;
+    left:50% !important;
+    -webkit-transform:translateX(-50%) !important;
+    -ms-transform:translateX(-50%) !important;
+    transform:translateX(-50%) !important;
+}
+.tooltipped-multiline.tooltipped-w:after,.tooltipped-multiline.tooltipped-e:after{
+    right:100%
+}
+@media screen and (min-width: 0\0) {
+    .tooltipped-multiline:after {
+        width:250px !important;
+    }
+}
+.tooltipped-sticky:before,.tooltipped-sticky:after {
+    display:inline-block !important;
+}
+.tooltipped-sticky.tooltipped-multiline:after {
+    display:table-cell !important;
+}
+.fullscreen-overlay-enabled.dark-theme .tooltipped:after {
+    color:#000 !important;
+    background:rgba(255,255,255,0.8) !important;
+}
+.fullscreen-overlay-enabled.dark-theme .tooltipped .tooltipped-s:before,.fullscreen-overlay-enabled.dark-theme .tooltipped .tooltipped-se:before,.fullscreen-overlay-enabled.dark-theme .tooltipped .tooltipped-sw:before {
+    border-bottom-color:rgba(255,255,255,0.8) !important;
+}
+.fullscreen-overlay-enabled.dark-theme .tooltipped.tooltipped-n:before,.fullscreen-overlay-enabled.dark-theme .tooltipped.tooltipped-ne:before,.fullscreen-overlay-enabled.dark-theme .tooltipped.tooltipped-nw:before {
+    border-top-color:rgba(255,255,255,0.8) !important;
+}
+.fullscreen-overlay-enabled.dark-theme .tooltipped.tooltipped-e:before {
+    border-right-color:rgba(255,255,255,0.8) !important;
+}
+.fullscreen-overlay-enabled.dark-theme .tooltipped.tooltipped-w:before {
+    border-left-color:rgba(255,255,255,0.8) !important;
+}
+
+
+/* Captain Hook comment display/hide */
+#ch-comment label {
+    display:block !important;
+    cursor:default !important;
+}
+#ch-comment label.comment {
+    color:#125EAE !important;
+    cursor:pointer !important;
+}
+#ch-comment label.comment:hover { text-decoration:underline }
+#ch-comment input[type="checkbox"] {
+    position:absolute !important;
+    left:-999em !important;
+}
+#ch-comment .hide {
+    display:block !important;
+}
+#ch-comment .hide p {
+    padding:10px !important;
+    margin:0 !important;
+}
+#ch-comment input[type="checkbox"]:not(:checked) + div {
+    display:none !important;
+}
+
+#validatorBody ol {
+    font-size: 16px !important;
+}

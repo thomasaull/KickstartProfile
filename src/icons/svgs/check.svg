@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="30px" height="30px" viewBox="0 0 30 30" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 48.2 (47327) - http://www.bohemiancoding.com/sketch -->
+    <title>check</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+        <g id="check" stroke="#000000" stroke-width="1.5">
+            <g transform="translate(3.500000, 3.500000)">
+                <polyline id="Stroke-1" points="16.2916667 8.14583333 9.10416667 14.8541667 6.70833333 12.4583333"></polyline>
+                <path d="M11.5,0.479166667 C17.5873333,0.479166667 22.5208333,5.413625 22.5208333,11.5 C22.5208333,17.5873333 17.5873333,22.5208333 11.5,22.5208333 C5.413625,22.5208333 0.479166667,17.5873333 0.479166667,11.5 C0.479166667,5.413625 5.413625,0.479166667 11.5,0.479166667 Z" id=".color-.bold"></path>
+            </g>
+        </g>
+    </g>
+</svg>

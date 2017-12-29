@@ -1,0 +1,29 @@
+* { box-sizing: border-box; }
+
+input:focus,
+textarea:focus
+{
+  outline: none;
+}
+
+html, body {
+  height: 100%;
+}
+
+body
+{
+  min-height: 100%;
+  min-width: 100%;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  // -webkit-text-stroke: 0.2px rgba(0,0,0, 0.5) // wenn Text in Webkit zu dünn
+  // text-shadow: #fff 0px 1px 1px; // Wenn Text in allen Browsern zu dünn
+  hyphens: auto;
+}
+
+html {
+  font-family: $fontStack-default;
+  &.wf-loading { font-family: $fontStack-system; }
+  &.wf-active { font-family: $fontStack-default; }
+}
