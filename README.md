@@ -77,9 +77,9 @@ I use FieldtypeRepeaterMatrix for the Contentbuilder. Since it’s  a Pro Module
 ### VS Code
 Open „Workspace Settings“ and add this to `settings`:
 ```
-	"search.exclude": {
-		"**/dist": true
-	}
+"search.exclude": {
+  "**/dist": true
+}
 ```
 
 Save Workspace in your project folder
