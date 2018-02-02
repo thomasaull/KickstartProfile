@@ -6,7 +6,6 @@ class ContactForm
 {
   public static function submit($data)
   {
-    \TD::fireLog($data);
     ApiHelper::checkRequiredParameters($data, ['name', 'email', 'message']);
 
     // Sanitize

@@ -1,7 +1,7 @@
 # Kickstart Site Profile
 
 **Disclaimer**
-This is mainly a personal site profile to kickstart my own ProcessWire Projects. Nevertheless, Feel free to dig around and copy whatever you find useful.
+This is mainly a personal site profile to kickstart my own ProcessWire Projects. Also most of the following instructions are for my very specific setup routine. Nevertheless, Feel free to dig around and copy whatever you find useful.
 
 ### Features
 - easy deployment process (all sources outside of processwire)
@@ -10,6 +10,9 @@ This is mainly a personal site profile to kickstart my own ProcessWire Projects.
 - minification of css and js resources
 - optimized webfont loading with https://github.com/typekit/webfontloader
 - automated generation of critical css
+- error reporting of javascript errors in ProcessWire logs
+- Maintenance Modes for Frontend and Backend
+- Easy testing from devices on local network
 
 ### Install
 
@@ -49,10 +52,11 @@ $config->dbPort = '3306';
 */ 
 
 $config->debug = true;
+$config->maintenanceBackend = false;
+$config->maintenanceFrontend = false;
 ```
 
 - In src/package.json change url to your local development url
-- in webpack.config.js change dev server proxy url to your development url
 
 ```
 cd src
@@ -65,3 +69,17 @@ For Development run `npm run dev` and open your browser at `http://localhost:808
 
 ### Critical CSS
 To generate critical css for all necessary templates, add entries to package.json "criticalCSS" accordingly
+
+### Contentbuilder
+
+I use FieldtypeRepeaterMatrix for the Contentbuilder. Since it’s  a Pro Module I’m not allowed to include it here. So you need to install it yourself (or alternatively delete it or use another approach for the contentbuilder).
+
+### VS Code
+Open „Workspace Settings“ and add this to `settings`:
+```
+	"search.exclude": {
+		"**/dist": true
+	}
+```
+
+Save Workspace in your project folder

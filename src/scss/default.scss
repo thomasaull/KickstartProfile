@@ -1,17 +1,35 @@
-* { box-sizing: border-box; }
+:root {
+  --fontSize-small: $fontSize-small;
+  --fontSize-default: $fontSize-default;
+  --fontSize-large: $fontSize-large;
+  --fontSize-larger: $fontSize-larger;
 
-input:focus,
-textarea:focus
-{
-  outline: none;
+  // Media Queries für responsive Anpassung hier
 }
 
 html, body {
   height: 100%;
 }
 
+// Using CSS Variables to avoid Flash of Invisible Text
+html {
+  font: var(--fontSize-default) $fontStack-system; // Fallback
+  --fontStack-default: $fontStack-default;
+
+  &.wf-loading {
+    font-family: $fontStack-system;
+    --fontStack-default: $fontStack-system;
+  }
+  &.wf-active {
+    font-family: $fontStack-default;
+    --fontStack-default: $fontStack-default;
+  }
+}
+
 body
 {
+  font: var(--fontSize-default) var(--fontStack-sans);
+
   min-height: 100%;
   min-width: 100%;
   overflow-x: hidden;
@@ -19,11 +37,36 @@ body
   -moz-osx-font-smoothing: grayscale;
   // -webkit-text-stroke: 0.2px rgba(0,0,0, 0.5) // wenn Text in Webkit zu dünn
   // text-shadow: #fff 0px 1px 1px; // Wenn Text in allen Browsern zu dünn
+
+  // Source: https://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-container/
+  /* These are technically the same, but use both */
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+
+  /* Adds a hyphen where the word breaks, if supported (No Blink) */
   hyphens: auto;
 }
 
-html {
-  font-family: $fontStack-default;
-  &.wf-loading { font-family: $fontStack-system; }
-  &.wf-active { font-family: $fontStack-default; }
+// Border Box Everything
+* { box-sizing: border-box; }
+
+// No Focus outlines, don't forget to define by yourself!
+input:focus, textarea:focus, button:focus { outline: none; }
+
+// Default Styles for Links
+a {
+  text-decoration: none;
+  color: currentColor;
+}
+
+// Default Styles for Buttons
+button {
+  border: none;
+  background: none;
+  font: var(--fontSize-default) var(--fontStack-defualt);
+}
+
+// Defaults for Form
+input, textarea {
+  font: var(--fontSize-default) var(--fontStack-defualt);
 }

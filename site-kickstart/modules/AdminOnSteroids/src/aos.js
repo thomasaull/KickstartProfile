@@ -4,6 +4,15 @@ function _isEnabled(submoduleName) {
     return AOSsettings.enabledSubmodules.indexOf(submoduleName) !== -1
 }
 
+function addCSSRule(sheet, selector, rules, index) {
+    if ("insertRule" in sheet) {
+        sheet.insertRule(selector + "{" + rules + "}", index);
+    }
+    else if ("addRule" in sheet) {
+        sheet.addRule(selector, rules, index);
+    }
+}
+
 function initCKE() {
 
     var CKEplugins = ProcessWire.config.InputfieldCKEditor.plugins,
@@ -328,16 +337,16 @@ function setupAdminDataTableFilter() {
     if ($('.AdminDataTable:not(.InputfieldTable)').length) {
 
         var autofocus = $('#ProcessTemplateList, #ProcessFieldList').length ? ' autofocus' : '';
-        if ($('body.AdminThemeUikit').length == 0) {
+        if ($('body.AdminThemeUikit').length === 0) {
             var dtFilter = $('<div class="Inputfield InputfieldMarkup"><div class="dtFilter filterbox InputfieldContent"><input type="text"' + autofocus + ' placeholder="Filter items..." class="ui-input"><i class="fa fa-close"></i><span class="counter"></span></div></div>');
         }
         else {
-            var dtFilter = $('<div class=\'uk-inline filterbox-wrapper uk-grid-margin Inputfield InputfieldMarkup\'>' +
+            var dtFilter = $('<div class="uk-inline filterbox-wrapper uk-grid-margin Inputfield InputfieldMarkup">' +
                 '<div class="dtFilter filterbox InputfieldContent ">' +
                 // '<span class="uk-form-icon">' +
                 // '<i class="fa fa-search"></i>' +
                 // '</span>' +
-                '<input type="text"' + autofocus + ' class=\'uk-input uk-form-width-medium\'>' +
+                '<input type="text" placeholder="Filter..."' + autofocus + ' class="uk-input uk-form-width-medium">' +
                 '<i class="fa fa-close"></i>' +
                 '<span class="counter"></span></div></div>');
         }
@@ -374,7 +383,7 @@ function setupAdminDataTableFilter() {
             setDtTable(table);
 
             // add to DOM
-            if ($('.AdminDataTable').length == 1) {
+            if ($('.AdminDataTable').length === 1) {
 
                 // Sessions page
                 if ($('body').hasClass('id-1095')) {
@@ -499,28 +508,27 @@ function setupAdminDataTableFilter() {
             e = e || window.event;
 
             var target = e.target || e.srcElement,
-                filter = target.value.toLowerCase(),
                 field = $('.AdminDataTable'),
+                filter = target.value.toLowerCase(),
                 items = field.find('tbody td'),
-                //count = 0,
-                length = filter.length,
+                length,
                 invertedSearch = false;
 
-            // Lister page: process only closest tables (exception)
+            // Lister page: process only first datatable (exception)
             if ($('body').hasClass('id-1007')) {
-                field = $(target).parent().parent().find('.AdminDataTable');
+                field = $(target).parent().parent().parent().find('.AdminDataTable');
                 items = field.find('tbody td');
             }
 
             if (!target.value) {
                 updateDtFilterCounter();
                 $(target).parent().removeClass('hasValue');
-                $('tr.hidden').removeClass('hidden');
-                $('.Inputfield.hidden').removeClass('hidden');
+                field.find('tr.hidden').removeClass('hidden');
+                field.find('.Inputfield.hidden').removeClass('hidden');
                 return true;
             }
 
-            if (e.keyCode == 13) {  // Enter
+            if (e.keyCode === 13) {  // Enter
                 var visibleRowLinks = $('tbody tr:not(.hidden) a');
                 if (visibleRowLinks.length) {
                     visibleRowLinks.first().get(0).click();
@@ -559,7 +567,7 @@ function setupAdminDataTableFilter() {
 
                 var filter_tags = filter.split(" "); // Split user input by spaces
 
-                if (filter_tags.length == 0) return true;
+                if (filter_tags.length === 0) return true;
 
                 items.each(function () {
 
@@ -636,7 +644,7 @@ function setupAdminDataTableFilter() {
 // Translator filter box
 function setupTranslatorFilter() {
 
-    var transFilter = $('<div class="transFilter filterbox"><input type="text" autofocus><i class="fa fa-close"></i></div>');
+    var transFilter = $('<div class="transFilter filterbox"><input type="text" autofocus placeholder="Filter..."><i class="fa fa-close"></i></div>');
 
     $('form > .Inputfields > .Inputfield:not(.Inputfield_abandoned_fieldset)').each(function () {
 
@@ -1035,14 +1043,11 @@ $(document).ready(function () {
             }
 
 
-            if (HotkeysSettings.indexOf('removeNoticeHotkey')) {
+            if (HotkeysSettings.indexOf('removeNoticeHotkey') !== -1) {
 
                 function removeNoticeHotkey(e) {
 
                     var keyCode = e.keyCode || e.charCode;
-
-                    // always remove event because only first keydown should trigger the notice removal
-                    $(document).off('keydown', removeNoticeHotkey);
 
                     if (keyCode === 27) {
                         if ($('a.notice-remove').length) {
@@ -1055,12 +1060,14 @@ $(document).ready(function () {
                 }
 
                 if ($('a.notice-remove').length) {
-                    $(document).on('keydown', removeNoticeHotkey);
+                    $(document).one('keydown', removeNoticeHotkey);
                 }
             }
 
 
             if (HotkeysSettings.indexOf('breadcrumbTweaks') !== -1 && BreadcrumbsSettings) {
+
+                $('.uk-breadcrumb').attr('id', 'breadcrumbs');  // adminthemeuikit has no id
 
                 // add "data-*" markups
                 // skip first item in Default admin theme (.pw-panel)
@@ -1246,7 +1253,7 @@ $(document).ready(function () {
                     searchBoxValue;
 
                 // try in parent frame (uikit)
-                if(searchBox.length === 0) {
+                if (searchBox.length === 0) {
                     searchBox = $('#ProcessPageSearchQuery, .uk-navbar-right .pw-search-form .pw-search-input', window.parent.document);
                 }
 
@@ -1326,7 +1333,7 @@ $(document).ready(function () {
                 function addAsmWidths() {
                     setTimeout(function () {
                         $("#wrap_fieldgroup_fields .asmListItemStatus:not(:contains('%'))").each(function () {
-                            $(this).html($(this).text() + '<em> 100%</em>');
+                            $(this).html($(this).html() + '<em> 100%</em>');
                         });
                     }, 100);
                 }
@@ -1441,7 +1448,7 @@ $(document).ready(function () {
 
                     var aos_splitter = Split(['.aos_col_left', '.aos_col_right'], {
                         sizes: typeof sizes === 'string' ? JSON.parse(sizes) : sizes,
-                        gutterSize: 12,
+                        gutterSize: 20,
                         minSize: 250,
                         onDragEnd: function () {
                             localStorage.setItem(storageName, JSON.stringify(aos_splitter.getSizes()));
@@ -1550,17 +1557,20 @@ $(document).ready(function () {
                 selector: 'a.iuc',
                 linkHiddenClass: 'iuc-hide',
                 lockedClass: 'iuc-locked-link',
-                dummyFieldSelector: 'IUC-dummy',
                 dataMode: 'data-iuc-mode',
                 dataTarget: 'data-iuc-target',
                 dataForceHttp: 'data-iuc-force-http',
                 dataLoaded: 'data-iuc-loaded'
             };
 
-            // get button height with a dummy element
-            $('body').append('<input class="' + IUC.dummyFieldSelector + '">');
-            IUC.btnHeight = $('.' + IUC.dummyFieldSelector).outerHeight() - 2;
-            $('.' + IUC.dummyFieldSelector).remove();
+            // add css height and line-height to stylesheet
+            $('body').append('<input class="uk-input IUC-dummy">');
+            IUC.height = $('.IUC-dummy').outerHeight() - 2;
+            $('.IUC-dummy').remove();
+
+            if (IUC.height > 0 && document.styleSheets[0]) {
+                addCSSRule(document.styleSheets[0], '.iuc-button', 'height: ' + IUC.height + 'px; line-height: ' + IUC.height + 'px');
+            }
 
             // $(document).on('ready reloaded wiretabclick opened', initIUC);
             $(document).on('ready reloaded wiretabclick opened', initIUC);
@@ -1574,21 +1584,6 @@ $(document).ready(function () {
             });
 
             function initIUC(e) {
-
-                $(IUC.selector).not('[' + IUC.dataLoaded + '="1"]').each(function () {
-
-                    var iucLink = $(this);
-
-                    // set link height
-                    setTimeout(function () {
-                        if (IUC.btnHeight > 0) {
-                            iucLink.css({
-                                'height': IUC.btnHeight + 'px',
-                                'line-height': IUC.btnHeight + 'px'
-                            });
-                        }
-                    }, 0);
-                });
 
                 $(IUC.selector + '[' + IUC.dataMode + '!=""][' + IUC.dataMode + ']').not('[' + IUC.dataLoaded + '="1"]').each(function () {
 
@@ -2729,7 +2724,7 @@ $(document).ready(function () {
                     moduleFilter;
 
                 if ($('body.AdminThemeUikit').length != 0) {
-                    moduleFilter = $('<div class="filterbox-wrapper Inputfield"><div class="moduleFilter filterbox InputfieldContent "' + hiddenStyle + '><input type="text" autofocus placeholder="Filter modules below" class="uk-input uk-form-width-medium"><i class="fa fa-close"></i><span class="counter"></span></div></div>');
+                    moduleFilter = $('<div class="filterbox-wrapper Inputfield"><div class="moduleFilter filterbox InputfieldContent "' + hiddenStyle + '><input type="text" autofocus placeholder="Filter modules..." class="uk-input uk-form-width-medium"><i class="fa fa-close"></i><span class="counter"></span></div></div>');
                 }
                 else {
                     moduleFilter = $('<div class="moduleFilter filterbox"' + hiddenStyle + '><input type="text" autofocus><i class="fa fa-close"></i></div>');
@@ -3020,6 +3015,14 @@ $(document).ready(function () {
             // add 'active' class if submenu has active item
             $('.AdminThemeReno .navItem.hasSubmenu a.current').parents('.hasSubmenu').first().addClass('active');
 
+            if($('html.AdminThemeUikit').length) {
+                topNavElem = $('.uk-navbar-nav.pw-primary-nav > li > ul').first();
+                $NavItems.children('li').each(function () {
+                      topNavElem.append($(this));
+                  });
+            } else {
+
+
             if (topNavHasItems) {
                 // if ($('.NavItems > li').length) {
                 $NavItems.children('li').each(function () {
@@ -3034,6 +3037,7 @@ $(document).ready(function () {
                 $NavItems.each(function () {
                     firstNavItem.children('ul').append($(this));
                 });
+            }
             }
 
             $('body').removeAttr('data-navitems');
@@ -3155,6 +3159,7 @@ $(document).ready(function () {
                         }
 
                         field.find('.InputfieldFileFieldFilter input').attr('list', field.attr('id'));
+
                     }
                 }
 

@@ -4,16 +4,19 @@ require_once "{$config->paths->templates}/api/ApiHelper.php";
 require_once "{$config->paths->templates}/api/Test.php";
 require_once "{$config->paths->templates}/markup/Helper.php";
 
-// $data = Test::getSomeData();
-// $page->main .= ApiHelper::renderModuleTemplate('Blupp', $data);
+// Option 1: Putting Data directly
+$page->main .= Helper::renderModuleTemplate('TestModule', (object) ['name' => 'Thomas', 'age' => 29, 'location' => 'Würzburg']);
 
-$page->main .= ApiHelper::renderModuleTemplate('ContactForm');
+// Option 2: Using a controller (optional – does overwrite this directly put data)
+$page->main .= Helper::renderModuleTemplate('TestModuleWithController', (object) ['name' => 'Thomas', 'age' => 29, 'location' => 'Würzburg']);
 
-// $page->main .= ApiHelper::renderModuleTemplate('Bla');
+// Option 3: Use the API by acessing functions directly
+$page->main .= Helper::renderModuleTemplate('TestModule', Test::getSomeData());
 
+// $page->main .= Helper::renderModuleTemplate('Kitchensink');
 
 // foreach($page->contentbuilder as $content) {
 //   $page->main .= $content->render();
 // }
 
-include("index.php");
+include("dist/index.php");

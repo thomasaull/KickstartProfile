@@ -32,7 +32,7 @@ class AdminOnSteroids extends WireData implements Module, ConfigurableModule
         return array(
             'title'     => 'AdminOnSteroids',
             'class'     => 'AdminOnSteroids',
-            'version'   => '168',
+            'version'   => '1.7.6',
             'summary'   => __('Various ProcessWire admin tweaks to boost productivity'),
             'author'    => 'Roland Toth',
             'autoload'  => 'template=admin',
@@ -619,6 +619,7 @@ class AdminOnSteroids extends WireData implements Module, ConfigurableModule
             }
         }
 
+
 //        $this->addHookBefore('ProcessPageList::execute', function(HookEvent $event) {
 //            // overwrite GET lang parameter
 //            $this->input->get['lang'] = 1020;
@@ -916,7 +917,7 @@ class AdminOnSteroids extends WireData implements Module, ConfigurableModule
 //						$p->of(false);	// fix breadcrumb html-encoded value issue (fixed in PW 3.05x)
                         $breadcrumbUrls[] = array(
                             'url'     => $p->viewable() ? $p->httpUrl : null,
-                            'editUrl' => $p->editable() ? rtrim($homepage->httpUrl, '/') . $p->editUrl : null
+                            'editUrl' => $p->editable() ? $p->editUrl : null
                         );
                     }
 
@@ -979,6 +980,12 @@ class AdminOnSteroids extends WireData implements Module, ConfigurableModule
                 if ($this->page->process == "ProcessLanguageTranslator" && $this->wire('languages')->count() > 1) {
                     $this->addHookAfter('ProcessLanguageTranslator::executeEdit', $this, 'addTranslatorLinks');
                 }
+            }
+
+            // logsHelperTweaks
+            if (in_array('logsHelperTweaks', $configData[$subModule])) {
+                $this->addHookAfter('InputfieldFieldset(id=FieldsetTools)::render', $this, 'expandFieldsetToolsField');
+                $this->addHookAfter('InputfieldSelect(id=Inputfield_action,is_replacement!=1)::render', $this, 'replaceLogActionsWithRadios');
             }
 
 
@@ -1200,15 +1207,38 @@ class AdminOnSteroids extends WireData implements Module, ConfigurableModule
 //    }
 
 
+    public function expandFieldsetToolsField(HookEvent $event)
+    {
+        $field = $event->object;
+        $field->collapsed = Inputfield::collapsedNo;
+        $field->label = '';
+        $field->wrapAttr('class', 'aos_no-inputfield-padding');
+    }
+
+    // replace select box for Actions field on Logs page
+    public function replaceLogActionsWithRadios(HookEvent $event)
+    {
+        $field = $event->object;
+        $config = $this->wire('config');
+
+        $radios = wire('modules')->get('InputfieldRadios');
+        $radios->name = 'action';
+        $radios->is_replacement = '1';  // custom property for the conditional hook (to run only 1 times)
+        $field->wrapAttr('class', 'InputfieldRadios');
+
+        $radios->addOptions($field->options);
+
+        // need to manually load css
+        $config->styles->add($config->urls->modules . '/Inputfield/InputfieldRadios/InputfieldRadios.css');
+
+        $event->return = $radios->render();
+    }
+
+
     // uncheck "Active?" checkbox next to language names when adding a new page
     public function uncheckAddnewActive(HookEvent $event)
     {
         $page = $this->wire('page');
-
-        // AOS is only available in the admin
-//        if ($page->template != 'admin') {
-//            return;
-//        }
 
         if ($page->process == 'ProcessPageAdd' || ($page->process == 'ProcessPageEdit' && $this->wire('input')->get('new') == 1)) {
             $event->return = str_replace("checked='checked'", "", $event->return);
@@ -1313,7 +1343,7 @@ class AdminOnSteroids extends WireData implements Module, ConfigurableModule
         $page_language_ids = $page_languages->id();
 
         foreach ($langs as $lang) {
-            $l .= '<b' . (in_array($lang->id, $page_language_ids) ? '  class="active"' : '') .' title="' . $lang->title . '">' . mb_substr($lang->title, 0, 3) . '</b>';
+            $l .= '<b' . (in_array($lang->id, $page_language_ids) ? '  class="active"' : '') . ' title="' . $lang->title . '">' . mb_substr($lang->title, 0, 3) . '</b>';
         }
 
         $event->return = $markup . '<i class="pagelist-langs">' . $l . '</i>';
@@ -1381,7 +1411,7 @@ class AdminOnSteroids extends WireData implements Module, ConfigurableModule
     {
 
         // do not process Image (and other) fields
-        if ($event->object->class !== 'FieldtypeFile') {
+        if ($event->object instanceof FieldtypeFile) {
             return;
         }
 
@@ -1998,12 +2028,16 @@ class AdminOnSteroids extends WireData implements Module, ConfigurableModule
         }
 
         $fsetLeft = $this->modules->get("InputfieldFieldset");
-        $fsetLeft->attr('class', $fsetLeft->attr('class') . ' aos_col_left');
+        $fsetLeft->attr('class', $fsetLeft->attr('class') . ' aos_col_left aos_no-inputfield-padding');
+        $fsetLeft->set('themeBorder', 'none');
+        $fsetLeft->set('themeOffset', false);
         $fsetLeft->wrapAttr('style', 'width: ' . $colWidths[0] . '%');
         $fsetLeft->wrapAttr('data-splitter-default', $colWidths[0]);
 
         $fsetRight = $this->modules->get("InputfieldFieldset");
-        $fsetRight->attr('class', $fsetRight->attr('class') . ' aos_col_right');
+        $fsetRight->set('themeBorder', 'none');
+        $fsetRight->set('themeOffset', false);
+        $fsetRight->attr('class', $fsetRight->attr('class') . ' aos_col_right aos_no-inputfield-padding');
         $fsetRight->wrapAttr('style', 'width: ' . $colWidths[1] . '%');
         $fsetRight->wrapAttr('data-splitter-default', $colWidths[1]);
 
@@ -2274,10 +2308,10 @@ class AdminOnSteroids extends WireData implements Module, ConfigurableModule
 
         $parts = $event->return;
 
-        $div_class = ($this->adminTheme === 'AdminThemeUikit') ? 'pw-container uk-container uk-container-expand' : '';
+        $div_class = ($this->wire('config')->defaultAdminTheme === 'AdminThemeUikit') ? 'pw-container uk-container uk-container-expand' : '';
 
-        $enabledText = __('Disable', __FILE__) . ' AdminOnSteroids';   // Disable AdminOnSteroids
-        $disabledText = __('Enable', __FILE__) . ' AdminOnSteroids';   // Enable AdminOnSteroids
+        $enabledText = __('Disable', __FILE__) . ' AdminOnSteroids';
+        $disabledText = __('Enable', __FILE__) . ' AdminOnSteroids';
 
         $linkStyle = 'style="opacity: 0.75; color: inherit !important; margin-left: 0; display: inline-block; padding: 4px 0; margin-right: 1px;"';
         $mouseover = 'onmouseover="this.style.textDecoration=\'underline\'" onmouseout="this.style.textDecoration=\'none\'"';
@@ -2286,13 +2320,9 @@ class AdminOnSteroids extends WireData implements Module, ConfigurableModule
         $configLink = '<a href="' . $modulePage . '" ' . $linkStyle . ' title="' . __('Configure module',
                 __FILE__) . '"><i class="fa fa-cog"></i></a>';
 
-        $configLinkMarkup = '<div class="' . $div_class . '"><div class="uk-grid"><div class="uk-width-2-3@m uk-flex-first@m uk-text-center uk-text-left@m uk-first-column"><p style="margin-top: 10px; font-size: 
-0.9rem;" class=""><a 
-href="' . $modulePage . '&toggle=1" 
-class="aos_toggle" 
-' . $linkStyle . '><i 
-class="fa fa-medkit"></i> 
-<span ' . $mouseover . '>
+        $configLinkMarkup = '<div class="' . $div_class . '">
+<div class="uk-grid"><div class="uk-width-2-3@m uk-flex-first@m uk-text-center uk-text-left@m uk-first-column"><p style="margin-top: 10px; font-size: 0.9rem;" class="">
+<a href="' . $modulePage . '&toggle=1" class="aos_toggle"' . $linkStyle . '><i class="fa fa-medkit"></i> <span ' . $mouseover . '>
 ' . ($this->enabled ? $enabledText : $disabledText) . '</span></a> ' . $configLink . '</p></div></div></div>';
 
         $parts['footer'] .= $configLinkMarkup;
@@ -2319,6 +2349,8 @@ class="fa fa-medkit"></i>
 
         if ($this->adminTheme === 'AdminThemeDefault') {
             $event->return = str_replace('<li class=\'title\'>', '<li class="title">' . $templateEditLink, $event->return);
+        } else if ($this->adminTheme === 'AdminThemeUikit') {
+            $event->return = str_replace('<h1 class=\'uk-margin-remove-top\'>', '<h1 id="title" class="uk-margin-remove-top">' . $templateEditLink, $event->return);
         } else {
             // todo check for AdminThemeUikit
             $event->return = preg_replace('/<h1 id="title">(<span>)?(.*)(<\/span>)?<\/h1>/', '<h1 id="title"><span>${2}</span>' . $templateEditLink . '</h1>', $event->return, 1);
@@ -2339,7 +2371,7 @@ class="fa fa-medkit"></i>
             return;
         }
 
-        if ($field = $this->fields->get($inputfield->name)) {
+        if ($field = $inputfield->hasField) {
 
             if (!is_object($field)) {
                 return;
@@ -2348,10 +2380,9 @@ class="fa fa-medkit"></i>
             // add class to wrapper to be able to use :hover even if label is unavailable (eg. checkbox field)
             $inputfield->wrapAttr('class', $inputfield->wrapAttr('class') . ' aos_hasTooltip');
 
-
             $editFieldUrl = $this->config->urls->admin . 'setup/field/edit?id=' . $field->id;
 
-            $editFieldTooltip = '<em class="aos_EditField">' . $inputfield->name . '<i class="fa fa-pencil"></i></em>';
+            $editFieldTooltip = '<em class="aos_EditField">' . $field->name . '<i class="fa fa-pencil"></i></em>';
 
             // needed to allow HTML in label
             $inputfield->entityEncodeLabel = false;
@@ -3407,6 +3438,9 @@ HTML;
         $f->addOption('stickyCKE', __('Sticky CKEditor toolbar', __FILE__));
         $f->addOption('themeConfigLinks', __('Add Profile page links to configure admin themes (SuperUser only)', __FILE__));
         $f->addOption('prevNextLinks', __('Add links to edit previous and next pages', __FILE__));
+        $f->addOption('logsHelperTweaks', __('Expand Helpers field on Logs page and use radio buttons for log actions', __FILE__));
+        $f->addOption('headBtnToTitle', __('Place header button next to the main title', __FILE__));
+
 
 
         if ($data[$f->name]) {
@@ -3631,7 +3665,6 @@ HTML;
         $f->addOption('sbAutoHide', __('Autohide sidebar', __FILE__));
         $f->addOption('pListCompact', __('Use narrow pagelist rows', __FILE__));
         $f->addOption('openSearch', __('Always show search field', __FILE__));
-        $f->addOption('headBtnToTitle', __('Place header button next to the main title', __FILE__));
         $f->addOption('hoverTopSubmenus', __('Show topnav submenus on hover instead click', __FILE__));
         $f->addOption('noticeLeftX', __('Move notice close buttons to the left', __FILE__));
 

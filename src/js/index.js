@@ -4,6 +4,7 @@ import Vue from 'vue'
 import VeeValidate from 'vee-validate'
 import de from 'vee-validate/dist/locale/de'
 
+import '@/js/reportErrors'
 import '@/js/fonts'
 
 VeeValidate.Validator.localize('de', de)

@@ -1,0 +1,83 @@
+<?php
+ 
+/**
+ * UserWorkspaces
+ *
+ * Example module to hide page in the admin per user per page.
+ *
+ * ProcessWire 2.x
+ * Copyright (C) 2010 by Ryan Cramer
+ * Licensed under GNU/GPL v2, see LICENSE.TXT
+ *
+ * http://www.processwire.com
+ * http://www.ryancramer.com
+ *
+ */
+ 
+class HiddenAdminPages extends WireData implements Module {
+ 
+    public static function getModuleInfo() {
+ 
+        return array(
+            'title' => 'HiddenAdminPages',
+            'version' => 100,
+            'summary' => 'Example module to hide page in the admin per role per page.
+                          Add a page field "pagelist_hidden" with a PageListSelectMultiple input type
+                          to the role template. Select or add pages you want to hide in the admin.',
+            'href' => '',
+            'singular' => true,
+            'autoload' => true
+            );
+    }
+ 
+ 
+    public function init() 
+    {
+        // only add hook only if the render parameter is set
+        // (as used by ProcessPageList)
+        if(!isset($_GET['render'])) return;
+ 
+        if(!$this->templates->get("role")->hasField('pagelist_hidden')) return;
+        //if(!count($this->role->pagelist_hidden)) return;
+       	
+       	$roleHasField = false;
+       	foreach ($this->user->roles as $role) 
+       	{
+       		if(count($role->pagelist_hidden))
+       			$roleHasField = true;
+       	}
+       	
+       	if($roleHasField == false)
+       		return;
+ 
+        $this->addHookAfter('ProcessPageList::execute', $this, 'pageListHiddenPages');
+    }
+ 
+ 
+    public function pageListHiddenPages(HookEvent $event)
+    {        
+        $hidden = array();
+        
+        foreach($this->user->roles as $role)
+        {
+        	foreach($role->pagelist_hidden as $page) 
+        	{
+        		array_push($hidden, $page->id);
+        	}
+        	
+        }
+ 		
+        // make sure it's an ajax request
+        if($this->config->ajax){
+            // manipulate the json returned and remove any pages found from array
+            $json = json_decode($event->return, true);
+            foreach($json['children'] as $key => $child){
+                if(in_array($child['id'],$hidden)) unset($json['children'][$key]);
+            }
+            $json['children'] = array_values($json['children']);
+            $event->return = json_encode($json);
+        }
+ 
+    }
+ 
+}

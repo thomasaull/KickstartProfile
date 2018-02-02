@@ -1,0 +1,66 @@
+.defaultText {
+  font: $fontSize-default var(--fontStack-sans);
+
+  & p {
+    margin-bottom: 1em;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  & h2 {
+    font: $fontSize-larger var(--fontStack-default);
+    margin-bottom: 10px;
+    color: $color-key;
+  }
+
+  & h3 {
+    font: $fontSize-large var(--fontStack-default);
+    margin-bottom: 10px;
+  }
+
+  & h4 {
+    font-weight: 700;
+  }
+
+  & a {
+    color: $color-key;
+
+    &:hover {
+      // opacity: 0.75;
+    }
+  }
+}
+
+.defaultText.-lists {
+  ul {
+    margin-bottom: 1em;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    & li {
+      position: relative;
+      padding-left: 10px;
+
+      &::before {
+        content: "";
+        width: 4px;
+        height: 4px;
+        border-radius: 4px;
+        background-color: currentColor;
+        position: absolute;
+        user-select: none;
+        top: 10px;
+        left: 0;
+      }
+    }
+  }
+
+  ul ul {
+    margin-left: 5px;
+    font-weight: 300;
+  }
+}

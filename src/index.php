@@ -1,7 +1,14 @@
 <?php namespace ProcessWire; require_once("{$config->paths->templates}/markup/Helper.php"); ?>
 
+<?php
+  if ($config->maintenanceFrontend === true) {
+    echo "Website is in maintenance mode";
+    if (!$user->isSuperuser()) exit();
+  }
+?>
+
 <!DOCTYPE html>
-<html lang="de" class="no-js">
+<html lang="de" class="noJs">
 <head>
   <?php include("{$config->paths->templates}/markup/head.php"); ?>
 
@@ -19,18 +26,37 @@
     </noscript>
   <% } %>
 
-  <script type="text/javascript" src="<%= htmlWebpackPlugin.files.chunks.critical.entry %>"></script>
+  <script>
+    <?php
+      // Include errorTracking.js inline
+      if ("<%= htmlWebpackPlugin.options.env %>" === 'production')
+        include("{$config->paths->root}<%= htmlWebpackPlugin.files.chunks.errorTracking.entry %>");
+
+      // Uncomment if you want to test or get Error-Tracking in Development:
+      // else echo file_get_contents("<%= htmlWebpackPlugin.files.chunks.errorTracking.entry %>");
+    ?>
+  </script>
+
+  <script><?php include("{$config->paths->templates}/static/cssrelpreload.js"); ?></script>
+
+  <script type="text/javascript">
+    // Remove noJs Class:
+    document.documentElement.classList.remove('noJs')
+
+    window.lazySizesConfig = window.lazySizesConfig || {};
+    // Disable Lazysizes Auto Init:
+    // window.lazySizesConfig.init = false;
+  </script>
 </head>
 
-<body class="<?=$page->bodyClass?>">
-  <noscript>
-    <div class="jswarning">
-      <div class="jswarning-text">
-        Diese Website benötigt Javascript um richtig zu funktionieren. Leider ist bei deinem Browser Javascript deaktiviert.
-        Wenn du es aktivieren möchtest, aber nicht weiß wie das geht, folge einfach <a href="http://enable-javascript.com/de/">diesem Link</a> für eine Anleitung.
-      </div>
-    </div>
-  </noscript>
+<?php
+  $layoutClass = '';
+  // $layoutClass = 'layoutDefault';
+  // if ($page->layout) $layoutClass = 'layout' . ucwords($page->layout);
+?>
+
+<body class="<?=$page->bodyClass?> <?=$layoutClass?>">
+  <?=Helper::renderModuleTemplate('NoJsWarning');?>
 
   <?php
   if ($page->layout)
@@ -43,10 +69,19 @@
   <?=$pages->get("template=global_settings")->code?>
 
   <script>
-    document.config = { publicPath: "<%= htmlWebpackPlugin.options.publicPath %>" }
+    document.config = {
+      publicPath: "<%= htmlWebpackPlugin.options.publicPath %>",
+      page: {
+        id: <?=$page->id?>,
+        name: '<?=$page->name?>',
+        title: '<?=$page->title?>'
+      }
+    }
     document.jsvars = <?=json_encode($config->jsvars->getArray());?>;
   </script>
 
-  <script type="text/javascript" src="<%= htmlWebpackPlugin.files.chunks.bundle.entry %>"></script>
 </body>
 </html>
+
+<script type="text/javascript" src="<%= htmlWebpackPlugin.files.chunks.critical.entry %>" async></script>
+<script type="text/javascript" src="<%= htmlWebpackPlugin.files.chunks.bundle.entry %>" async></script>

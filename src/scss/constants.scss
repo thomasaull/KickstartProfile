@@ -1,16 +1,12 @@
-.constants {
-  color: red !important;
-}
-
 // Typography:
 $fontStack-system: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 
-$fontStack-default: 'Slabo 27px', sans-serif;
+$fontStack-default: 'Open Sans', sans-serif;
 
 $fontSize-small: #{11px} / #{13px};
-$fontSize-default: #{12px} / #{14px};
-$fontSize-large: #{14px} / #{16px};
-$fontSize-larger: #{18px} / #{21px};
+$fontSize-default: #{14px} / #{16px};
+$fontSize-large: #{18px} / #{20px};
+$fontSize-larger: #{24px} / #{26px};
 
 // Colors
 $color-key: #ff0000;
@@ -58,5 +54,43 @@ $filterShadow-level2: drop-shadow(0 4px 2px rgba(0,0,0,0.16)) drop-shadow(0 4px 
 
   &:hover {
     transition: all 0.1s;
+  }
+}
+
+@mixin wrap {
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@mixin wrapWrapper {
+  padding-left: 20px;
+  padding-right: 20px;
+
+  @include media("<=smallMargin") {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+@mixin wrappedButFullWidth {
+  margin-left: -20px;
+  margin-right: -20px;
+
+  @include media("<=smallMargin") {
+    margin-left: -10px;
+    margin-right: -10px;
+  }
+}
+
+@mixin wrappedFullBleedBackground {
+  @include wrappedButFullWidth;
+  padding-left: 20px;
+  padding-right: 20px;
+
+  @include media("<=smallMargin") {
+    padding-left: 10px;
+    padding-right: 10px;
   }
 }

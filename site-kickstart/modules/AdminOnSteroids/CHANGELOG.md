@@ -1,6 +1,73 @@
 # Changelog
 
 
+### 1.7.6 (2018-01-24)
+
+- AdminThemeUikit: fix ctrl-click on breadcrumbs
+- AdminThemeUikit: add navItems to Page menu
+- move tweak "Place header button next to the main title" to Misc (available for all 3 admin themes)
+- breadcrumb editurl: fix double directory in url on subdirectory installs
+- InputfieldFileFieldFilter positioning fix in AdminThemeUikit (reported by gmclelland)
+
+
+
+### 1.7.5 (2018-01-22)
+
+- filterbox fix for Find page (Lister) (reported by gmclelland)
+- filterbox: clear only current instance on ESC
+- change to string versioning
+
+
+
+### 1.7.4 (2018-01-18)
+
+- logsHelperTweaks: expand Helpers field on Logs page and use radios instead select for Actions (Misc)
+- AdminThemeUikit filterbox fixes + design update
+- better fix for IUC button vertical positioning (works inside repeaters too)
+- fix AdminThemeUikit pagelistUnselect button misplacement (reported by Robin S)
+- AdminThemeUikit support for h1 templateEditLink
+- fix for non-reachable h1 templateEditLink
+- aos_column_break: remove extra fieldset gutter and background color (AdminThemeUikit), increase gutter width
+
+
+
+### 1.7.3 (2018-01-16)
+
+- disable filename truncation: support icons besides fa-file-image-o
+- sticky cke toolbar: add support for AdminThemeUikit fixed/compact header
+
+
+
+### 1.7.2 (2018-01-12)
+
+- fix remove notice hotkey enabled check (by Robin S)
+
+
+
+### 1.7.1 (2018-01-10)
+
+- fix field edit links inside repeaters (by Robin S)
+- disable Filename Truncation does not work when field is required #84 (report & fix by gingebaker)
+- InputfieldURLChecker improvements (triggered by gmclelland)
+- fix modules list cog icon placement in Uikit theme (+ make them sharper)
+- fix enable/disable AOS link alignment when module is in disabled state
+- fix noFilenameTruncate: too broad CSS selector that may conflict with others (reported by Robin S)
+- remove forced zero border radius from pagelist action buttons (reported by adrian)
+
+
+
+### 1.7.0 (2017-12-12)
+
+- fix suppressing the "required" icon in the template editor (reported by Robin S)
+
+
+
+### 1.6.9 (2017-12-12)
+
+- PR merge: Different size buttons when editing a page #80 (by gmclelland)
+
+
+
 ### 1.6.8 (2017-12-02)
 
 - moduleModal fix for Uikit theme (reported by jmartsch)
@@ -756,7 +823,7 @@
 
 ### 0.8.2 (2016-10-20)
 
-- array to string conversion fix for InputfieldURLChecker (reported by Toutouwai)
+- array to string conversion fix for InputfieldURLChecker (reported by Robin S)
 
 
 

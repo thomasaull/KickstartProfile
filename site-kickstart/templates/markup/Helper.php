@@ -6,6 +6,28 @@ setlocale(LC_TIME, "de_DE.utf8");
 
 class Helper
 {
+  public static function renderModuleTemplate($templateString, $data = []) {
+    $folder = wire('config')->paths->templates . "dist/modules/$templateString";
+
+    // get and merge data from controller
+    $data = (object) array_merge((array) $data, (array) self::getControllerData("$folder/${templateString}Controller.php"));
+
+    $t = new TemplateFile(wire('config')->paths->templates . "dist/modules/$templateString/$templateString.php");
+    foreach ($data as $key => $value) { $t->set($key, $value); }
+
+    return $t->render();
+  }
+  
+  private static function getControllerData($path) {
+    if (!file_exists($path)) {
+      return;
+    }
+
+    $data = require_once($path);
+    
+    return $data;
+  }
+
   public static function checkForCriticalCss ($templateName) {
     $path = wire('config')->paths->templates . "dist/critical/{$templateName}_critical.min.css";
     
@@ -31,6 +53,13 @@ class Helper
     }
 
     return $modifier;
+  }
+
+  /* Includes a modifier variable if present, use like:
+  /* <div class="myElement <?=ProcessWire\Helper::modifier($this)?>">
+  */
+  public static function modifier ($template) {
+    if (isset($template->modifier)) return $template->modifier;
   }
 
   // muss getestet ggf. angepasst werden:

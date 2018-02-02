@@ -6,23 +6,29 @@ class ApiHelper
     return 'No Endpoint specified!';
   }
 
-  public static function renderModuleTemplate($templateString, $data = []) {
-    $templateStringLowerCase = strtolower($templateString);
-
-    $t = new TemplateFile(wire('config')->paths->templates . "modules/$templateStringLowerCase/$templateString.php");
-    foreach ($data as $key => $value) { $t->set($key, $value); }
-
-    return $t->render();
-  }
-
-  public static function checkRequiredParameters($data, $params) {
+  public static function checkAndSanitizeRequiredParameters($data, $params) {
     foreach ($params as $param) {
-      if (!isset($data->$param)) throw new \Exception('Required parameter "' . $param .'" missing!', 400);
+      // Split param: Format is name|sanitizer
+      $name = explode('|', $param)[0];
+      $sanitizer = explode('|', $param)[1];
+
+      // Check if Param exists
+      if (!isset($data->$name)) throw new \Exception('Required parameter "' . $param .'" missing!', 400);
+
+      // Sanitize Data
+      if (!$sanitizer) {
+        \TD::fireLog('WARNING: No Sanitizer specified for: ' . $name . ' Applying default sanitizer: text');
+        $data->$name = wire('sanitizer')->text($data->$name);
+      }
+
+      $data->$name = wire('sanitizer')->$sanitizer($data->$name);
     }
+
+    return $data;
   }
 
   public static function baseUrl() {
     // $site->urls->httpRoot
-    return (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
+    return (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]/";
   }
 }

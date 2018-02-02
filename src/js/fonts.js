@@ -9,7 +9,7 @@ if (sessionStorage.fontsLoaded) {
 
 WebFont.load({
   google: {
-    families: ['Slabo 27px']
+    families: ['Open Sans']
   },
 
   active: () => {
