@@ -36,7 +36,7 @@ composer require firebase/php-jwt
 - create environment.php:
 
 ```
-<?php;
+<?php
 
 /* 
  * Database
