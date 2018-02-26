@@ -13,6 +13,7 @@ This is mainly a personal site profile to kickstart my own ProcessWire Projects.
 - error reporting of javascript errors in ProcessWire logs
 - Maintenance Modes for Frontend and Backend
 - Easy testing from devices on local network
+- integrates: https://github.com/thomasaull/RestApiProfile
 
 ### Install
 
