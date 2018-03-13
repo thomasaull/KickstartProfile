@@ -21,10 +21,35 @@ This is mainly a personal site profile to kickstart my own ProcessWire Projects.
 - create hosts entry
 - create database
 
-Grab a copy of processwire and place the contents of this repository in the root of your ProcessWire directory. Install ProcessWire as usual (don’t forget to pick the site profile).
+Grab a copy of processwire and place the contents of this repository in the root of your ProcessWire directory (including hidden files!). Install ProcessWire as usual (don’t forget to pick the site profile). If you want to keep the .gitignore, make sure to disable the checkbox at the last step of the Processwire installation routine.
 
 - create .gitkeep in site/assets/ cache, files, logs, sessions
 - adjust .htaccess settings to your needs
+- adjust .gitignore to your needs, I usually use this as a starting point:
+```
+# ProcessWire
+/site/assets/cache/*
+!/site/assets/cache/.gitkeep
+
+/site/assets/files/*
+!/site/assets/files/.gitkeep
+
+/site/assets/logs/*
+!/site/assets/logs/.gitkeep
+
+/site/assets/sessions/*
+!/site/assets/sessions/.gitkeep
+
+/site/assets/backups/
+
+/site/environment.php
+
+# OSX
+.DS_Store
+
+# Node
+node_modules
+```
 
 Install the composer modules:
 
