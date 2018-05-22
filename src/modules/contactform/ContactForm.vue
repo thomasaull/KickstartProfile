@@ -45,14 +45,14 @@ export default {
 
 <style lang="scss">
 
-.contactForm {
+.ContactForm {
   // IE Styles
-  display: flex;
-  flex-direction: column;
-  .contactForm-inputWrapper { margin-bottom: 10px;}
+  // display: flex;
+  // flex-direction: column;
+  // .ContactForm-inputWrapper { margin-bottom: 10px;}
 
   @supports (grid-template-areas: "area") {
-    .contactForm-inputWrapper { margin-bottom: initial; }
+    .ContactForm-inputWrapper { margin-bottom: initial; }
   }
 
   display: grid;
@@ -69,36 +69,36 @@ export default {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto auto auto;
     grid-template-areas:
-    "name"
-    "email"
-    "subject"
-    "message"
-    "control";
+      "name"
+      "email"
+      "subject"
+      "message"
+      "control";
   }
 }
 
-.contactForm-inputWrapper {
+.ContactForm-inputWrapper {
   width: 100%;
 
-  &.-name {
+  &--name {
     grid-area: name;
   }
 
-  &.-email {
+  &--email {
     grid-area: email;
   }
 
-  &.-subject {
+  &--subject {
     grid-area: subject;
   }
 
-  &.-message {
+  &--message {
     grid-area: message;
   }
 }
 
-.contactForm-inputText,
-.contactForm-textarea {
+.ContactForm-inputText,
+.ContactForm-textarea {
   display: block;
   width: 100%;
   // height: 100%;
@@ -108,13 +108,13 @@ export default {
   border: 1px solid transparent;
   margin: 0;
 
-  &.-error {
+  &--error {
     // background-color: rgba(red, 0.1);
     border-color: red;
   }
 }
 
-.contactForm-textarea {
+.ContactForm-textarea {
   min-height: 120px;
   resize: vertical;
   width: 100%;
@@ -122,7 +122,7 @@ export default {
   min-width: 100%;
 }
 
-.contactForm-error {
+.ContactForm-error {
   padding: 8px 12px;
   color: red;
   text-transform: uppercase;
@@ -130,10 +130,10 @@ export default {
   font-weight: 700;
   letter-spacing: 0.25px;
 
-  .noJs & { display: none; }
+  .NoJs & { display: none; }
 }
 
-.contactForm-messageAndSend {
+.ContactForm-messageAndSend {
   grid-area: control;
   min-width: 0;
   display: flex;
@@ -144,7 +144,7 @@ export default {
   }
 }
 
-.contactForm-button {
+.ContactForm-button {
   // font: var(--fontSize-default) var(--fontStack-defualt);
   border: none;
   background-color: #fff;
@@ -160,13 +160,13 @@ export default {
   }
 }
 
-.contactForm-message {
+.ContactForm-message {
   align-self: center;
   justify-self: end;
   padding-right: 20px;
   padding-left: 10px;
 
-  &.-error {
+  &--error {
     color: red;
   }
 
@@ -176,7 +176,7 @@ export default {
     order: 1;
   }
 
-  .noJs & { display: none; }
+  .NoJs & { display: none; }
 }
 
 </style>

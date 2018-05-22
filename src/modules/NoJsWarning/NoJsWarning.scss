@@ -1,14 +1,14 @@
-.noJsWarning {
+.NoJsWarning {
   grid-area: 'navigation';
   background-color: #fff4b5;
   padding: 10px;
   font-weight: 700;
 
-  & a {
-    text-decoration: underline;
-  }
+  // & a {
+  //   text-decoration: underline;
+  // }
 }
 
-.noJsWarning-text {
+.NoJsWarning-text {
   @include wrap;
 }

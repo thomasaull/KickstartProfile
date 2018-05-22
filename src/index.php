@@ -10,7 +10,7 @@
 <!DOCTYPE html>
 <html lang="de" class="noJs">
 <head>
-  <?php include("{$config->paths->templates}/markup/head.php"); ?>
+  <?php echo Helper::renderModuleTemplate('Head');?>
 
   <?php
     if("<%= htmlWebpackPlugin.options.env %>" === 'production') {
@@ -20,7 +20,7 @@
   ?>
 
   <% for (var css in htmlWebpackPlugin.files.css) { %>
-    <link href="<%= htmlWebpackPlugin.files.css[css] %>" rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link href="<%= htmlWebpackPlugin.files.css[css] %>" rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet';window.dispatchEvent(new Event('CSSLoaded'));">
     <noscript>
       <link href="<%= htmlWebpackPlugin.files.css[css] %>" rel="stylesheet">
     </noscript>
@@ -38,6 +38,7 @@
   </script>
 
   <script><?php include("{$config->paths->templates}/static/cssrelpreload.js"); ?></script>
+  <script><?php include("{$config->paths->EmailObfuscation}/emo.min.js"); ?></script>
 
   <script type="text/javascript">
     // Remove noJs Class:
@@ -47,15 +48,19 @@
     // Disable Lazysizes Auto Init:
     // window.lazySizesConfig.init = false;
   </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Kreon:300,400,700" rel="stylesheet">
 </head>
 
 <?php
   $layoutClass = '';
   // $layoutClass = 'layoutDefault';
   // if ($page->layout) $layoutClass = 'layout' . ucwords($page->layout);
+
+  $fontsLoadedClass = $input->cookie('fontsLoaded') === 'true' ? '-fontsLoaded' : '';
 ?>
 
-<body class="<?=$page->bodyClass?> <?=$layoutClass?>">
+<body class="<?=$page->bodyClass?> <?=$layoutClass?> <?=$fontsLoadedClass?>">
   <?=Helper::renderModuleTemplate('NoJsWarning');?>
 
   <?php

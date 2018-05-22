@@ -1,5 +1,6 @@
 .defaultText {
-  font: $fontSize-default var(--fontStack-sans);
+  font-family: var(--fontStack-sans);
+  font-size: var(--fontSize-default);
 
   & p {
     margin-bottom: 1em;
@@ -10,13 +11,15 @@
   }
 
   & h2 {
-    font: $fontSize-larger var(--fontStack-default);
+    // font-size: var(--fontSize-large);
+    @include interpolate(font-size, 500px, 1200px, 26px, 44px);
+
     margin-bottom: 10px;
     color: $color-key;
   }
 
   & h3 {
-    font: $fontSize-large var(--fontStack-default);
+    font-size: var(--fontSize-large);
     margin-bottom: 10px;
   }
 
@@ -36,6 +39,11 @@
 .defaultText.-lists {
   ul {
     margin-bottom: 1em;
+
+    & ul {
+      margin-left: 5px;
+      font-weight: 300;
+    }
 
     &:last-child {
       margin-bottom: 0;
@@ -57,10 +65,5 @@
         left: 0;
       }
     }
-  }
-
-  ul ul {
-    margin-left: 5px;
-    font-weight: 300;
   }
 }

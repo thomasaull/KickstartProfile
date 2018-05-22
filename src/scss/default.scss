@@ -1,35 +1,23 @@
+// Linear Gradients, Source: https://www.npmjs.com/package/postcss-easing-gradients
+// background: linear-gradient(90deg, rgba($colorBackground-grey, 1), ease, rgba($colorBackground-grey, 0));
+
+// Interpolate Mixing
+// @include interpolate(font-size padding, 500px, 1200px, 26px, 44px);
+
 :root {
-  --fontSize-small: $fontSize-small;
-  --fontSize-default: $fontSize-default;
-  --fontSize-large: $fontSize-large;
-  --fontSize-larger: $fontSize-larger;
+  --fontSize-default: 16px;
+  --fontSize-large: 20px;
+  --lineHeight-default: 1.4;
 
   // Media Queries für responsive Anpassung hier
 }
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
-// Using CSS Variables to avoid Flash of Invisible Text
-html {
-  font: var(--fontSize-default) $fontStack-system; // Fallback
-  --fontStack-default: $fontStack-default;
-
-  &.wf-loading {
-    font-family: $fontStack-system;
-    --fontStack-default: $fontStack-system;
-  }
-  &.wf-active {
-    font-family: $fontStack-default;
-    --fontStack-default: $fontStack-default;
-  }
-}
-
-body
-{
-  font: var(--fontSize-default) var(--fontStack-sans);
-
+body {
   min-height: 100%;
   min-width: 100%;
   overflow-x: hidden;
@@ -39,25 +27,33 @@ body
   // text-shadow: #fff 0px 1px 1px; // Wenn Text in allen Browsern zu dünn
 
   // Source: https://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-container/
-  /* These are technically the same, but use both */
+  // These are technically the same, but use both
   overflow-wrap: break-word;
   word-wrap: break-word;
 
+  // Prevent iOS to enlarge font-size
+  -webkit-text-size-adjust: none;
+
   /* Adds a hyphen where the word breaks, if supported (No Blink) */
-  hyphens: auto;
+  @include media("<=600px") {
+    /* Adds a hyphen where the word breaks, if supported (No Blink) */
+    hyphens: auto;
+  }
+
+  // Using CSS Variables to avoid Flash of Invisible Text
+  font: var(--fontSize-default) / var(--lineHeight-default) $fontStack-system; // Fallback
+
+  --fontStack-default: $fontStack-default;
+
+  &.-fontsLoaded {
+    font-family: $fontStack-default;
+
+    --fontStack-default: $fontStack-default;
+  }
 }
 
 // Border Box Everything
 * { box-sizing: border-box; }
-
-// No Focus outlines, don't forget to define by yourself!
-input:focus, textarea:focus, button:focus { outline: none; }
-
-// Default Styles for Links
-a {
-  text-decoration: none;
-  color: currentColor;
-}
 
 // Default Styles for Buttons
 button {
@@ -67,6 +63,18 @@ button {
 }
 
 // Defaults for Form
-input, textarea {
+input,
+textarea {
   font: var(--fontSize-default) var(--fontStack-defualt);
+}
+
+// No Focus outlines, don't forget to define by yourself!
+input:focus,
+textarea:focus,
+button:focus { outline: none; }
+
+// Default Styles for Links
+a {
+  text-decoration: none;
+  color: currentColor;
 }

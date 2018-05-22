@@ -1,0 +1,16 @@
+{
+  "plugins": [
+    "stylelint-scss",
+    "stylelint-selector-bem-pattern"
+  ],
+  "extends": "stylelint-config-standard",
+  "rules": {
+    "at-rule-no-unknown": null,
+
+    "plugin/selector-bem-pattern": {
+      "implicitComponents": "modules/**/*",
+      "preset": "suit",
+      "ignoreSelectors": ["NoJs"]
+    }
+  }
+}

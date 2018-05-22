@@ -6,6 +6,7 @@ import de from 'vee-validate/dist/locale/de'
 
 import '@/js/reportErrors'
 import '@/js/fonts'
+// import '@/js/loadSvgSprite' // uncomment if you want to use an svg sprite!
 
 VeeValidate.Validator.localize('de', de)
 Vue.use(VeeValidate, {locale: 'de'})

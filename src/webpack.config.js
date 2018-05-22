@@ -4,7 +4,7 @@ var ExtractTextPlugin = require('extract-text-webpack-plugin')
 var HtmlWebpackPlugin = require('html-webpack-plugin')
 var HtmlWebpackHarddiskPlugin = require('html-webpack-harddisk-plugin')
 const SpriteLoaderPlugin = require('svg-sprite-loader/plugin')
-// const { replaceInModuleSource, getAllModules } = require('svg-sprite-loader/lib/utils');
+const { replaceInModuleSource, getAllModules } = require('svg-sprite-loader/lib/utils');
 var OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
 var svgoplugins = require('./build/svgoplugins')
@@ -14,6 +14,7 @@ const WriteFilePlugin = require('write-file-webpack-plugin')
 const chalk = require('chalk')
 const pkg = require('./package.json')
 var ip = require('ip');
+const StyleLintPlugin = require('stylelint-webpack-plugin');
 
 // CONFIG
 const useLocalIpAddress = false;
@@ -28,10 +29,11 @@ console.log(chalk`For local testing, use: {green ${publicPath}}`)
 const sassResourceLoader = {
   loader: 'sass-resources-loader',
   options: {resources: [
-    path.resolve(__dirname, './scss/constants.scss'),
+    path.resolve(__dirname, './node_modules/include-media/dist/_include-media.scss'),
     path.resolve(__dirname, './scss/easing.scss'),
+    path.resolve(__dirname, './scss/interpolate.scss'),
     path.resolve(__dirname, './node_modules/family.scss/source/src/_family.scss'),
-    path.resolve(__dirname, './node_modules/include-media/dist/_include-media.scss')
+    path.resolve(__dirname, './scss/constants.scss')
   ]}
 }
 
@@ -50,7 +52,7 @@ if (process.env.NODE_ENV === 'development') vueLoader.unshift('vue-style-loader'
 let cssLoader = 'style-loader!css-loader!postcss-loader'
 if (process.env.NODE_ENV === 'production') cssLoader = ExtractTextPlugin.extract({ use: ['css-loader?importLoaders=1', 'postcss-loader'] })
 
-const distRoot = path.resolve(__dirname, '../site/templates')
+const distRoot = path.resolve(__dirname, '../')
 
 let config = {
   context: __dirname,
@@ -67,7 +69,7 @@ let config = {
     ]
   },
   output: {
-    path: distRoot + '/dist',
+    path: distRoot + '/site/templates/dist',
     publicPath: publicPath,
     filename: 'js/[name].[hash:6].js'
     // filename: "[name].js"
@@ -169,6 +171,26 @@ let config = {
               }
             ]
           },
+          {
+            resourceQuery: /sprite/,
+            use: [
+              {
+                loader: 'svg-sprite-loader',
+                options: {
+                  extract: true,
+                  symbolId: '[name]',
+                  // spriteFilename: 'sprite.[hash:6].svg'
+                  spriteFilename: 'sprite.svg'
+                }
+              },
+              {
+                loader: 'svgo-loader',
+                options: {
+                  plugins: svgoplugins
+                }
+              }
+            ]
+          },
         ]
       },
       {
@@ -208,23 +230,30 @@ let config = {
     new SpriteLoaderPlugin(),
     new FriendlyErrorsWebpackPlugin(),
     new WriteFilePlugin({ // write assets used by php to disk
-      test: /\.(php|svg)$/
+      // test: /\.(php|svg)$/
+      test: /\.(?!vue|js|scss).*$/
     }),
     new CopyWebpackPlugin([
-      { from: 'modules', to: 'modules', ignore: ['!*.php'] },
-      // { from: 'modules', to: '../modules' }
-    ])
-    /* { // replace sprite Url with hash, but this doesn't work
+      // { from: 'modules', to: 'modules', ignore: ['!*.php'] },
+      { from: 'modules', to: 'modules', ignore: ['*.scss', '*.js', '*.vue'] },
+      { from: 'static', to: 'static' }
+    ]),
+    new CleanWebpackPlugin([
+      distRoot + '/site/templates/dist',
+    ], { allowExternal: true }),
+    new StyleLintPlugin(),
+
+    /*{ // replace sprite Url with hash, but this doesn't work
       apply(compiler) {
         compiler.plugin('emit', (compilation, done) => {
           const { assets } = compilation;
-          const spriteFilename = Object.keys(assets)
-            .find(assetName => assetName.startsWith('sprite.'));
+          const spriteFilename = 'my-sprite-filename'
+          // const spriteFilename = Object.keys(assets)
+          //   .find(assetName => assetName.startsWith('sprite.'));
 
           console.log(':::::::filename: ' + spriteFilename)
 
           getAllModules(compilation).forEach((module) => {
-            console.log(module)
             replaceInModuleSource(module, {
               __SPRITE_URL__: spriteFilename
             });
@@ -233,7 +262,7 @@ let config = {
           done();
         });
       }
-    } */
+    }*/
   ]
 }
 
@@ -253,11 +282,6 @@ if (process.env.NODE_ENV === 'production') {
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': '"production"'
     })
-  )
-  config.plugins.push(
-    new CleanWebpackPlugin([
-      distRoot + '/dist'
-    ], { allowExternal: true })
   )
   config.plugins.push(
     new ExtractTextPlugin({ // define where to save the file
