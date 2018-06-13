@@ -43,12 +43,12 @@ body {
   // Using CSS Variables to avoid Flash of Invisible Text
   font: var(--fontSize-default) / var(--lineHeight-default) $fontStack-system; // Fallback
 
-  --fontStack-default: $fontStack-default;
+  --fontStack-default: #{$fontStack-system};
 
   &.-fontsLoaded {
     font-family: $fontStack-default;
 
-    --fontStack-default: $fontStack-default;
+    --fontStack-default: #{$fontStack-default};
   }
 }
 

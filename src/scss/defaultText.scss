@@ -10,21 +10,28 @@
     }
   }
 
-  & h2 {
-    // font-size: var(--fontSize-large);
-    @include interpolate(font-size, 500px, 1200px, 26px, 44px);
+  & h1,
+  & h2,
+  & h3,
+  & h4 {
+    line-height: 1.2;
+  }
 
-    margin-bottom: 10px;
+  & h2 {
+    @include ms-respond(font-size, 5);
+    @include ms-respond(margin-bottom, 2);
+
     color: $color-key;
   }
 
   & h3 {
-    font-size: var(--fontSize-large);
-    margin-bottom: 10px;
+    @include ms-respond(font-size, 3);
+    @include ms-respond(margin-bottom, 1);
   }
 
   & h4 {
-    font-weight: 700;
+    @include ms-respond(font-size, 2);
+    @include ms-respond(margin-bottom, 0);
   }
 
   & a {

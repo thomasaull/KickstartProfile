@@ -1,10 +1,15 @@
+$contentMinWidth: 320px;
+$contentMaxWidth: 1200px;
+$breakpoints: (mobile: 700px);
+// $breakpoints: map-merge($breakpoints, (tablet: 768px)); // to extend array use map-merge
+
 // Typography:
 $fontStack-system: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 
 $fontStack-default: 'Kreon', sans-serif;
 
 // Colors
-$color-key: #ff00;
+$color-key: red;
 
 $colorText-default: rgb(60, 60, 60);
 
@@ -19,6 +24,19 @@ $shadow-level4: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22)
 $shadow-level5: 0 19px 38px rgba(0, 0, 0, 0.3), 0 15px 12px rgba(0, 0, 0, 0.22);
 
 $filterShadow-level2: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.16)) drop-shadow(0 4px 2px rgba(0, 0, 0, 0.23));
+
+$modularscale: (
+  base: 16px,
+  ratio: $major-second,
+  $contentMinWidth: (
+    base: 20px,
+    ratio: $major-second
+  ),
+  $contentMaxWidth: (
+    base: 18px,
+    ratio: $major-third
+  ),
+);
 
 @mixin textLabel {
   font: 600 $fontSize-small $fontStack-default;
@@ -45,9 +63,11 @@ $filterShadow-level2: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.16)) drop-shadow(0 4
 
 @mixin transition-hover {
   transition: all 0.2s;
+  transition-property: color;
 
   &:hover {
     transition: all 0.1s;
+    transition-property: color;
   }
 }
 
@@ -59,33 +79,14 @@ $filterShadow-level2: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.16)) drop-shadow(0 4
 }
 
 @mixin wrapWrapper {
-  padding-left: 20px;
-  padding-right: 20px;
-
-  @include media("<=smallMargin") {
-    padding-left: 10px;
-    padding-right: 10px;
-  }
+  @include interpolate(padding-left padding-right, $contentMinWidth, $contentMaxWidth, 10px, 20px);
 }
 
 @mixin wrappedButFullWidth {
-  margin-left: -20px;
-  margin-right: -20px;
-
-  @include media("<=smallMargin") {
-    margin-left: -10px;
-    margin-right: -10px;
-  }
+  @include interpolate(margin-left margin-right, $contentMinWidth, $contentMaxWidth, -10px, -20px);
 }
 
 @mixin wrappedFullBleedBackground {
   @include wrappedButFullWidth;
-
-  padding-left: 20px;
-  padding-right: 20px;
-
-  @include media("<=smallMargin") {
-    padding-left: 10px;
-    padding-right: 10px;
-  }
+  @include interpolate(padding-left padding-right, $contentMinWidth, $contentMaxWidth, 10, 20px);
 }

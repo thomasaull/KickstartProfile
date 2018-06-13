@@ -14,10 +14,15 @@
 
   <?php
     if("<%= htmlWebpackPlugin.options.env %>" === 'production') {
-      $criticalCss = Helper::checkForCriticalCss($page->template->name);
+      $criticalCss = Helper::checkForCriticalCss($page->id);
       if($criticalCss) echo "<style>$criticalCss</style>";
     }
   ?>
+
+  <link href="https://fonts.googleapis.com/css?family=Kreon:300,400,700" rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet';">
+  <noscript>
+    <link href="https://fonts.googleapis.com/css?family=Kreon:300,400,700" rel="stylesheet">
+  </noscript>
 
   <% for (var css in htmlWebpackPlugin.files.css) { %>
     <link href="<%= htmlWebpackPlugin.files.css[css] %>" rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet';window.dispatchEvent(new Event('CSSLoaded'));">
@@ -49,7 +54,12 @@
     // window.lazySizesConfig.init = false;
   </script>
 
-  <link href="https://fonts.googleapis.com/css?family=Kreon:300,400,700" rel="stylesheet">
+  <!-- Hide v-cloak -->
+  <style>
+    [v-cloak] { display: none; }
+    .noJs .hiddenWithoutJs { display: none; }
+  </style>
+
 </head>
 
 <?php
@@ -69,9 +79,6 @@
   else
     include("{$config->paths->templates}/markup/layouts/default.php");
   ?>
-
-  <!-- Tracking-Code -->
-  <?=$pages->get("template=global_settings")->code?>
 
   <script>
     document.config = {

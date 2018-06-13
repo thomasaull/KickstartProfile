@@ -1,0 +1,179 @@
+.ContactForm {
+  @include interpolate(margin-top margin-bottom, $contentMinWidth, $contentMaxWidth, 30px, 60px);
+}
+
+.ContactForm-text {
+  margin-bottom: 1em;
+}
+
+.ContactForm-form {
+  // IE Styles
+  // display: flex;
+  // flex-direction: column;
+  // .ContactForm-inputWrapper { margin-bottom: 10px;}
+
+  @supports (grid-template-areas: "area") {
+    .ContactForm-inputWrapper { margin-bottom: initial; }
+  }
+
+  display: grid;
+  grid-gap: 10px;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto auto auto;
+  grid-template-areas:
+    "name email"
+    "subject subject"
+    "message message"
+    "note note"
+    "control control";
+
+  @include media("<=550px") {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto auto;
+    grid-template-areas:
+      "name"
+      "email"
+      "subject"
+      "message"
+      "note"
+      "control";
+  }
+}
+
+.ContactForm-inputWrapper {
+  width: 100%;
+  position: relative;
+
+  &--name {
+    grid-area: name;
+  }
+
+  &--email {
+    grid-area: email;
+  }
+
+  &--subject {
+    grid-area: subject;
+  }
+
+  &--message {
+    grid-area: message;
+  }
+}
+
+.ContactForm-inputText,
+.ContactForm-textarea {
+  display: block;
+  width: 100%;
+  border-radius: 0;
+  // background-color: transparent;
+  // height: 100%;
+  // font: $fontSize-default $fontStack-sans;
+  // font: $fontSize-default var(--fontStack-sans);
+  padding-top: 21px;
+  padding-left: 8px;
+  padding-right: 10px;
+  padding-bottom: 3px;
+  border: 1px solid transparent;
+  margin: 0;
+
+  &--error {
+    // background-color: rgba(red, 0.1);
+    border-color: red;
+  }
+}
+
+.ContactForm-textarea {
+  min-height: 120px;
+  resize: vertical;
+  width: 100%;
+  max-width: 100%;
+  min-width: 100%;
+}
+
+.ContactForm-label {
+  position: absolute;
+  top: 15px;
+  left: 13px;
+  font-weight: bold;
+  opacity: 0.5;
+  pointer-events: none;
+  transition: all 0.15s ease;
+  transition-property: top, left, font-size, color, opacity;
+}
+
+.ContactForm-inputText:focus + .ContactForm-label,
+.ContactForm-textarea:focus + .ContactForm-label,
+.ContactForm-label--filled {
+  top: 6px;
+  left: 8px;
+  font-size: 13px;
+  opacity: 1;
+  color: var(--color-key);
+}
+
+.ContactForm-label--filled {
+  color: currentColor;
+}
+
+.ContactForm-error {
+  padding: 8px 12px;
+  padding-bottom: 0;
+  color: red;
+  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 0.25px;
+
+  .NoJs & { display: none; }
+}
+
+.ContactForm-note {
+  grid-area: note;
+}
+
+.ContactForm-messageAndSend {
+  grid-area: control;
+  min-width: 0;
+  display: flex;
+  justify-content: flex-end;
+
+  @include media("<=550px") {
+    flex-direction: column;
+  }
+}
+
+.ContactForm-button {
+  // font: var(--fontSize-default) var(--fontStack-defualt);
+  border: none;
+  background-color: #fff;
+  padding-left: 40px;
+  padding-right: 40px;
+  justify-self: end;
+  height: 46px;
+  flex: none;
+
+  @include media("<=550px") {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+}
+
+.ContactForm-message {
+  align-self: center;
+  justify-self: end;
+  padding-right: 20px;
+  padding-left: 10px;
+
+  &--error {
+    color: red;
+  }
+
+  @include media("<=550px") {
+    width: 100%;
+    flex: none;
+    order: 1;
+  }
+
+  .NoJs & { display: none; }
+}

@@ -15,7 +15,7 @@
 	<meta name="description" content="<?=$description?>"/>
 <?php endif; ?>
 
-<meta name="robots" content="<?=$noIndex?> <?=$noFollow?>"/>
+<meta name="robots" content="<?=$robots?>"/>
 
 <meta property="og:locale" content="de_DE"/>
 <meta property="og:type" content="article"/>
@@ -42,11 +42,3 @@
 
 <!-- Generate Favicons here: https://realfavicongenerator.net/ -->
 <!-- PASTE GENERATED FAVICONS CODE HERE -->
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=Km2E207Xpy">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=Km2E207Xpy">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=Km2E207Xpy">
-<link rel="manifest" href="/site.webmanifest?v=Km2E207Xpy">
-<link rel="mask-icon" href="/safari-pinned-tab.svg?v=Km2E207Xpy" color="#1d3661">
-<link rel="shortcut icon" href="/favicon.ico?v=Km2E207Xpy">
-<meta name="msapplication-TileColor" content="#1d3661">
-<meta name="theme-color" content="#1d3661">

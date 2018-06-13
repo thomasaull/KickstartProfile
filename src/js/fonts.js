@@ -24,7 +24,7 @@ import FontFaceObserver from 'fontfaceobserver'
 let font = new FontFaceObserver('Kreon')
 
 font.load().then(() => {
-  document.documentElement.classList.add('-fontsLoaded')
+  document.querySelector('body').classList.add('-fontsLoaded')
   setCookie('fontsLoaded', true, 30)
 })
 

@@ -1,12 +1,13 @@
 // https://github.com/processwire-recipes/Recipes/blob/master/inline-critical-css.md
 
 const path = require('path')
-// const argv = require('yargs').argv
+const argv = require('yargs').argv
 const critical = require('critical')
 const chalk = require('chalk')
 const pkg = require('../package.json')
+var http = require('http')
 
-// // Process data in an array synchronously, moving onto the n+1 item only after the nth item callback
+// Process data in an array synchronously, moving onto the n+1 item only after the nth item callback
 const doSynchronousLoop = (data, processData, done) => {
   if (data.length > 0) {
     const loop = (data, i, processData, done) => {
@@ -27,7 +28,7 @@ const doSynchronousLoop = (data, processData, done) => {
 const createCriticalCSS = (element, i, callback) => {
   // const url = argv.url || pkg.urls.critical
   const criticalSrc = pkg.urls.dev + element.url
-  const criticalDest = path.resolve(__dirname, `../../site/templates/dist/critical/${element.template}_critical.min.css`)
+  const criticalDest = path.resolve(__dirname, `../../site/templates/dist/critical/${element.id}_critical.min.css`)
   console.log(chalk`-> Generating critical CSS: {cyan ${criticalSrc}} -> {magenta ${criticalDest}}`)
   critical.generate({
     src: criticalSrc,
@@ -38,13 +39,29 @@ const createCriticalCSS = (element, i, callback) => {
     width: 1300, // 1440,
     height: 900 // 1280
   }).then((output) => {
-    console.log(chalk`-> Critical CSS generated: {green ${element.template}_critical.min.css}`)
+    console.log(chalk`-> Critical CSS generated: {green ${element.id}_critical.min.css}`)
     callback()
   }).error((err) => {
     console.log(chalk`-> Something went wrong {red ${err}}`)
   })
 }
 
-doSynchronousLoop(pkg.criticalCSS, createCriticalCSS, () => {
-  console.log(chalk`{green Done!}`)
+// Get Routes from API
+http.get({
+  path: `${pkg.urls.dev}/api/criticalroutes/`
+}, function (response) {
+  var body = ''
+  response.on('data', function(d) {
+    body += d
+  })
+  response.on('end', function () {
+    var routes = JSON.parse(body)
+    doSynchronousLoop(routes, createCriticalCSS, () => {
+      console.log(chalk`{green Done!}`)
+    })
+  })
 })
+
+// doSynchronousLoop(pkg.criticalCSS, createCriticalCSS, () => {
+//   console.log(chalk`{green Done!}`)
+// })

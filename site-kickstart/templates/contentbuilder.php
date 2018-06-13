@@ -4,6 +4,8 @@ require_once "{$config->paths->templates}/api/ApiHelper.php";
 require_once "{$config->paths->templates}/api/Test.php";
 require_once "{$config->paths->templates}/markup/Helper.php";
 
+// $page->main .= Helper::renderModuleTemplate('ContactForm');
+
 // Option 1: Putting Data directly
 $page->main .= Helper::renderModuleTemplate('TestModule', (object) ['name' => 'Thomas', 'age' => 29, 'location' => 'Würzburg']);
 
@@ -18,5 +20,6 @@ $page->main .= Helper::renderModuleTemplate('TestModule', Test::getSomeData());
 // foreach($page->contentbuilder as $content) {
 //   $page->main .= $content->render();
 // }
+$page->main .= Helper::renderModuleTemplate('Contentbuilder');
 
 include("dist/index.php");

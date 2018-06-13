@@ -6,30 +6,27 @@ class ContactForm
 {
   public static function submit($data)
   {
-    ApiHelper::checkRequiredParameters($data, ['name', 'email', 'message']);
-
-    // Sanitize
-    $data->name = wire('sanitizer')->string($data->name);
-    $data->email = wire('sanitizer')->string($data->email);
-    $data->message = wire('sanitizer')->string($data->message);
+    ApiHelper::checkAndSanitizeRequiredParameters($data, ['name|string', 'email|string', 'message|string']);
 
     $mailContent = "";
 		$mailContent .= $data->message . "\n";
 		$mailContent .= "\n";
     $mailContent .= "– " . $data->name;
-    
+
+    $email = wire('pages')->get(1029)->email;
+
     $mail = wireMail();
 		$mail->from($data->email);
-		$mail->to("post@thomas-aull.de");
+		$mail->to($email);
 		$mail->subject("Kontaktformular von: " . $data->name);
 		$mail->body($mailContent);
     $mail->bodyHTML(str_replace("\n", "<br/>", $mailContent));
-    
+
     $sent = $mail->send();
 
     // Log in ProcessWire
     wire('log')->save('contactform', "$data->message – $data->name ($data->email)");
-    
+
     if($sent == 0) throw new \Exception('Error sending mail', 500);
 
     return 'email sent';

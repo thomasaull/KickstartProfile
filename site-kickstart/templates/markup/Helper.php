@@ -54,8 +54,8 @@ class Helper
     // objects get passed by reference, therefore no need to return anything
   }
 
-  public static function checkForCriticalCss ($templateName) {
-    $path = wire('config')->paths->templates . "dist/critical/{$templateName}_critical.min.css";
+  public static function checkForCriticalCss ($pageId) {
+    $path = wire('config')->paths->templates . "dist/critical/{$pageId}_critical.min.css";
 
     if (!\file_exists($path)) return; // no file
 
@@ -145,5 +145,45 @@ class Helper
     }, $content);
 
     return $content;
+  }
+
+  public static function replaceQuotes($text) {
+    if($text == '') return $text;
+
+    // return $text;
+
+    // echo "<script>";
+    // echo "console.log('before:');";
+    // echo "console.log('$text');";
+    // echo "</script>";
+
+    // echo "<script>";
+
+    $d = new \DOMDocument;
+    $fragment = $d->createDocumentFragment();
+    $fragment->appendXML($text);
+    $d->appendChild($fragment);
+    // $d->loadHTML(mb_convert_encoding("<div>".$text."</div>", 'HTML-ENTITIES', 'UTF-8'), LIBXML_HTML_NOIMPLIED|LIBXML_HTML_NODEFDTD);
+    // $d->loadHTML($text);
+
+    // \TD::fireLog($d->saveHTML());
+    $x = new \DOMXPath($d);
+
+    foreach ($x->query('//text()') as $node) {
+      // beginning quotes
+      $node->nodeValue = preg_replace('/"\b|\'\b|"\b|„\b/', "»", $node->nodeValue);
+
+      // ending quotes
+      $node->nodeValue = preg_replace('/\b"|\b\'|\b"|\b“/', "«", $node->nodeValue);
+
+
+      // echo "console.log('$node->nodeValue');";
+    }
+
+    // echo "</script>";
+
+    $text = $d->saveHTML();
+
+    return $text;
   }
 }

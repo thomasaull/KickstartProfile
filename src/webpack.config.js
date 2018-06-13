@@ -15,6 +15,7 @@ const chalk = require('chalk')
 const pkg = require('./package.json')
 var ip = require('ip');
 const StyleLintPlugin = require('stylelint-webpack-plugin');
+const VueLoaderPlugin = require('vue-loader/lib/plugin')
 
 // CONFIG
 const useLocalIpAddress = false;
@@ -32,6 +33,7 @@ const sassResourceLoader = {
     path.resolve(__dirname, './node_modules/include-media/dist/_include-media.scss'),
     path.resolve(__dirname, './scss/easing.scss'),
     path.resolve(__dirname, './scss/interpolate.scss'),
+    path.resolve(__dirname, './node_modules/modularscale-sass/stylesheets/_modularscale.scss'),
     path.resolve(__dirname, './node_modules/family.scss/source/src/_family.scss'),
     path.resolve(__dirname, './scss/constants.scss')
   ]}
@@ -103,20 +105,24 @@ let config = {
   },
   module: {
     rules: [
+      // {
+      //   test: /\.vue$/,
+      //   loader: 'vue-loader',
+      //   options: {
+      //     loaders: {
+      //       // Since sass-loader (weirdly) has SCSS as its default parse mode, we map
+      //       // the "scss" and "sass" values for the lang attribute to the right configs here.
+      //       // other preprocessors should work out of the box, no loader config like this necessary.
+      //       // scss: ['vue-style-loader', 'css-loader', 'sass-loader'],
+      //       scss: vueLoader
+      //     }
+      //     // extractCSS: true
+      //     // other vue-loader options go here
+      //   }
+      // },
       {
         test: /\.vue$/,
-        loader: 'vue-loader',
-        options: {
-          loaders: {
-            // Since sass-loader (weirdly) has SCSS as its default parse mode, we map
-            // the "scss" and "sass" values for the lang attribute to the right configs here.
-            // other preprocessors should work out of the box, no loader config like this necessary.
-            // scss: ['vue-style-loader', 'css-loader', 'sass-loader'],
-            scss: vueLoader
-          }
-          // extractCSS: true
-          // other vue-loader options go here
-        }
+        loader: 'vue-loader'
       },
       { // eslint
         test: /\.js$/,
@@ -141,7 +147,7 @@ let config = {
         test: /\.svg$/,
         oneOf: [
           {
-            resourceQuery: /file/,
+            resourceQuery: /\?file$/,
             use: [
               {
                 loader: 'file-loader',
@@ -158,7 +164,18 @@ let config = {
             ]
           },
           {
-            resourceQuery: /inline/,
+            resourceQuery: /\?fileNoSvgo$/,
+            use: [
+              {
+                loader: 'file-loader',
+                options: {
+                  name: 'icons/[name].[ext]'
+                }
+              }
+            ]
+          },
+          {
+            resourceQuery: /\?inline$/,
             use: [
               {
                 loader: 'raw-loader',
@@ -172,7 +189,7 @@ let config = {
             ]
           },
           {
-            resourceQuery: /sprite/,
+            resourceQuery: /\?sprite$/,
             use: [
               {
                 loader: 'svg-sprite-loader',
@@ -242,6 +259,7 @@ let config = {
       distRoot + '/site/templates/dist',
     ], { allowExternal: true }),
     new StyleLintPlugin(),
+    new VueLoaderPlugin()
 
     /*{ // replace sprite Url with hash, but this doesn't work
       apply(compiler) {

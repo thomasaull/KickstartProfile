@@ -1,0 +1,4 @@
+.Text {
+  // Inhalt
+  @include interpolate(margin-top margin-bottom, $contentMinWidth, $contentMaxWidth, 15px, 40px);
+}

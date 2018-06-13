@@ -10,6 +10,7 @@ require_once dirname(__FILE__) . "/Auth.php";
 require_once dirname(__FILE__) . "/Test.php";
 require_once dirname(__FILE__) . "/ContactForm.php";
 require_once dirname(__FILE__) . "/ErrorTracking.php";
+require_once dirname(__FILE__) . "/Critical.php";
 
 use \Firebase\JWT\JWT;
 
@@ -37,6 +38,7 @@ $content = Router::go(function(\FastRoute\RouteCollector $r)
   $r->addRoute('POST', '/contactForm', ContactForm::class . '@submit');
 
   $r->addRoute('POST', '/error', ErrorTracking::class . '@save');
+  $r->addRoute('GET', '/criticalroutes', Critical::class . '@generateCriticalRoutes');
 });
 
 class Router

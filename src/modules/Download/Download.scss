@@ -1,0 +1,12 @@
+.Download {
+  @include interpolate(margin-top margin-bottom, $contentMinWidth, $contentMaxWidth, 30px, 60px);
+}
+
+.Download-text {
+  margin-bottom: 0.5em;
+}
+
+.Download-description {
+  color: $colorText-default;
+  font-weight: normal;
+}

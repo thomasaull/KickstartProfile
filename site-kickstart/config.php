@@ -39,6 +39,10 @@ $config->defaultAdminTheme = 'AdminThemeUikit';
 $config->jsvars = new ProcessWire\WireData();
 $config->maintenanceBackend = false;
 $config->maintenanceFrontend = false;
+$config->imageSizerOptions = array(
+	'upscaling' => false,
+	'interlace' => true,
+);
 
 
 /*** INSTALLER CONFIG ********************************************************************/

@@ -1,0 +1,14 @@
+.Image {
+  @include wrap;
+  @include interpolate(margin-top margin-bottom, $contentMinWidth, $contentMaxWidth, 15px, 40px);
+
+  position: relative;
+}
+
+.Image-image {
+  max-width: 100%;
+  width: 100%;
+  max-height: calc(100vh - 40px);
+  object-fit: cover;
+  display: block;
+}
