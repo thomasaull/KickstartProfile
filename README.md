@@ -8,7 +8,7 @@ This is mainly a personal site profile to kickstart my own ProcessWire Projects.
 - module based approach for templates/js/scss
 - Vue Single File Components
 - minification of css and js resources
-- optimized webfont loading with https://github.com/typekit/webfontloader
+- optimized webfont loading with https://github.com/bramstein/fontfaceobserver
 - automated generation of critical css
 - error reporting of javascript errors in ProcessWire logs
 - Maintenance Modes for Frontend and Backend
@@ -98,7 +98,7 @@ run `npm run build` and check if the site is working
 For Development run `npm run dev` and open your browser at `http://localhost:8080`
 
 ### Critical CSS
-To generate critical css for all necessary templates, add entries to package.json "criticalCSS" accordingly
+Critical CSS gets generated for all visible pages automatically. If you want to add hidden pages, change `$additionalHiddenPages` in site/templates/api/Critial.php
 
 ### Contentbuilder
 
