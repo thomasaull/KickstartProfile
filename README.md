@@ -24,6 +24,10 @@ This is mainly a personal site profile to kickstart my own ProcessWire Projects.
 Grab a copy of processwire and place the contents of this repository in the root of your ProcessWire directory (including hidden files!). Install ProcessWire as usual (don’t forget to pick the site profile). If you want to keep the .gitignore, make sure to disable the checkbox at the last step of the Processwire installation routine.
 
 - create .gitkeep in site/assets/ cache, files, logs, sessions
+```
+If Terminal is open in /
+touch site/assets/cache/.gitkeep touch site/assets/files/.gitkeep touch site/assets/logs/.gitkeep touch site/assets/sessions/.gitkeep
+```
 - adjust .htaccess settings to your needs
 - adjust .gitignore to your needs, I usually use this as a starting point:
 ```
