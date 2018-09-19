@@ -13,7 +13,7 @@ This is mainly a personal site profile to kickstart my own ProcessWire Projects.
 - error reporting of javascript errors in ProcessWire logs
 - Maintenance Modes for Frontend and Backend
 - Easy testing from devices on local network
-- Integrates RestApiProfile: https://github.com/thomasaull/RestApiProfile
+- Integrates RestApi: https://github.com/thomasaull/RestApi
 
 ### Install
 
@@ -55,18 +55,13 @@ touch site/assets/cache/.gitkeep touch site/assets/files/.gitkeep touch site/ass
 node_modules
 ```
 
-Install the composer modules:
-
-```
-composer require nikic/fast-route
-composer require firebase/php-jwt
-```
-
 - in config.php add at the bottom: `require("environment.php");`
 - create environment.php:
 
 ```
 <?php
+
+$config->environment = 'development';
 
 /* 
  * Database

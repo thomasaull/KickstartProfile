@@ -32,17 +32,8 @@ if(!defined("PROCESSWIRE")) die();
  * @var bool
  *
  */
-$config->debug = true;
+$config->debug = false;
 
-$config->jwtSecret = "ZxDWh8rXl16lrpX6jHBNUh+9uEv9g7jv3ebVHthTUnM2x30Lq2aMr1Ekij8LDgde/D/K04clCV9/gNxivEibjQ==";
-$config->defaultAdminTheme = 'AdminThemeUikit';
-$config->jsvars = new ProcessWire\WireData();
-$config->maintenanceBackend = false;
-$config->maintenanceFrontend = false;
-$config->imageSizerOptions = array(
-	'upscaling' => false,
-	'interlace' => true,
-);
 
 
 /*** INSTALLER CONFIG ********************************************************************/

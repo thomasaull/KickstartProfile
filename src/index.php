@@ -95,5 +95,5 @@
 </body>
 </html>
 
-<script type="text/javascript" src="<%= htmlWebpackPlugin.files.chunks.critical.entry %>" async></script>
-<script type="text/javascript" src="<%= htmlWebpackPlugin.files.chunks.bundle.entry %>" async></script>
+<script type="text/javascript" src="<%= htmlWebpackPlugin.files.chunks.critical.entry %>" defer></script>
+<script type="text/javascript" src="<%= htmlWebpackPlugin.files.chunks.bundle.entry %>" defer></script>

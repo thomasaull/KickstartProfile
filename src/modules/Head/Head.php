@@ -1,7 +1,7 @@
 
 <meta charset="UTF-8">
 
-<title><?=$title?></title>
+<title><?=$title?> – Seitenname</title>
 
 <?php if ($canonical):?>
   <link rel="canonical" href="<?= $canonical?>"/>

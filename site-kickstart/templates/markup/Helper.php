@@ -73,13 +73,13 @@ class Helper
     return "<svg class='$class'><use xlink:href='#$iconName--sprite'></use></svg>";
   }
 
-  public static function createModifierString($selectOptions) {
+  public static function createModifierString($selectOptions, $baseClass = '') {
     $modifier = "";
 
     if(!$selectOptions) return '';
 
     foreach ($selectOptions as $option) {
-      $modifier .= $option->value . " ";
+      $modifier .= "$baseClass--$option->value ";
     }
 
     return $modifier;
@@ -92,22 +92,10 @@ class Helper
     if (isset($template->modifier)) return $template->modifier;
   }
 
-  // muss getestet ggf. angepasst werden:
-  /*public static function hasModifier($selectOptions, $modifier) {
-    if($selectOptions instanceof PageArray)
-    {
-      if($selectOptions->has("class=$modifier"))
-        return true;
-    }
-
-    if($selectOptions instanceof Page)
-    {
-      if($selectOptions->class == $modifier)
-        return true;
-    }
-
-    return false;
-  }*/
+  public static function hasModifier($selectOptions, $modifier) {
+    $option = $selectOptions->get("value=$modifier");
+    return $option ? true : false;
+  }
 
   // Source: https://css-tricks.com/snippets/php/truncate-string-by-words/
   public static function stripTextAfterWordLimit ($text, $limit, $append = ' &hellip;') {

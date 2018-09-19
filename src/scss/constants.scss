@@ -6,7 +6,7 @@ $breakpoints: (mobile: 700px);
 // Typography:
 $fontStack-system: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 
-$fontStack-default: 'Kreon', sans-serif;
+$fontStack-default: 'Kreon', $fontStack-system;
 
 // Colors
 $color-key: red;
@@ -73,7 +73,7 @@ $modularscale: (
 
 @mixin wrap {
   width: 100%;
-  max-width: 1200px;
+  max-width: $contentMaxWidth;
   margin-left: auto;
   margin-right: auto;
 }
