@@ -93,7 +93,9 @@ run `npm run build` and check if the site is working
 For Development run `npm run dev` and open your browser at `http://localhost:8080`
 
 ### Critical CSS
-Critical CSS gets generated for all visible pages automatically. If you want to add hidden pages, change `$additionalHiddenPages` in site/templates/api/Critial.php
+Critical CSS gets generated for all visible pages automatically. If you want to add hidden pages, change `$additionalHiddenPages` in site/api/Critial.php
+
+You can decide to create the critical CSS from the live site by adjusting `urls.critical` in `package.json`
 
 ### Contentbuilder
 
