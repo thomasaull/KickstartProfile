@@ -14,7 +14,7 @@
 
   <?php
     if("<%= htmlWebpackPlugin.options.env %>" === 'production') {
-      $criticalCss = Helper::checkForCriticalCss($page->id);
+      $criticalCss = Helper::checkForCriticalCss($page);
       if($criticalCss) echo "<style>$criticalCss</style>";
     }
   ?>
@@ -67,7 +67,9 @@
   // $layoutClass = 'layoutDefault';
   // if ($page->layout) $layoutClass = 'layout' . ucwords($page->layout);
 
-  $fontsLoadedClass = $input->cookie('fontsLoaded') === 'true' ? '-fontsLoaded' : '';
+  $fontsLoadedClass = '';
+  if($input->cookie('fontsLoaded') === 'true') $fontsLoadedClass = '-fontsLoaded';
+  if($input->get->fontsLoaded === 'true') $fontsLoadedClass = '-fontsLoaded';
 ?>
 
 <body class="<?=$page->bodyClass?> <?=$layoutClass?> <?=$fontsLoadedClass?>">

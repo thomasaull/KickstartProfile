@@ -1,0 +1,439 @@
+<?php
+
+/**
+ * ProcessWire Module Cronjob Database Backup
+ * 
+ * @author kixe (Christoph Thelen) 2014/11/05
+ * @license Licensed under GNU/GPL v3
+ * @link https://processwire.com/talk/topic/8207-cronjob-database-backup/
+ * @version 1.1.5
+ * @since 1.1.5 added CTA Button to ProcessDatabaseBackups page (edit backups) 2016/11/28
+ *
+ * some code taken from Ryans Module Database Backups (Thanks!)
+ *
+ * Database Backups
+ * ProcessWire 2.x, 3.x
+ * Copyright (C) 2014 by Ryan Cramer 
+ * Licensed under GNU/GPL v2, see LICENSE.TXT
+ * 
+ * http://processwire.com
+ *
+ *
+ */
+
+class CronjobDatabaseBackup extends Process implements ConfigurableModule {
+
+	public static function getModuleInfo() {
+
+		$infoArray = array(
+			'title' => __('Cronjob Database Backup'), 
+			'version' => 115,
+			'summary' => __("Periodic automatic backup of the database. Set interval in settings."),
+			'autoload' => true,
+			'singular' => true,
+			'author' => 'kixe',
+			'href' => 'https://processwire.com/talk/topic/8207-cronjob-database-backup/',
+			'license' => 'GNU-GPLv3',
+			'permission' => 'db-backup', // loggedin User must have this permission
+			'hreflicense' => 'http://www.gnu.org/licenses/gpl-3.0.html',
+			'requires' => array('LazyCron','ProcessWire>=2.4.15'), // bug in ProcessModule.module (no line-breaks here!)
+			'icon' => 'database'
+		);
+		
+		$perminfo = __('Manage database backups (recommended for superuser only)');
+		if(!wire('modules')->isInstalled('ProcessDatabaseBackups')) $infoArray['permissions'] = array('db-backup' => $perminfo);
+		return $infoArray;
+	}
+
+
+	static public function getDefaultConfig() {
+		return array(
+			'cycle' => 'every4Weeks', // default set to 4 weeks
+			'max' => null,
+			'deadline' => null,
+			'backup_all' => 1,
+			'backup_name' => null,
+			'backup_fileinfo' => null,
+			'field_storage_path' => null,
+			'tables' => null
+		);
+	}
+
+	public function __construct() {
+		foreach(self::getDefaultConfig() as $key => $value) {
+			$this->$key = $value;
+		}
+	}
+
+	protected $backup = null;
+
+	/**
+	*
+	* maximum number of allowed backup files
+	*/
+	const MAXFILES = 100;
+
+	/**
+	* Initialize
+	* hooks in Lazy Cron
+	* set interval of script execution here
+	* check syntax of hookable time functions in wire/modules/LazyCron.module
+	*
+	*/
+	public function init() {
+		parent::init();
+		$this->backup = $this->wire('database')->backups(); //WireDatabaseBackup Class
+		$this->max = ($this->max && $this->max <= self::MAXFILES)?$this->max:self::MAXFILES;
+		if ($this->field_storage_path && $this->checkPath($this->wire('config')->paths->root.$this->field_storage_path)) $this->backup->setPath($this->wire('config')->paths->root.ltrim($this->field_storage_path,"/"));
+		if ($this->cycle == 'logoutTrigger') {
+			$this->addHookBefore("Session::logout", function() {
+				if(!$this->wire('user')->hasPermission('db-backup')) return;
+				$e = new HookEvent();
+				$this->cronBackup($e);
+			});
+		}
+		else if ($this->cycle) {
+			$this->addHook("LazyCron::{$this->cycle}", $this, 'cronBackup');
+		}
+	}
+	
+	/**
+	* checks wether a path exists or not - don't mind about leading or trailing slash
+	* @return bool
+	*/
+	public function checkPath($path) {
+		if($path && is_dir(ltrim($path,"/")) && is_writable(ltrim($path,"/"))) return true;
+		return false;
+	}
+
+	/**
+	* made by Ryan
+	*
+	*/
+	protected function backupPath($short = false) {
+		$path = $this->backup->getPath();
+		if($short) $path = str_replace($this->wire('config')->paths->root, '/', $path); 
+		return $path;
+	}
+
+	/**
+	* replaces placeholders for databasename (#), date function (%) and user properties ({})
+	*
+	* @param string $string
+	* @return string
+	*
+	*/
+	protected function renderInfoString($string) {
+		$string = str_replace('#',$this->wire('config')->dbName, $string);
+		if(preg_match('/^([^%]*)%?([^%]*)%?([^%]*)$/', $string, $matches)) $string = $matches[1].date($matches[2]).$matches[3];
+		$user = $this->wire('user');
+		return wirePopulateStringTags($string, $user);
+	}
+
+	/**
+	*
+	* @return string filename .sql
+	* @see renderInfoString
+	*
+	*/
+	protected function ___backupFilename() {
+		$filename = $this->backup_name? $this->backup_name:$this->wire('config')->dbName;
+		$filename = $this->renderInfoString($filename); 
+		$_filename = $filename;
+		$filename .= '.sql';
+		if(preg_match('/^(.+)-(\d+)$/', $_filename, $matches)) {
+			$_filename = $matches[1]; 
+			$n = $matches[2];
+		} else {
+			$n = 0; 
+		}
+		while(file_exists($this->backupPath() . $filename)) {
+			$filename = $_filename . "-" . (++$n) . ".sql";
+		}
+		return $filename;
+	}
+
+	/**
+	*
+	* @return string
+	* @see renderInfoString
+	*
+	*/
+	protected function ___backupFileinfo() {
+		if (!$this->backup_fileinfo) return 'backup made by CronjobDatabaseBackup';
+		return $this->renderInfoString($this->backup_fileinfo);
+	}
+
+	/**
+	* hooky dooky
+	*
+	*/
+	public function cronBackup(HookEvent $e) {
+		$allTables = $this->backup->getAllTables();
+		$database = $this->wire('database'); 
+
+		$options = array(
+			'filename' => $this->backupFilename(), 
+			'description' => $this->backupFileinfo(),
+			'maxSeconds' => 120
+			); 
+
+		if(!$this->backup_all) {
+			// selective tables
+			$options['tables'] = array();
+			foreach($this->tables as $table) {
+				if(!isset($allTables[$table])) continue; 
+				$options['tables'][] = $allTables[$table];
+			}
+		}
+
+		ignore_user_abort(true);
+		$file = $this->backup->backup($options); 
+		$message = "Saved db-backup - PATH[$file]";
+		$this->message($message,Notice::logOnly);
+
+		// delete odd backups if deadline (date) or max (files)
+		if ($this->deadline || $this->max <= $this->getAll()) {
+			$removed = count($this->clean($this->max,strtotime("-{$this->deadline}")));
+			$message = "Deleted %d backup%s";
+			$this->message(sprintf($message,$removed,($removed>1)?'s':''),Notice::logOnly); 
+		}
+	}
+
+	/**
+	* count backups (type sql)
+	* @return int
+	* 
+	*/
+	protected function getAll() {
+		$path = $this->backupPath();
+		$files = scandir($path);
+		if(!count($files)) return 0;
+	    $all = 0;
+		foreach ($files as $file) {
+	    	if (strrchr($file,'.') != '.sql') continue;
+	        $all++;
+	    }
+		return $all;
+	}
+
+	/**
+	* get last backups
+	* @param int size
+	* @param int deadline (unix timestamp)
+	* @return array/ bool
+	* 
+	*/
+	protected function keep($size=1,$deadline=null) {
+
+		$path = $this->backupPath();
+		$files = scandir($path);
+		if(!count($files)) return false;
+	    foreach ($files as $file) {
+	    	if (strrchr($file,'.') != '.sql') continue;
+	    	$date = filemtime($path.$file);
+	    	if($deadline && $date < $deadline) continue;
+	        $last[$file] = $date;
+	    }
+	    arsort($last);
+	    $last = array_keys($last);
+		if (!count($last)) return false;
+		return array_slice($last,0,$size);
+	}
+
+	/**
+	* clean backup directory
+	* @param size
+	* @return array
+	* 
+	*/
+	protected function clean($size=1,$deadline=null) {
+
+		if (!$this->keep()) return array();
+		$path = $this->backupPath(); 
+		$cleaned = array();	
+
+		$error_message = $this->_("Removing %1s from %2s failed!");
+		$keep = $this->keep($size,$deadline);
+		foreach(new DirectoryIterator($path) as $backup) {
+			if ($backup->getExtension() != 'sql') continue;
+			$backup = $backup->getFilename();
+			if (in_array($backup,$keep)) continue;
+			if (unlink($path.$backup)) {
+				$cleaned[] = $backup;
+				continue;
+			}
+			else $this->error(sprintf($error_message,$backup,$path)); 
+		}	
+		return $cleaned;
+	}
+
+	/**
+	 * module settings
+	 *
+	 */
+	static public function getModuleConfigInputfields(array $data) {
+
+		$modules = wire('modules');
+		$database = wire('database');
+		$config = wire('config');
+		$cleaner = $modules->get('CronjobDatabaseBackup'); 
+
+		if(wire('input')->post->cleanup) {
+			$removed = $cleaner->clean(wire('input')->post->cleanup);
+			$message = __("%d backups deleted successfully");
+			if (!count($removed)) $cleaner->message( __('Nothing to clean in').' '.$cleaner->backupPath(true));			
+			else $cleaner->message(sprintf($message,count($removed))); 
+		}
+		
+		$fields = new InputfieldWrapper();
+		$defaults = self::getDefaultConfig();
+		$data = array_merge($defaults, $data);
+		$path = $cleaner->backupPath(true);
+ 
+        $f = $modules->get("InputfieldMarkup");
+		$markupText = __("%d backups are currently stored in folder %s");
+        $f->markupText = '<strong>'.sprintf($markupText,$cleaner->getAll(),$path).'</strong>';
+
+ 		if($cleaner->getAll() && wire('modules')->isInstalled('ProcessDatabaseBackups')) {
+        	$b = $modules->get('InputfieldButton'); 
+			$b->value = __('Edit Backups'); 
+			$b->icon = 'database';
+			$b->href = wire('pages')->get('process='.$modules->getModuleInfo('ProcessDatabaseBackups')['id'])->url; 
+			$b->addClass('head_button_clone'); 
+			$f->markupText .= '<p>'.$b->render().'</p>';
+		}
+		$fields->add($f);
+
+        $f = $modules->get("InputfieldSelect");
+        $f->attr('name', 'cycle');
+		$f->label = __("Backup Trigger");
+ 		$f->icon = 'refresh';
+        $f->description = __("Select a time interval for automated database backups or the option 'logout trigger' to force download after a user with 'db-backup' permission has logged out.");
+        if ($data['cycle'] == 'logoutTrigger') $f->notes = __("The cronjob to backup your database is triggered after logout of any user with 'db-backup' permission.");
+		$f->addOptions(array(
+			0 => __('never'),
+			//'every30Seconds' =>__('30 seconds'), // for development use
+			'everyHour' => __('1 hour'),
+			'every6Hours' => __('6 hours'),
+			'everyDay' => __('1 day'),
+			'every2Days' => __('2 days'),
+			'everyWeek' => __('1 week'),
+			'every2Weeks' => __('2 weeks'),
+			'every4Weeks' => __('4 weeks'),
+			'logoutTrigger' => __('logout trigger')
+            ));
+        if(isset($_POST['cycle']) && $_POST['cycle'] != $data['cycle']) $f->message( __('Backup cycle interval changed to').' '.$_POST['cycle']);
+		$f->value = $data['cycle'];
+ 		$fields->add($f);
+
+		$f = $modules->get('InputfieldInteger'); 
+		$f->attr('name', 'max'); 
+		$f->value = $data['max'];
+		$f->icon = 'signal'; 
+		$f->attr('min', 1); 
+		$f->attr('max', self::MAXFILES); 
+		$f->attr('type', 'number'); 
+		$f->set('collapsed',$data['max']?false:true);
+		$f->label = __('Maximum Number of Backups');
+		$f->description = __('How many backups do you want to keep in the storage?');
+		$notes = __("max value: %d (defined by constant MAXFILES)");
+		$f->notes = sprintf($notes,self::MAXFILES);
+		$fields->add($f); 
+
+        $f = $modules->get("InputfieldSelect");
+        $f->attr('name', 'deadline');
+		$f->label = __("Remove backups older than");
+		$f->icon = 'calendar'; 
+        $f->description = __("Choose a time interval after a backup will be deleted sustainably by the cronjob.");
+		$f->set('collapsed',$data['deadline']?false:true);
+		$f->addOptions(array(
+			null => __('never'),
+			//'1 minute' =>__('1 minute'), // for development use
+			'1 day' => __('1 day'),
+			'1 week' => __('1 week'),
+			'1 month' => __('1 month'),
+			'1 year' => __('1 year'),
+            ));
+		$f->value = $data['deadline'];
+ 		$fields->add($f);
+
+		$def = $config->dbName;
+		$f = $modules->get('InputfieldText'); 
+		$f->attr('name', 'backup_name');
+		$f->set('collapsed',$data['backup_name']?false:true);
+		$f->attr('pattern', '[A-Za-z0-9%#_-]*');
+		$f->set('required', false);
+		$f->icon = 'file-archive-o'; 
+		$f->label = __('Backup Name'); 
+		$f->description = __('This will be used as the backup filename. Extension .sql will be added automatically.'); 
+		$f->notes = __('If omitted the name of the database will be used (config). Format syntax: # placeholder for db-name. Escape date() format with surrounding %. Any $user property surrounded with curled brackets will be replaced by the corresponding value.If filename exists a unique filename will be generated: [filename]-[n].sql. Allowed types: A-Z, a-z, 0-9, #, %, dash and underscore'); 
+		$f->value = $data['backup_name'];
+		$fields->add($f); 
+
+		$f = $modules->get('InputfieldText'); 
+		$f->attr('name', 'backup_fileinfo');
+		$f->set('collapsed',$data['backup_fileinfo']?false:true);
+		$f->set('required', false);
+		$f->icon = 'info-circle'; 
+		$f->label = __('Backup Fileinfo'); 
+		$f->description = __('Define custom fileinfo string here.'); 
+		$f->notes = __('Format syntax: # placeholder for db-name. Escape date() format with surrounding %. Any $user property surrounded with curled brackets will be replaced by the corresponding value. Default: \'backup made by CronjobDatabaseBackup\''); 
+		$f->value = $data['backup_fileinfo'];
+		$fields->add($f); 
+
+		$def = str_replace($config->paths->root,'',$database->backups()->getPath());
+		$f = $modules->get('InputfieldText'); 
+		$f->attr('name', 'field_storage_path');
+		$f->set('collapsed',$data['field_storage_path']?false:true);
+		$f->set('required', false);
+		$f->icon = 'folder-open-o'; 
+		$f->label = __('Storage Path'); 
+		$f->description = __("Path to custom storage directory.");
+		$f->notes = __("Leave this blank for storage under default path: $def");
+		if(!count($_POST) && $data['field_storage_path'] && !is_dir($config->paths->root.ltrim($data['field_storage_path'],"/"))) $f->error("Path doesn't exist! Default pass will be used.");
+		elseif(!count($_POST) && $data['field_storage_path'] && !is_writable($config->paths->root.ltrim($data['field_storage_path'],"/"))) $f->error("Path isn't writable! Default pass will be used.");
+		$f->value = $data['field_storage_path'];
+		$fields->add($f);
+
+		$f = $modules->get('InputfieldCheckbox');
+		$f->attr('name', 'backup_all'); 
+		$f->label = __('Backup all?'); 
+        $f->attr('checked', $data['backup_all'] ? 'checked' : '' );
+        $f->notes = __('Uncheck to make a selection');
+		$f->set('collapsed',$data['backup_all']?false:true);
+		$fields->add($f);
+
+		$f = $modules->get('InputfieldSelectMultiple'); 
+		$f->attr('name', 'tables');
+		$f->icon = 'table'; 
+		$f->label = __('Data Tables'); 
+		$f->description = __('By default, the export will include all data tables. If you only want certain tables to be included in the backup file, select them below.'); 
+		$allTables = $database->backups()->getAllTables();
+		foreach($allTables as $table) $f->addOption($table, $table); 
+		$f->attr('value', $data['tables']?$data['tables']:$allTables); 
+		$f->showIf = 'backup_all=0';
+		$fields->add($f);
+
+		$f = $modules->get('InputfieldInteger'); 
+		$f->attr('name', 'cleanup'); 
+		$f->attr('min', 1); 
+		$f->attr('type', 'number'); 
+		$f->set('collapsed',true);
+		$f->icon = 'fire'; 
+		$f->label = __('Burn backups now');
+		$f->description = __('Select the number of files that are to remain in the storage directory.');
+		$f->notes = __("Save to execute the process");
+		$fields->add($f); 
+
+		return $fields;
+	}
+
+	public function ___uninstall() {
+		$userpath = ($this->data['field_storage_path'])?"] and in [".trim($this->data['field_storage_path'],'/'):"";
+		$defpath = $this->backupPath(true);
+		$this->error(sprintf( __("Please note that maybe backup files remain in folder %s%s. If you don't want them there, please remove them manually."),$defpath,$userpath),Notice::warning); 
+		if ($this->wire('modules')->isInstalled('ProcessDatabaseBackups')) $this->message( __("Module 'Process Database Backups' remains installed"));
+		parent::___uninstall();
+	}
+}

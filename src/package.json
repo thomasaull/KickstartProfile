@@ -10,7 +10,11 @@
   },
   "urls": {
     "dev": "http://pwkickstart.test",
-    "live": ""
+    "live": "",
+    "critical": "http://pwkickstart.test"
+  },
+  "critical": {
+    "include": [".mySelektorIAlwaysWantToInclude"]
   },
   "author": "",
   "devDependencies": {

@@ -1,4 +1,4 @@
-# --- WireDatabaseBackup {"time":"2018-09-19 22:37:40","user":"","dbName":"pwkickstart","description":"","tables":[],"excludeTables":["pages_drafts","pages_roles","permissions","roles","roles_permissions","users","users_roles","user","role","permission"],"excludeCreateTables":[],"excludeExportTables":["field_roles","field_permissions","field_email","field_pass","caches","session_login_throttle","page_path_history"]}
+# --- WireDatabaseBackup {"time":"2018-11-06 16:53:49","user":"","dbName":"pwkickstart","description":"","tables":[],"excludeTables":["pages_drafts","pages_roles","permissions","roles","roles_permissions","users","users_roles","user","role","permission"],"excludeCreateTables":[],"excludeExportTables":["field_roles","field_permissions","field_email","field_pass","caches","session_login_throttle","page_path_history"]}
 
 DROP TABLE IF EXISTS `caches`;
 CREATE TABLE `caches` (
@@ -611,7 +611,7 @@ CREATE TABLE `modules` (
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `class` (`class`)
-) ENGINE=MyISAM AUTO_INCREMENT=193 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=195 DEFAULT CHARSET=utf8;
 
 INSERT INTO `modules` (`id`, `class`, `flags`, `data`, `created`) VALUES('1', 'FieldtypeTextarea', '1', '', '2017-12-03 18:00:49');
 INSERT INTO `modules` (`id`, `class`, `flags`, `data`, `created`) VALUES('2', 'FieldtypeNumber', '0', '', '2017-12-03 18:00:49');
@@ -728,6 +728,8 @@ INSERT INTO `modules` (`id`, `class`, `flags`, `data`, `created`) VALUES('186', 
 INSERT INTO `modules` (`id`, `class`, `flags`, `data`, `created`) VALUES('187', 'FieldtypeRepeaterMatrix', '33', '', '2018-02-01 19:52:11');
 INSERT INTO `modules` (`id`, `class`, `flags`, `data`, `created`) VALUES('188', 'InputfieldRepeaterMatrix', '0', '', '2018-02-01 19:52:11');
 INSERT INTO `modules` (`id`, `class`, `flags`, `data`, `created`) VALUES('192', 'RestApi', '3', '{\"useJwtAuth\":\"\",\"jwtSecret\":\"GjDxcf2qyZPSYOwiqy6tZssTkCAk8LB9PdFc6Yok4ZqM9YXv8j7GXJ+KvWphzq44ncJYLLfE9P\\/FNdxfzCy8CuEzYGa0kTYUOZdQFD7Pdt6bNXxPHkYdtTBnU3nFfntTzcrZYjtTf41SfZSSnaumZsNX+k0JOaIcxBtdeIy97VU=\"}', '2018-09-19 22:23:55');
+INSERT INTO `modules` (`id`, `class`, `flags`, `data`, `created`) VALUES('193', 'LazyCron', '3', '', '2018-11-06 16:42:07');
+INSERT INTO `modules` (`id`, `class`, `flags`, `data`, `created`) VALUES('194', 'CronjobDatabaseBackup', '3', '', '2018-11-06 16:42:35');
 
 DROP TABLE IF EXISTS `pages`;
 CREATE TABLE `pages` (
@@ -965,4 +967,4 @@ INSERT INTO `templates` (`id`, `name`, `fieldgroups_id`, `flags`, `cache_time`, 
 
 UPDATE pages SET created_users_id=41, modified_users_id=41, created=NOW(), modified=NOW();
 
-# --- /WireDatabaseBackup {"numTables":41,"numCreateTables":47,"numInserts":452,"numSeconds":0}
+# --- /WireDatabaseBackup {"numTables":41,"numCreateTables":47,"numInserts":454,"numSeconds":0}

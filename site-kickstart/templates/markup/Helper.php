@@ -54,13 +54,14 @@ class Helper
     // objects get passed by reference, therefore no need to return anything
   }
 
-  public static function checkForCriticalCss ($pageId) {
-    $path = wire('config')->paths->templates . "dist/critical/{$pageId}_critical.min.css";
+  public static function checkForCriticalCss ($page) {
+    $pathPageId = wire('config')->paths->templates . "dist/critical/{$page->id}_critical.min.css";
+    $pathTemplate = wire('config')->paths->templates . "dist/critical/{$page->template->id}_critical.min.css";
 
-    if (!\file_exists($path)) return; // no file
+    if (\file_exists($pathPageId)) return \file_get_contents($pathPageId);
+    if (\file_exists($pathTemplate)) return \file_get_contents($pathTemplate);
 
-    $critical = \file_get_contents($path);
-    return $critical;
+    return;
   }
 
   public static function inlineIcon ($iconName) {
@@ -74,15 +75,26 @@ class Helper
   }
 
   public static function createModifierString($selectOptions, $baseClass = '') {
-    $modifier = "";
+    $response = "";
+    $allModifiers = [];
 
     if(!$selectOptions) return '';
 
     foreach ($selectOptions as $option) {
-      $modifier .= "$baseClass--$option->value ";
+      // split multiple modifiers
+      $modifiers = explode(',', $option->value);
+      foreach($modifiers as $modifier) {
+        array_push($allModifiers, $modifier);
+      }
     }
 
-    return $modifier;
+    $allModifiers = array_unique($allModifiers);
+
+    foreach($allModifiers as $modifier) {
+      $response .= "$baseClass--$modifier ";
+    }
+
+    return $response;
   }
 
   /* Includes a modifier variable if present, use like:
@@ -94,7 +106,9 @@ class Helper
 
   public static function hasModifier($selectOptions, $modifier) {
     $option = $selectOptions->get("value=$modifier");
-    return $option ? true : false;
+    if($option->id) return true;
+
+    return false;
   }
 
   // Source: https://css-tricks.com/snippets/php/truncate-string-by-words/
