@@ -1,26 +1,27 @@
-var path = require('path')
-var webpack = require('webpack')
-var ExtractTextPlugin = require('extract-text-webpack-plugin')
-var HtmlWebpackPlugin = require('html-webpack-plugin')
-var HtmlWebpackHarddiskPlugin = require('html-webpack-harddisk-plugin')
-const SpriteLoaderPlugin = require('svg-sprite-loader/plugin')
-const { replaceInModuleSource, getAllModules } = require('svg-sprite-loader/lib/utils');
-var OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
+const path = require('path')
+const webpack = require('webpack')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const HtmlWebpackHarddiskPlugin = require('html-webpack-harddisk-plugin')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
-var svgoplugins = require('./build/svgoplugins')
-var FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin')
+const svgoplugins = require('./build/svgoplugins')
+const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const WriteFilePlugin = require('write-file-webpack-plugin')
 const chalk = require('chalk')
 const pkg = require('./package.json')
-var ip = require('ip');
-const StyleLintPlugin = require('stylelint-webpack-plugin');
-const VueLoaderPlugin = require('vue-loader/lib/plugin')
+const ip = require('ip')
+const StyleLintPlugin = require('stylelint-webpack-plugin')
+const { VueLoaderPlugin } = require('vue-loader')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 
 // CONFIG
-const useLocalIpAddress = false;
+const useLocalIpAddress = false
 
-let publicPath = useLocalIpAddress ? `http://${ip.address()}:8080/` : 'http://localhost:8080/'
+let publicPath = useLocalIpAddress
+  ? `http://${ip.address()}:8080/`
+  : 'http://localhost:8080/'
 // publicPath = 'http://192.168.178.47:8080/dist/' // für lokales Netzwerk-Testen
 // if(process.env.NODE_ENV === 'production') publicPath = '<?=$config->urls->templates?>dist/'
 if (process.env.NODE_ENV === 'production') publicPath = '/site/templates/dist/'
@@ -29,37 +30,43 @@ console.log(chalk`For local testing, use: {green ${publicPath}}`)
 
 const sassResourceLoader = {
   loader: 'sass-resources-loader',
-  options: {resources: [
-    path.resolve(__dirname, './node_modules/include-media/dist/_include-media.scss'),
-    path.resolve(__dirname, './scss/easing.scss'),
-    path.resolve(__dirname, './scss/interpolate.scss'),
-    path.resolve(__dirname, './node_modules/modularscale-sass/stylesheets/_modularscale.scss'),
-    path.resolve(__dirname, './node_modules/family.scss/source/src/_family.scss'),
-    path.resolve(__dirname, './scss/constants.scss')
-  ]}
+  options: {
+    resources: [
+      path.resolve(
+        __dirname,
+        './node_modules/include-media/dist/_include-media.scss'
+      ),
+      path.resolve(__dirname, './scss/easing.scss'),
+      path.resolve(__dirname, './scss/interpolate.scss'),
+      path.resolve(
+        __dirname,
+        './node_modules/modularscale-sass/stylesheets/_modularscale.scss'
+      ),
+      path.resolve(
+        __dirname,
+        './node_modules/family.scss/source/src/_family.scss'
+      ),
+      path.resolve(__dirname, './scss/constants.scss')
+    ]
+  }
 }
 
-// let scssLoader = 'style-loader?sourceMap!css-loader?sourceMap!postcss-loader?sourceMap!sass-loader?sourceMap'
-let scssLoader = ['css-loader', 'postcss-loader', 'sass-loader', sassResourceLoader]
+let cssLoader = [
+  'style-loader',
+  MiniCssExtractPlugin.loader,
+  'css-loader',
+  'postcss-loader'
+]
 
-if (process.env.NODE_ENV === 'production') scssLoader = ExtractTextPlugin.extract({ use: scssLoader })
-if (process.env.NODE_ENV === 'development') scssLoader.unshift('style-loader')
-
-// let vueLoader = ['css-loader', 'postcss-loader', 'sass-loader', sassResourceLoader]
-let vueLoader = ['css-loader', 'postcss-loader', 'sass-loader', sassResourceLoader]
-if (process.env.NODE_ENV === 'production') vueLoader = ExtractTextPlugin.extract({ use: vueLoader, fallback: 'vue-style-loader' })
-if (process.env.NODE_ENV === 'development') vueLoader.unshift('vue-style-loader')
-
-// let cssLoader = 'style-loader!css-loader?sourceMap!postcss-loader?sourceMap'
-let cssLoader = 'style-loader!css-loader!postcss-loader'
-if (process.env.NODE_ENV === 'production') cssLoader = ExtractTextPlugin.extract({ use: ['css-loader?importLoaders=1', 'postcss-loader'] })
+let scssLoader = [...cssLoader, 'sass-loader', sassResourceLoader]
+let vueLoader = ['vue-style-loader', ...scssLoader]
 
 const distRoot = path.resolve(__dirname, '../')
 
 let config = {
   context: __dirname,
   devtool: '#cheap-module-eval-source-map',
-  // devtool: '',
+
   entry: {
     errorTracking: [path.resolve(__dirname, './js/errorTracking.js')],
     critical: [path.resolve(__dirname, './js/critical.js')],
@@ -70,80 +77,59 @@ let config = {
       path.resolve(__dirname, './scss')
     ]
   },
+
   output: {
     path: distRoot + '/site/templates/dist',
     publicPath: publicPath,
     filename: 'js/[name].[hash:6].js'
-    // filename: "[name].js"
-    // filename: 'js/[name].[chunkhash].js',
-    // chunkFilename: 'js/[id].[chunkhash].js'
   },
+
   devServer: {
     quiet: true,
-    // contentBase: path.resolve(__dirname, '../site/templates'),
-    // watchContentBase: true,
-    // watchOptions: {
-      // ignored: path.resolve(__dirname, '../site/templates/dist') // greift irgendwie nicht
-      // ignored: '*.js'
-    // },
     host: '0.0.0.0',
     publicPath: publicPath,
-    // host: ip.address(),
-    // disableHostCheck: true,
     proxy: {
       '**': {
         target: pkg.urls.dev,
-        // target: {
-        //   host: 'pwkickstart.test',
-        //   protocol: 'http:',
-        //   port: 80
-        // },
         changeOrigin: true
       }
-
     }
   },
+
   module: {
     rules: [
-      // {
-      //   test: /\.vue$/,
-      //   loader: 'vue-loader',
-      //   options: {
-      //     loaders: {
-      //       // Since sass-loader (weirdly) has SCSS as its default parse mode, we map
-      //       // the "scss" and "sass" values for the lang attribute to the right configs here.
-      //       // other preprocessors should work out of the box, no loader config like this necessary.
-      //       // scss: ['vue-style-loader', 'css-loader', 'sass-loader'],
-      //       scss: vueLoader
-      //     }
-      //     // extractCSS: true
-      //     // other vue-loader options go here
-      //   }
-      // },
       {
         test: /\.vue$/,
-        loader: 'vue-loader'
+        loader: 'vue-loader',
+        options: {
+          loaders: {
+            scss: vueLoader
+          }
+        }
       },
-      { // eslint
+      {
         test: /\.js$/,
         loader: 'eslint-loader',
         enforce: 'pre',
+        options: {
+          fix: true
+        },
         exclude: /node_modules/
       },
-      { // javascript
+      {
         test: /\.js$/,
-        exclude: /node_modules/,
-        loader: 'babel-loader'
+        use: 'babel-loader',
+        exclude: /node_modules/
       },
-      { // regular css files
+      {
         test: /\.css$/,
-        loader: cssLoader
+        use: cssLoader
       },
-      { // sass / scss loader for webpack
-        test: /\.(sass|scss)$/,
-        loader: scssLoader
+      {
+        test: /\.scss$/,
+        use: scssLoader
       },
-      { // svgs
+      {
         test: /\.svg$/,
         oneOf: [
           {
@@ -178,7 +164,7 @@ let config = {
             resourceQuery: /\?inline$/,
             use: [
               {
-                loader: 'raw-loader',
+                loader: 'raw-loader'
               },
               {
                 loader: 'svgo-loader',
@@ -187,45 +173,42 @@ let config = {
                 }
               }
             ]
-          },
-          {
-            resourceQuery: /\?sprite$/,
-            use: [
-              {
-                loader: 'svg-sprite-loader',
-                options: {
-                  extract: true,
-                  symbolId: '[name]',
-                  // spriteFilename: 'sprite.[hash:6].svg'
-                  spriteFilename: 'sprite.svg'
-                }
-              },
-              {
-                loader: 'svgo-loader',
-                options: {
-                  plugins: svgoplugins
-                }
-              }
-            ]
-          },
+          }
         ]
       },
       {
         test: /\.(png|jpg|gif)$/,
-        loader: 'file-loader',
-        options: {
-          name: '[name].[ext]?[hash]'
-        }
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]?[hash]'
+            }
+          }
+        ]
       }
     ]
   },
+
   resolve: {
     extensions: ['.js', '.vue', '.json'],
     alias: {
-      'vue$': 'vue/dist/vue.esm.js',
+      vue$: 'vue/dist/vue.esm.js',
       '@': path.join(__dirname)
     }
   },
+
+  optimization: {
+    minimizer: [
+      new UglifyJsPlugin({
+        cache: true,
+        parallel: true,
+        sourceMap: true
+      }),
+      new OptimizeCSSAssetsPlugin({})
+    ]
+  },
+
   plugins: [
     new HtmlWebpackPlugin({
       title: 'My App',
@@ -244,9 +227,9 @@ let config = {
       chunksSortMode: 'dependency'
     }),
     new HtmlWebpackHarddiskPlugin(),
-    new SpriteLoaderPlugin(),
     new FriendlyErrorsWebpackPlugin(),
-    new WriteFilePlugin({ // write assets used by php to disk
+    new WriteFilePlugin({
+      // write assets used by php to disk
       // test: /\.(php|svg)$/
       test: /\.(?!vue|js|scss).*$/
     }),
@@ -255,32 +238,16 @@ let config = {
       { from: 'modules', to: 'modules', ignore: ['*.scss', '*.js', '*.vue'] },
       { from: 'static', to: 'static' }
     ]),
-    new CleanWebpackPlugin([
-      distRoot + '/site/templates/dist',
-    ], { allowExternal: true }),
+    new CleanWebpackPlugin([distRoot + '/site/templates/dist'], {
+      allowExternal: true
+    }),
     new StyleLintPlugin(),
-    new VueLoaderPlugin()
+    new VueLoaderPlugin(),
 
-    /*{ // replace sprite Url with hash, but this doesn't work
-      apply(compiler) {
-        compiler.plugin('emit', (compilation, done) => {
-          const { assets } = compilation;
-          const spriteFilename = 'my-sprite-filename'
-          // const spriteFilename = Object.keys(assets)
-          //   .find(assetName => assetName.startsWith('sprite.'));
-
-          console.log(':::::::filename: ' + spriteFilename)
-
-          getAllModules(compilation).forEach((module) => {
-            replaceInModuleSource(module, {
-              __SPRITE_URL__: spriteFilename
-            });
-          });
-
-          done();
-        });
-      }
-    }*/
+    new MiniCssExtractPlugin({
+      filename: '[name].css',
+      chunkFilename: '[id].css'
+    })
   ]
 }
 
@@ -296,51 +263,10 @@ if (process.env.NODE_ENV === 'development') {
 /* PRODUCTION */
 if (process.env.NODE_ENV === 'production') {
   config.devtool = ''
+
   config.plugins.push(
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': '"production"'
-    })
-  )
-  config.plugins.push(
-    new ExtractTextPlugin({ // define where to save the file
-      filename: 'screen.[hash:6].css',
-      // filename: "screen.css",
-      allChunks: true
-    })
-  )
-  config.plugins.push(
-    new OptimizeCSSPlugin()
-  )
-  /* config.plugins.push(
-    // split vendor js into its own file
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'vendor',
-      minChunks: function (module, count) {
-        // any required modules inside node_modules are extracted to vendor
-        return (
-          module.resource &&
-          /\.js$/.test(module.resource) &&
-          module.resource.indexOf(
-            path.join(__dirname, '../node_modules')
-          ) === 0
-        )
-      }
-    })
-  )*/
-  /* config.plugins.push(
-    // extract webpack runtime and module manifest to its own file in order to
-    // prevent vendor hash from being updated whenever app bundle is updated
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'manifest',
-      chunks: ['vendor']
-    })
-  )*/
-  config.plugins.push(
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        warnings: false
-      },
-      sourceMap: true
     })
   )
 }

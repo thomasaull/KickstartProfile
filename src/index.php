@@ -56,8 +56,8 @@
 
   <!-- Hide v-cloak -->
   <style>
-    [v-cloak] { display: none; }
-    .noJs .hiddenWithoutJs { display: none; }
+    [v-cloak] { display: none !important; }
+    .noJs .hiddenWithoutJs { display: none !important; }
   </style>
 
 </head>

@@ -1,4 +1,4 @@
-import '@/scss/reset.scss'
+import '@/node_modules/reset-css/reset.css'
 import '@/scss/default.scss'
 import '@/scss/defaultText.scss'
 import '@/scss/layoutDefault.scss'
