@@ -2,9 +2,11 @@
 
 class FileEditorPanel extends BasePanel {
 
-    protected $icon;
-    protected $tracyFileEditorFilePath;
-    protected $errorMessage = null;
+    private $icon;
+    private $tracyFileEditorFilePath;
+    private $errorMessage = null;
+    private $encoding = 'auto';
+    private $tracyPwApiData;
 
     public function getTab() {
 
@@ -27,10 +29,10 @@ class FileEditorPanel extends BasePanel {
         $this->tracyFileEditorFilePath = $this->wire('input')->cookie->tracyFileEditorFilePath ?: str_replace($this->wire('config')->paths->root, '', $this->p->template->filename);
 
         if(isset($_POST['tracyTestTemplateCode']) || $this->wire('input')->cookie->tracyTestFileEditor) {
-            $iconColor = '#D51616';
+            $iconColor = \TracyDebugger::COLOR_ALERT;
         }
         else {
-            $iconColor = '#444444';
+            $iconColor = \TracyDebugger::COLOR_NORMAL;
         }
 
         $this->icon = '
@@ -55,7 +57,7 @@ class FileEditorPanel extends BasePanel {
 
     public function getPanel() {
 
-        $tracyModuleUrl = $this->wire("config")->urls->TracyDebugger;
+        $tracyModuleUrl = $this->wire('config')->urls->TracyDebugger;
 
         $filePath = $this->wire('config')->paths->root . $this->tracyFileEditorFilePath;
 
@@ -74,10 +76,64 @@ class FileEditorPanel extends BasePanel {
             $tracyFileEditorFileCode = json_encode($this->tracyFileEditorFilePath . ' does not exist');
         }
 
-        $out = '<script>' . file_get_contents($this->wire("config")->paths->TracyDebugger . 'scripts/js-loader.js') . '</script>';
-        $out .= '<script>' . file_get_contents($this->wire("config")->paths->TracyDebugger . 'scripts/file-editor.js') . '</script>';
+        $maximizeSvg = '<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="282.8 231 16 15.2" enable-background="new 282.8 231 16 15.2" xml:space="preserve"><polygon fill="#AEAEAE" points="287.6,233.6 298.8,231 295.4,242 "/><polygon fill="#AEAEAE" points="293.9,243.6 282.8,246.2 286.1,235.3 "/></svg>';
 
-        $out .= <<< HTML
+        $codeUseSoftTabs = \TracyDebugger::getDataValue('codeUseSoftTabs');
+        $codeShowInvisibles = \TracyDebugger::getDataValue('codeShowInvisibles');
+        $codeTabSize = \TracyDebugger::getDataValue('codeTabSize');
+        $customSnippetsUrl = \TracyDebugger::getDataValue('customSnippetsUrl');
+
+        $aceTheme = \TracyDebugger::getDataValue('aceTheme');
+        $codeFontSize = \TracyDebugger::getDataValue('codeFontSize');
+        $codeLineHeight = \TracyDebugger::getDataValue('codeLineHeight');
+
+        if(\TracyDebugger::getDataValue('pwAutocompletions')) {
+            $i=0;
+            foreach(\TracyDebugger::getApiData('variables') as $key => $vars) {
+                foreach($vars as $name => $params) {
+                    if(strpos($name, '()') !== false) {
+                        $pwAutocompleteArr[$i]['name'] = "$$key->" . str_replace('___', '', $name) . (method_exists($this->wire()->$key, $name) ? '()' : '');
+                        $pwAutocompleteArr[$i]['meta'] = 'PW method';
+                    }
+                    else {
+                        $pwAutocompleteArr[$i]['name'] = "$$key->" . str_replace('___', '', $name);
+                        $pwAutocompleteArr[$i]['meta'] = 'PW property';
+                    }
+                    if(\TracyDebugger::getDataValue('codeShowDescription')) {
+                        $pwAutocompleteArr[$i]['docHTML'] = $params['description'] . "\n" . (isset($params['params']) ? '('.implode(', ', $params['params']).')' : '');
+                    }
+                    $i++;
+                }
+            }
+
+            $i=0;
+            foreach(\TracyDebugger::getApiData('proceduralFunctions') as $key => $vars) {
+                foreach($vars as $name => $params) {
+                    $pwAutocompleteArr[$i]['name'] = $name . '()';
+                    $pwAutocompleteArr[$i]['meta'] = 'PW function';
+                    if(\TracyDebugger::getDataValue('codeShowDescription')) {
+                        $pwAutocompleteArr[$i]['docHTML'] = $params['description'] . "\n" . (isset($params['params']) && !empty($params['params']) ? '('.implode(', ', $params['params']).')' : '');
+                    }
+                    $i++;
+                }
+            }
+
+            // page fields
+            $i = count($pwAutocompleteArr);
+            foreach($this->p->fields as $field) {
+                $pwAutocompleteArr[$i]['name'] = '$page->'.$field;
+                $pwAutocompleteArr[$i]['meta'] = 'PW ' . str_replace('Fieldtype', '', $field->type) . ' field';
+                if(\TracyDebugger::getDataValue('codeShowDescription')) $pwAutocompleteArr[$i]['docHTML'] = $field->description;
+                $i++;
+            }
+
+            $pwAutocomplete = json_encode($pwAutocompleteArr);
+        }
+        else {
+            $pwAutocomplete = json_encode(array());
+        }
+
+        $out = <<< HTML
         <script>
 
             var tracyFileEditor = {
@@ -86,6 +142,20 @@ class FileEditorPanel extends BasePanel {
                 tracyModuleUrl: "$tracyModuleUrl",
                 tracyFileEditorFilePath: "{$this->tracyFileEditorFilePath}",
                 errorMessage: "{$this->errorMessage}",
+                customSnippetsUrl: "$customSnippetsUrl",
+                pwAutocomplete: $pwAutocomplete,
+                aceTheme: "$aceTheme",
+                codeFontSize: $codeFontSize,
+                codeLineHeight: $codeLineHeight,
+
+                isSafari: function() {
+                    if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1) {
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+                },
 
                 getRawFileEditorCode: function() {
                     document.cookie = "tracyFileEditorFilePath=" + document.getElementById('fileEditorFilePath').value + "; path=/";
@@ -99,12 +169,36 @@ class FileEditorPanel extends BasePanel {
                     localStorage.setItem(name, JSON.stringify(tracyHistoryItem));
                 },
 
-                resizeAce: function() {
-                    var ml = Math.round((document.getElementById("tracy-debug-panel-FileEditorPanel").offsetHeight - 160) / 23);
-                    tracyFileEditor.tfe.setOptions({
-                        minLines: ml,
-                        maxLines: ml
-                    });
+                toggleFullscreen: function() {
+                    var tracyFileEditorPanel = document.getElementById('tracy-debug-panel-FileEditorPanel');
+                    if(!document.getElementById("tracyFileEditorCodeContainer").classList.contains("maximizedConsole")) {
+                        window.Tracy.Debug.panels["tracy-debug-panel-FileEditorPanel"].toFloat();
+                        // hack to hide resize handle that was showing through
+                        tracyFileEditorPanel.style.resize = 'none';
+                        if(this.isSafari()) {
+                            // Safari doesn't support position:fixed on elements outside document body
+                            // so move File Editor panel to body when in fullscreen mode
+                            document.body.appendChild(tracyFileEditorPanel);
+                        }
+                    }
+                    else {
+                        tracyFileEditorPanel.style.resize = 'both';
+                        if(this.isSafari()) {
+                            document.getElementById("tracy-debug").appendChild(tracyFileEditorPanel);
+                        }
+                    }
+                    document.getElementById("tracyFileEditorCodeContainer").classList.toggle("maximizedConsole");
+                    document.documentElement.classList.toggle('noscroll');
+                    tracyFileEditor.resizeAce();
+                },
+
+                resizeAce: function(focus = true) {
+
+                    if(typeof tracyFileEditor.tfe.resize == 'function') tracyFileEditor.tfe.resize(true);
+                    if(focus && typeof tracyFileEditor.tfe.focus == 'function') {
+                        document.getElementById("tracy-debug-panel-FileEditorPanel").classList.add('tracy-focused');
+                        tracyFileEditor.tfe.focus();
+                    }
                 }
 
             };
@@ -112,10 +206,18 @@ class FileEditorPanel extends BasePanel {
             tracyJSLoader.load(tracyFileEditor.tracyModuleUrl + "scripts/ace-editor/ace.js", function() {
                 if(typeof ace !== "undefined") {
                     tracyFileEditor.tfe = ace.edit("tracyFileEditorCode");
-                    tracyFileEditor.tfe.container.style.lineHeight = 1.8;
-                    tracyFileEditor.tfe.setFontSize(13);
+                    tracyFileEditor.lineHeight = tracyFileEditor.codeLineHeight;
+                    tracyFileEditor.tfe.container.style.lineHeight = tracyFileEditor.lineHeight + 'px';
+                    tracyFileEditor.tfe.setFontSize(tracyFileEditor.codeFontSize);
                     tracyFileEditor.tfe.setShowPrintMargin(false);
+                    tracyFileEditor.tfe.setShowInvisibles($codeShowInvisibles);
                     tracyFileEditor.tfe.\$blockScrolling = Infinity; //fix deprecation warning
+
+                    tracyFileEditor.tfe.on("beforeEndOperation", function() {
+                        tracyFileEditor.saveToLocalStorage('tracyFileEditor');
+                        // focus set to false to prevent breaking the Ace search box
+                        tracyFileEditor.resizeAce(false);
+                    });
 
                     tracyFileEditor.tfe.on("beforeEndOperation", function(e) {
                         tracyFileEditor.saveToLocalStorage('tracyFileEditor');
@@ -129,90 +231,193 @@ class FileEditorPanel extends BasePanel {
                     });
 
                     // set theme
-                    tracyFileEditor.tfe.setTheme("ace/theme/tomorrow_night");
+                    tracyFileEditor.tfe.setTheme("ace/theme/" + tracyFileEditor.aceTheme);
 
                     // set mode appropriately
-                    // in ext-modelist.js I have added "inc" to PHP and "latte" to Twig
                     tracyJSLoader.load(tracyFileEditor.tracyModuleUrl + "scripts/ace-editor/ext-modelist.js", function() {
                         tracyFileEditor.modelist = ace.require("ace/ext/modelist");
-                        var mode = tracyFileEditor.modelist.getModeForPath(tracyFileEditor.tracyFileEditorFilePath).mode;
-                        tracyFileEditor.tfe.session.setMode(mode);
-                    });
+                        tracyFileEditor.mode = tracyFileEditor.modelist.getModeForPath(tracyFileEditor.tracyFileEditorFilePath).mode;
+                        tracyFileEditor.tfe.session.setMode(tracyFileEditor.mode);
 
-                    // set autocomplete and other options
-                    ace.config.loadModule('ace/ext/language_tools', function () {
-                        document.getElementById("tracyFileEditorCode").style.visibility = "visible";
-                        if(tracyFileEditor.tracyFileEditorFilePath) {
-                            tracyFileEditor.tfe.setValue($tracyFileEditorFileCode);
-                            var tracyFileEditorState = JSON.parse(localStorage.getItem("tracyFileEditor"));
-                            if(!!tracyFileEditorState) {
-                                tracyFileEditor.tfe.selection.fromJSON(tracyFileEditorState.selections);
-                                tracyFileEditor.tfe.session.setScrollTop(tracyFileEditorState.scrollTop);
-                                tracyFileEditor.tfe.session.setScrollLeft(tracyFileEditorState.scrollLeft);
+                        // set autocomplete and other options
+                        ace.config.loadModule('ace/ext/language_tools', function () {
+                            document.getElementById("tracyFileEditorCode").style.visibility = "visible";
+                            if(tracyFileEditor.tracyFileEditorFilePath) {
+                                tracyFileEditor.tfe.setValue($tracyFileEditorFileCode);
+                                var tracyFileEditorState = JSON.parse(localStorage.getItem("tracyFileEditor"));
+                                if(!!tracyFileEditorState) {
+                                    tracyFileEditor.tfe.selection.fromJSON(tracyFileEditorState.selections);
+                                    tracyFileEditor.tfe.session.setScrollTop(tracyFileEditorState.scrollTop);
+                                    tracyFileEditor.tfe.session.setScrollLeft(tracyFileEditorState.scrollLeft);
+                                }
+                                else {
+                                    tracyFileEditor.tfe.gotoLine(1, 0);
+                                }
                             }
-                            else {
-                                tracyFileEditor.tfe.gotoLine(1, 0);
+
+                            tracyFileEditor.tfe.setOptions({
+                                enableBasicAutocompletion: true,
+                                enableSnippets: true,
+                                enableLiveAutocompletion: true,
+                                tabSize: $codeTabSize,
+                                useSoftTabs: $codeUseSoftTabs,
+                                minLines: 5
+                            });
+
+                            // all PW variable completers
+                            if(tracyFileEditor.pwAutocomplete.length > 0) {
+                                var staticWordCompleter = {
+                                    getCompletions: function(editor, session, pos, prefix, callback) {
+                                        callback(null, tracyFileEditor.pwAutocomplete.map(function(word) {
+                                            return {
+                                                value: word.name,
+                                                meta: word.meta,
+                                                docHTML: word.docHTML
+                                            };
+                                        }));
+                                    }
+                                };
+                                tracyFileEditor.tfe.completers.push(staticWordCompleter);
                             }
-                        }
-                        tracyFileEditor.tfe.setOptions({
-                            enableBasicAutocompletion: true,
-                            enableLiveAutocompletion: true,
-                            minLines: 5
+
+                            // included PW snippets
+                            tracyJSLoader.load(tracyFileEditor.tracyModuleUrl + "scripts/code-snippets.js", function() {
+                                tracyFileEditor.snippetManager = ace.require("ace/snippets").snippetManager;
+                                tracyFileEditor.snippetManager.register(getCodeSnippets(), tracyFileEditor.mode.replace('ace/mode/', ''));
+
+                                // custom snippets URL
+                                if(tracyFileEditor.customSnippetsUrl !== '') {
+                                    tracyJSLoader.load(tracyFileEditor.customSnippetsUrl, function() {
+                                        tracyFileEditor.snippetManager.register(getCustomCodeSnippets(), "php");
+                                    });
+                                }
+
+                            });
+
                         });
+
+                        tracyFileEditor.tfe.commands.addCommands([
+                            {
+                                name: "increaseFontSize",
+                                bindKey: "Ctrl-=|Ctrl-+",
+                                exec: function(editor) {
+                                    var size = parseInt(tracyFileEditor.tfe.getFontSize(), 10) || 12;
+                                    editor.setFontSize(size + 1);
+                                }
+                            },
+                            {
+                                name: "decreaseFontSize",
+                                bindKey: "Ctrl+-|Ctrl-_",
+                                exec: function(editor) {
+                                    var size = parseInt(editor.getFontSize(), 10) || 12;
+                                    editor.setFontSize(Math.max(size - 1 || 1));
+                                }
+                            },
+                            {
+                                name: "resetFontSize",
+                                bindKey: "Ctrl+0|Ctrl-Numpad0",
+                                exec: function(editor) {
+                                    editor.setFontSize(14);
+                                }
+                            }
+                        ]);
+
 
                         tracyFileEditor.tfe.setAutoScrollEditorIntoView(true);
                         tracyFileEditor.resizeAce();
 
-                        // checks for changes to Console panel class which indicates focus so we can focus cursor in editor
+                        // create and append toggle fullscreen/restore buttons
+                        var toggleFullscreenButton = document.createElement('div');
+                        toggleFullscreenButton.innerHTML = '<span class="fullscreenToggleButton" title="Toggle fullscreen" onclick="tracyFileEditor.toggleFullscreen()">$maximizeSvg</span>';
+                        document.getElementById("tracyFileEditorContainer").querySelector('.ace_gutter').prepend(toggleFullscreenButton);
+
+                        // checks for changes to the panel
+                        var config = { attributes: true, attributeOldValue: true };
                         tracyFileEditor.observer = new MutationObserver(function(mutations) {
                             mutations.forEach(function(mutation) {
-                                if(mutation.attributeName === "class") {
-                                    tracyFileEditor.tfe.focus();
+                                // change in class indicates focus so we can focus cursor in editor
+                                if(mutation.attributeName == 'class' && mutation.oldValue !== mutation.target.className && mutation.oldValue.indexOf('tracy-focused') === -1 && mutation.target.classList.contains('tracy-focused')) {
+                                    tracyFileEditor.resizeAce();
+                                }
+                                // else if a change in style then resize but don't focus
+                                else if(mutation.attributeName == 'style') {
+                                    tracyFileEditor.resizeAce(false);
                                 }
                             });
                         });
-                        tracyFileEditor.observer.observe(document.getElementById("tracy-debug-panel-FileEditorPanel"), {
-                            attributes: true
+                        tracyFileEditor.observer.observe(document.getElementById("tracy-debug-panel-FileEditorPanel"), config);
+
+                        // this is necessary for Safari, but not Chrome and Firefox
+                        // otherwise resizing panel container doesn't resize internal panes
+                        if(tracyFileEditor.isSafari()) {
+                            document.getElementById("tracy-debug-panel-FileEditorPanel").addEventListener('mousemove', function() {
+                                tracyFileEditor.resizeAce();
+                            });
+                        }
+
+                        document.getElementById("tracyFileEditorCode").querySelector(".ace_text-input").addEventListener("keydown", function(e) {
+                            if(document.getElementById("tracy-debug-panel-FileEditorPanel").classList.contains("tracy-focused")) {
+                                if(e.ctrlKey && e.shiftKey) {
+                                    e.preventDefault();
+                                    // enter
+                                    if((e.keyCode==10||e.charCode==10)||(e.keyCode==13||e.charCode==13)) {
+                                        tracyFileEditor.toggleFullscreen();
+                                    }
+                                }
+                            }
                         });
 
                         window.onresize = function(event) {
-                            tracyFileEditor.resizeAce();
+                            if(document.getElementById("tracy-debug-panel-FileEditorPanel").classList.contains("tracy-focused")) {
+                                tracyFileEditor.resizeAce();
+                            }
                         };
 
                     });
                 }
             });
 
-            tracyJSLoader.load(tracyFileEditor.tracyModuleUrl + "scripts/php-file-tree/php_file_tree.js");
+            tracyJSLoader.load(tracyFileEditor.tracyModuleUrl + "scripts/php-file-tree/php_file_tree.js", function() {
+                tracyJSLoader.load(tracyFileEditor.tracyModuleUrl + "scripts/file-editor.js");
+            });
+            tracyJSLoader.load(tracyFileEditor.tracyModuleUrl + "scripts/filterbox/filterbox.js", function() {
+                tracyJSLoader.load(tracyFileEditor.tracyModuleUrl + "scripts/file-editor-search.js");
+            });
+
             tracyFileEditorLoader.generateButtons($tracyFileEditorFileData);
             document.cookie = "tracyTestFileEditor=;expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/";
 
         </script>
 HTML;
 
-        $out .= '<h1>'.$this->icon.' File Editor: <span id="panelTitleFilePath" style="font-size:14px">'.($this->tracyFileEditorFilePath ?: 'no selected file').'</span></h1>
+        $out .= '<h1>'.$this->icon.' File Editor: <span id="panelTitleFilePath" style="font-size:14px">'.($this->tracyFileEditorFilePath ?: 'no selected file').'</span></h1><span class="tracy-icons"><span class="resizeIcons"><a href="#" title="Maximize / Restore" onclick="tracyResizePanel(\'FileEditorPanel\')">+</a></span></span>
         <div class="tracy-inner">
-            <div id="tracyFoldersFiles" style="float: left; margin: 0; padding:0; width: 310px; height: calc(100vh - 150px); overflow: auto">';
-
-                $out .= "<div class='fe-file-tree'>";
-                $out .= $this->php_file_tree($this->wire('config')->paths->{\TracyDebugger::getDataValue('fileEditorBaseDirectory')}, $this->toArray(\TracyDebugger::getDataValue('fileEditorAllowedExtensions')));
-                $out .= "</div>";
-
-            $out .= '
-            </div>
-            <div id="tracyFileEditorCodeContainer" style="float: left; width: calc(100vw - 400px) !important;">
-                <div id="tracyFileEditorCode" style="position:relative;"></div><br />
-                <form id="tracyFileEditorSubmission" method="post" action="'.\TracyDebugger::inputUrl(true).'">
-                    <fieldset>
-                        <textarea id="tracyFileEditorRawCode" name="tracyFileEditorRawCode" style="display:none"></textarea>
-                        <input type="hidden" id="fileEditorFilePath" name="fileEditorFilePath" value="'.$this->tracyFileEditorFilePath.'" />
-                        <div id="fileEditorButtons" style="margin-left:15px"></div>
-                    </fieldset>
-                </form>
+            <div id="tracyFileEditorContainer" style="height: 100%;">
+                <div style="float: left; height: calc(100% - 38px);">
+                    <select style="width: 17px !important;" title="Select recently opened files" onchange="tracyFileEditorLoader.loadFileEditor(this.value)" id="tfe_recently_opened"></select>
+                    <div id="tracyFoldersFiles" style="padding: 0; margin:0; width: 310px; height: 100%; overflow-y: auto; overflow-x: hidden; z-index: 1">';
+                        $out .= "<div class='fe-file-tree'>";
+                        $out .= $this->php_file_tree($this->wire('config')->paths->{\TracyDebugger::getDataValue('fileEditorBaseDirectory')}, $this->toArray(\TracyDebugger::getDataValue('fileEditorAllowedExtensions')));
+                        $out .= "</div>";
+                    $out .= '
+                    </div>
+                    <div style="padding: 10px 12px 0 0; float:right">
+                        <form id="tracyFileEditorSubmission" style="padding: 0; margin: 0;" method="post" action="'.\TracyDebugger::inputUrl(true).'">
+                            <fieldset>
+                                <textarea id="tracyFileEditorRawCode" name="tracyFileEditorRawCode" style="display:none"></textarea>
+                                <input type="hidden" id="fileEditorFilePath" name="fileEditorFilePath" value="'.$this->tracyFileEditorFilePath.'" />
+                                <div id="fileEditorButtons"></div>
+                            </fieldset>
+                        </form>
+                    </div>
+                </div>
+                <div id="tracyFileEditorCodeContainer" style="float: left; margin: 0; padding:0; width: calc(100% - 310px); height: 100%; overflow: none">
+                    <div id="tracyFileEditorCode" style="position:relative; height: 100%"></div>
+                </div>
             </div>
             ';
 
-            $out .= \TracyDebugger::generatedTimeSize('fileEditor', \Tracy\Debugger::timer('fileEditor'), strlen($out));
+            $out .= \TracyDebugger::generatePanelFooter('fileEditor', \Tracy\Debugger::timer('fileEditor'), strlen($out), 'fileEditorPanel');
 
         $out .= '
         </div>';
@@ -258,8 +463,13 @@ HTML;
      */
     private function php_file_tree_dir($directory, $extensions = array(), $extFilter = false, $parent = "") {
 
-        // Get directories/files
-        $filesArray = array_diff(@scandir($directory), array('.', '..')); // array_diff removes . and ..
+        if($this->strposa($directory, $this->toArray(\TracyDebugger::getDataValue('fileEditorExcludedDirs'))) !== false) {
+            $filesArray = array();
+        }
+        else {
+            // Get directories/files
+            $filesArray = array_diff(@scandir($directory), array('.', '..')); // array_diff removes . and ..
+        }
 
         // Filter unwanted extensions
         // currently empty extensions array returns all files in folders
@@ -302,8 +512,7 @@ HTML;
 
                 if(@is_dir("$directory/$file")) {
                     $subtree = $this->php_file_tree_dir("$directory/$file", $extensions, $extFilter, "$parent/$file"); // no need to urlencode parent/file
-                    $tree .= "<li class='tft-d'><a data-p='".($subtree == '' ? 'no editable files' : '')."'>$fileName</a>";
-                    //$tree .= "<li class='tft-d'><a data-p='$dirPath'>$fileName</a>";
+                    if($subtree != '') $tree .= "<li class='tft-d'><a>$fileName</a>";
                     $tree .= $subtree;
                     $tree .= "</li>";
                 } else {
@@ -352,6 +561,9 @@ HTML;
      *
      */
     private function toUTF8($str, $encoding = 'auto', $c = false) {
+
+        if(PHP_VERSION_ID >= 70100) return $str;
+
         // http://stackoverflow.com/questions/7979567/php-convert-any-string-to-utf-8-without-knowing-the-original-character-set-or
         if(extension_loaded('mbstring') && function_exists('iconv')) {
             if($encoding == 'auto') {
@@ -411,6 +623,15 @@ HTML;
         $ext = preg_replace('# +#', '', $extensions); // remove all spaces
         $ext = array_filter(explode($delimiter, $ext), 'strlen'); // convert to array splitting by delimiter
         return $ext;
+    }
+
+
+    private function strposa($haystack, $needle, $offset=0) {
+        if(!is_array($needle)) $needle = array($needle);
+        foreach($needle as $query) {
+            if(strpos($haystack, $query, $offset) !== false) return true; // stop on first true result
+        }
+        return false;
     }
 
 }

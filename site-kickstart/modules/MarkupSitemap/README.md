@@ -1,8 +1,6 @@
 ## Sitemap for ProcessWire
 
-![Shield: Tagged Release](https://img.shields.io/github/release/rockettpw/markup-sitemap.svg?style=flat-square) ![Shield: Status Beta](https://img.shields.io/badge/status-beta-orange.svg?style=flat-square) ![Shield: Requires ProcessWire Versions](https://img.shields.io/badge/requires-ProcessWire--2.8.16/3.0.16+-green.svg?style=flat-square) ![Shield: License = ISC](https://img.shields.io/github/license/rockettpw/markup-sitemap.svg?style=flat-square)
-
-An upgrade to [MarkupSitemapXML](https://github.com/Notanotherdotcom/MarkupSitemapXML) by Pete, MarkupSitemap adds multi-language support using the built-in LanguageSupportPageNames. Where multi-language pages are available, they are added to the sitemap by means of an alternate link in that page’s `<url>`. Support for listing images in the sitemap on a page-by-page basis and using a sitemap stylesheet are also added.
+Building on [MarkupSitemapXML](https://github.com/Notanotherdotcom/MarkupSitemapXML) by Pete, MarkupSitemap adds multi-language support using the built-in LanguageSupportPageNames. Where multi-language pages are available, they are added to the sitemap by means of an alternate link in that page’s `<url>`. Support for listing images in the sitemap on a page-by-page basis and using a sitemap stylesheet are also added.
 
 ---
 
@@ -56,7 +54,7 @@ On each page that has sitemap options, you can set a priority between 0.0 and 1.
 
 ### Discussion & Support
 
-Visit [processwire.com/talk/topic/17068-markupsitemap/](https://processwire.com/talk/topic/17068-markupsitemap/) to discuss the module and obtain support.
+Visit [processwire.com/talk/topic/17068-markupsitemap](https://processwire.com/talk/topic/17068-markupsitemap/) to discuss the module and obtain support.
 
 ---
 
@@ -66,4 +64,4 @@ I’d like to thank [Mathew Davies](https://github.com/ThePixelDeveloper) for hi
 
 ---
 
-Sitemap for Processwire is released under the [ISC License](LICENSE.md). The Sitemap package by Matthew Davies is license under the [MIT License](https://github.com/ThePixelDeveloper/Sitemap/blob/master/LICENSE).
+Sitemap for Processwire is released under the [ISC License](LICENSE.md). The Sitemap package by Matthew Davies is licensed under the [MIT License](https://github.com/ThePixelDeveloper/Sitemap/blob/master/LICENSE).

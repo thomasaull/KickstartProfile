@@ -8,10 +8,11 @@ class TodoPanel extends BasePanel {
     protected $todoTypes = array('todo', 'fixme', 'pending', 'xxx', 'hack', 'bug');
 
     public function getTab() {
+
         if(\TracyDebugger::isAdditionalBar()) return;
         \Tracy\Debugger::timer('todo');
 
-        $pathReplace = \TracyDebugger::getDataValue('todoScanModules') == 1 ? $this->wire('config')->paths->root : $this->wire('config')->paths->templates;
+        $pathReplace = \TracyDebugger::getDataValue('todoScanModules') == 1 || \TracyDebugger::getDataValue('todoScanAssets') == 1 ? $this->wire('config')->paths->root : $this->wire('config')->paths->templates;
 
         $numEntries = 0;
         $thisPageNumEntries = 0;
@@ -57,13 +58,13 @@ class TodoPanel extends BasePanel {
             </div>';
 
         if($thisPageNumEntries > 0) {
-            $this->iconColor = '#CD1818';
+            $this->iconColor = \TracyDebugger::COLOR_ALERT;
         }
         elseif($numEntries > 0) {
-            $this->iconColor = '#FF9933';
+            $this->iconColor = \TracyDebugger::COLOR_WARN;
         }
         else {
-            $this->iconColor = '#009900';
+            $this->iconColor = \TracyDebugger::COLOR_NORMAL;
         }
 
         $this->icon = '
@@ -89,7 +90,10 @@ class TodoPanel extends BasePanel {
 
         <div class="tracy-inner">';
             $out .= $this->entries;
-            $out .= \TracyDebugger::generatedTimeSize('todo', \Tracy\Debugger::timer('todo'), strlen($out)) . '
+
+        $out .= \TracyDebugger::generatePanelFooter('todo', \Tracy\Debugger::timer('todo'), strlen($out), 'todoPanel');
+
+        $out .= '
         </div>';
 
         return parent::loadResources() . $out;
@@ -149,10 +153,13 @@ class TodoPanel extends BasePanel {
         $items = $this->scanDirectories($this->wire('config')->paths->templates);
         if(\TracyDebugger::getDataValue('todoScanModules') == 1) $moduleItems = $this->scanDirectories($this->wire('config')->paths->siteModules);
         if(isset($moduleItems)) $items = array_merge($items, $moduleItems);
+        if(\TracyDebugger::getDataValue('todoScanAssets') == 1) $assetsItems = $this->scanDirectories($this->wire('config')->paths->assets);
+        if(isset($assetsItems)) $items = array_merge($items, $assetsItems);
         return $items;
     }
 
     private function scanDirectories($dir) {
+        $todoLinesData = $this->wire('cache')->get('TracyToDoData');
         $items = array();
         $ignoreDirs = array_map('trim', explode(',', \TracyDebugger::getDataValue('todoIgnoreDirs')));
         array_push($ignoreDirs, 'TracyDebugger');
@@ -161,7 +168,12 @@ class TodoPanel extends BasePanel {
             $filePath = $fileinfo->getPathname();
             $fileSize = filesize($filePath);
             if($fileSize > 0 && $fileinfo->isFile() && $this->strpos_array($filePath, $ignoreDirs) === false && in_array($fileinfo->getExtension(), $allowedExtensions) === true) {
-                $items[] = $this->parseFile($filePath, $fileSize);
+                if(!$todoLinesData || !isset($todoLinesData[$filePath]) || filemtime($filePath) > $todoLinesData[$filePath]['time']) {
+                    $todoLinesData[$filePath]['time'] = time();
+                    $todoLinesData[$filePath]['items'] = $this->parseFile($filePath, $fileSize);
+                    $this->wire('cache')->save('TracyToDoData', $todoLinesData, WireCache::expireNever);
+                }
+                $items[] = $todoLinesData[$filePath]['items'];
             }
         }
         return $items;

@@ -1,3 +1,5 @@
+// out: ../styles/aos_config.min.css, compress: true, sourceMap: false, autoprefixer: last 3 versions, groupmedia: true
+
 @import 'includes/variables';
 @import 'includes/mixins';
 
@@ -9,6 +11,7 @@
   bottom: 10px;
   display: inline-block;
   z-index: 5;
+
   i {
     opacity: 0.66;
     font-size: 20px !important;
@@ -16,12 +19,14 @@
     backface-visibility: hidden;
     color: rgba(#2c3e55, 0.7) !important;
   }
+
   &:hover {
     i {
       color: inherit !important;
       opacity: 1;
     }
   }
+
   &:not(:hover) {
     i {
       color: inherit;
@@ -39,12 +44,17 @@
   min-height: 100px;
 }
 
-#wrap_Inputfield_enabledSubmodules, #Inputfield_tweaks, #wrap_Inputfield_restore, #Inputfield_AssetPaths {
+#wrap_Inputfield_enabledSubmodules,
+#Inputfield_tweaks,
+#wrap_Inputfield_restore,
+#Inputfield_AssetPaths {
   transition: 0.3s;
   //  transform-origin: top;
 }
 
-li[id^="wrap_Inputfield"], li.Inputfield { // fix scrollto targets (when Tooltips are disabled)
+li[id^="wrap_Inputfield"],
+li.Inputfield {
+  // fix scrollto targets (when Tooltips are disabled)
   position: relative;
 }
 
@@ -59,13 +69,51 @@ li[id^="wrap_Inputfield"], li.Inputfield { // fix scrollto targets (when Tooltip
   min-height: 0 !important;
 }
 
-#Inputfield_tweaks {
+//.headSticky:not(.AdminThemeReno) {
+.headSticky {
+  #Inputfield_tweaks {
+    // scroll link offset
+    $offset: 110px;
 
+    //> .InputfieldContent > .Inputfields {
+    //  display: block; // override uikit flex
+    //  > li {
+    //    position: relative;
+    //    background: transparent;
+    //    @include clearfix;
+    //    &::before {
+    //      content: '';
+    //      height: $offset;
+    //      margin: -$offset 0 0;
+    //      display: block;
+    //      background: transparent;
+    //      pointer-events: none;
+    //    }
+    //    > .InputfieldHeader {
+    //      top: $offset !important;
+    //      z-index: 3;
+    //      background: transparent !important;
+    //      pointer-events: none;
+    //    }
+    //    > .InputfieldContent {
+    //      background: white !important;
+    //      > * {
+    //        // next element partly covers the content, move current content to the front
+    //        z-index: 4;
+    //      }
+    //    }
+    //  }
+    //}
+  }
+}
+
+#Inputfield_tweaks {
   .InputfieldCheckboxesStacked {
     label {
       padding-right: 1em;
     }
   }
+
   .focused {
     //box-shadow: 0 0 20px -6px rgba(#1C2836, 0.8);
     z-index: 2;
@@ -75,7 +123,8 @@ li[id^="wrap_Inputfield"], li.Inputfield { // fix scrollto targets (when Tooltip
     backface-visibility: hidden;
     animation: focusOut 4s ease-out -0.33s forwards !important;
   }
-  > label {
+
+  >label {
     font-size: 21px;
     padding-bottom: 0.5em;
     font-weight: normal;
@@ -84,12 +133,12 @@ li[id^="wrap_Inputfield"], li.Inputfield { // fix scrollto targets (when Tooltip
 
 #wrap_Inputfield_enabledSubmodules {
 
-  > label,
-  > .InputfieldContent {
+  >label,
+  >.InputfieldContent {
     background: #F0F3F7;
   }
 
-  > label {
+  >label {
     font-size: 21px;
     padding-bottom: 0.5em;
     font-weight: normal;
@@ -98,7 +147,8 @@ li[id^="wrap_Inputfield"], li.Inputfield { // fix scrollto targets (when Tooltip
   .InputfieldAsmSelect {
     margin: 8px 8px 8px 20px !important;
     outline: none !important;
-    > * {
+
+    >* {
       border: none;
       padding: 0;
     }
@@ -113,24 +163,40 @@ li[id^="wrap_Inputfield"], li.Inputfield { // fix scrollto targets (when Tooltip
 
   .InputfieldCheckboxesStacked {
     overflow: visible;
+
     input {
       display: none !important;
     }
-    > li {
+
+    .asmSelect {
+      &:hover {
+        background-color: transparent;
+      }
+
+      &:focus {
+        outline: none !important;
+      }
+    }
+
+    >li {
       @include clearfix;
       display: block;
       margin: 0 2px 2px 0 !important;
       //margin: 0;
       padding: 0 !important;
+
       //padding: 3px 0 !important;
-      > label {
+      >label {
         position: relative;
         display: block;
         //padding: 10px 20px 10px 30px;
         padding: 14px 20px 10px 18px;
-        z-index: 1;
-        > span {
+        white-space: normal !important;
+        z-index: 0;
+
+        >span {
           z-index: 1;
+
           &:before {
             content: "";
             position: absolute;
@@ -148,19 +214,10 @@ li[id^="wrap_Inputfield"], li.Inputfield { // fix scrollto targets (when Tooltip
         }
 
       }
+
       label:hover {
-        //input:checked {
-        //  + span {
-        //    strong {
-        //      text-decoration: line-through;
-        //    }
-        //  }
-        //}
-        //input:checked + span:before {
-        //outline-color: rgba(#97AAB4, 0.6);
-        //}
         input:not(:checked) {
-          + span {
+          +span {
             &:before {
               background: rgba(#97AAB4, 0.07);
               z-index: -1;
@@ -171,15 +228,17 @@ li[id^="wrap_Inputfield"], li.Inputfield { // fix scrollto targets (when Tooltip
         }
       }
     }
+
     input:not(:checked) {
-      ~ a.configLink {
+      ~a.configLink {
         opacity: 0;
         pointer-events: none;
         transition: all $defaultTransition;
       }
     }
+
     input:checked {
-      + span {
+      +span {
         &:before {
           z-index: -1;
           background: #fff !important;
@@ -192,83 +251,82 @@ li[id^="wrap_Inputfield"], li.Inputfield { // fix scrollto targets (when Tooltip
   li.InputfieldAsmSelect {
     position: static;
     margin: 0 !important;
-    background: transparent !important;
+    background-color: transparent !important;
   }
 
   .asmSelect {
     position: absolute;
-    right: 12px;
-    top: 8px;
-
-    @-moz-document url-prefix() {
-      top: 4px !important;
-    }
-
+    right: 10px;
+    top: 5px;
     width: auto !important;
-    background: transparent;
+    background-color: transparent;
     font-size: 66%;
     text-align: right;
     text-align-last: right;
     z-index: 30;
     opacity: 0.66;
     padding: 2px 4px 2px 0;
+
     option {
       font-size: 14px;
-      background: transparent;
+      background-color: transparent;
       text-align: left;
+
       &[disabled="disabled"]:first-child {
         display: none;
       }
     }
+
     border: 4px solid transparent !important;
     border-right-width: 0 !important;
 
     &:focus,
     &:hover {
-      background: #fff;
+      background-color: transparent;
       cursor: pointer;
       opacity: 1;
     }
   }
-  //.asmListItem {
-  //  margin-bottom: 1px !important;
-  //  &:first-child {
-  //    margin-top: 4px !important;
-  //  }
-  //}
+
   .asmContainer {
     margin-bottom: 0;
   }
 
   .asmList {
-    margin-top: 0 !important;
     margin-right: 20px;
+
     &:empty {
       display: none;
     }
   }
-  //> .InputfieldContent .InputfieldCheckboxesStacked li:hover .configLink i {
-  //  color: inherit !important;
-  //  opacity: 1;
-  //}
+
   .asmListItem {
     padding-left: 8px !important;
-    margin-right: 8px !important;
     display: inline-block !important;
     width: auto !important;
     font-size: 14px;
-    background: transparent !important;
+    background-color: transparent !important;
     border-color: transparent !important;
     color: inherit !important;
+    margin: 0 8px 0 0 !important;
+
+
+    // hide "N selected" for role asmSelects
+    &:last-child::before {
+      display: none !important;
+    }
+
     &:hover {
       .asmListItemLabel {
         text-decoration: line-through !important;
       }
     }
+
     .asmListItemRemove {
       left: 0 !important;
       right: 0 !important;
       bottom: 0;
+
       //top: 1px;
       i {
         &:before {
@@ -276,6 +334,7 @@ li[id^="wrap_Inputfield"], li.Inputfield { // fix scrollto targets (when Tooltip
         }
       }
     }
+
     i {
       margin-left: 2px;
       color: #EA2262;
@@ -283,229 +342,229 @@ li[id^="wrap_Inputfield"], li.Inputfield { // fix scrollto targets (when Tooltip
   }
 }
 
-form[action*="AdminOnSteroids"] {
+//form[action*="AdminOnSteroids"] {
 
-  > .Inputfields > li {
-    margin-bottom: 0.7em;
-  }
-  //.Inputfield_enabled {
-  //  margin-top: 1em;
-  //}
-  //.Inputfield_AssetsPaths {
-  //  margin-bottom: 1em;
-  //}
+form>.Inputfields>li {
+  margin-bottom: 0.7em;
+}
 
-  #wrap_Inputfield_enabledSubmodules {
-    > .InputfieldContent {
-      label {
-        font-size: 94%;
-        line-height: 1.45;
-        //font-style: italic;
-        color: rgba(#2A3C51, 0.64);
-        strong {
-          font-style: normal;
-          display: block;
-          font-weight: bold;
-          margin-bottom: 5px;
-          color: #2A3C51;
-        }
-      }
-      ul {
-        > li {
-          break-inside: avoid;
-          position: relative;
-        }
-        @media only screen and (min-width: 960px) {
-          column-count: 2;
-          column-gap: 0;
-          //column-gap: 6px;
-        }
-        @media only screen and (min-width: 1320px) {
-          column-count: 3;
-        }
-        html.AdminThemeReno &,
-        body.AdminThemeUikit & {
-          @media only screen and (min-width: 1640px) {
-            column-count: 4;
-          }
-        }
-      }
-    }
-  }
+//.Inputfield_enabled {
+//  margin-top: 1em;
+//}
+//.Inputfield_AssetsPaths {
+//  margin-bottom: 1em;
+//}
 
-  //html.AdminThemeReno & {
-  //  //@media only screen and (min-width: 1900px) {
-  //  @media only screen and (min-width: 11479px) {
-  //    #Inputfield_tweaks > .InputfieldContent > .Inputfields {
-  //      column-gap: 6px;
-  //      column-count: 2;
-  //      column-fill: balance; // Firefox only
-  //    }
-  //  }
-  //}
-  //html.AdminThemeDefault & {
-  //  @media only screen and (min-width: 1599px) {
-  //    #Inputfield_tweaks > .InputfieldContent > .Inputfields {
-  //      column-gap: 6px;
-  //      column-count: 2;
-  //      column-fill: balance; // Firefox only
-  //    }
-  //  }
-  //}
+#wrap_Inputfield_enabledSubmodules {
 
-  .Inputfields .InputfieldRadiosColumns {
-    > li {
-      width: auto !important;
-      padding-right: 3%;
-    }
+  >.InputfieldContent {
+    label {
+      font-size: 94%;
+      line-height: 1.45;
+      //font-style: italic;
+      color: rgba(#2A3C51, 0.64);
 
-  }
-
-  // fieldsets need extra styling not to look different
-  #Inputfield_tweaks {
-    #Inputfield_InputfieldURLChecker,
-    #Inputfield_CKEaddons,
-    #Inputfield_NavItems,
-    #Inputfield_ListerTweaks,
-    #Inputfield_AddNewChildFirst,
-    #Inputfield_PageListThumbs {
-      label {
-        background: transparent;
-      }
-      .Inputfields {
-        margin-left: -1em;
-        margin-right: -0.33em;
-        label, .InputfieldContent {
-          padding-top: 0;
-          //padding-left: 0;
-          border: none;
-        }
+      strong {
+        font-style: normal;
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #2A3C51;
       }
     }
 
-    .InputfieldContent .Inputfield li:last-child .InputfieldContent.uk-form-controls {
-      padding-bottom: 0;
-    }
-
-    .Inputfield {
-      .Inputfield {
-        outline: none;
-        .InputfieldHeader {
-          padding-top: 0;
-        }
+    ul {
+      >li {
+        break-inside: avoid;
+        position: relative;
       }
-      //.InputfieldHeader {
-      //  padding-top: 0;
-      //}
-    }
 
-    .ui-slider-handle {
-      top: -9px;
-    }
+      @media only screen and (min-width: 960px) {
+        column-count: 2;
+        column-gap: 0;
+        //column-gap: 6px;
+      }
 
-    .sliderTooltip-inner {
-      line-height: 1.25;
-      white-space: nowrap;
-      padding: 3px 5px;
-    }
+      @media only screen and (min-width: 1320px) {
+        column-count: 3;
+      }
 
-    @media only screen and (min-width: 960px) {
-
-      > .InputfieldContent > .Inputfields {
-
-        > li {
-          position: relative;
-          break-inside: avoid;
-
-          > label.InputfieldHeader,
-          > .InputfieldContent {
-            padding-top: 1.5em;
-            padding-bottom: 1.5em;
-          }
-          > label.InputfieldHeader {
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            right: 0;
-            font-size: 94%;
-            line-height: 1;
-          }
-          > .InputfieldContent {
-            padding-left: 300px;
-            position: relative;
-            background: transparent;
-            width: 100%;
-            //top: 1px;
-            //border-left: none;
-            //border: 1px solid #fff;
-            //border: none;
-          }
+      html.AdminThemeReno &,
+      body.AdminThemeUikit & {
+        @media only screen and (min-width: 1640px) {
+          column-count: 4;
         }
       }
     }
-  }
-
-  label {
-    &:hover {
-      cursor: pointer;
-    }
-  }
-
-  .InputfieldCheckboxesStacked {
-    li.disabled {
-      opacity: 0.7;
-      label {
-        &:hover {
-          cursor: not-allowed !important;
-        }
-      }
-    }
-  }
-
-  .AdminDataTable tr td:first-child {
-    color: inherit !important;
-  }
-
-  input[type="radio"],
-  input[type="checkbox"] {
-    vertical-align: top;
-    position: relative;
-    top: 5px;
-    &:hover {
-      cursor: pointer;
-    }
-    + span {
-      //opacity: 0.7;
-      white-space: normal;
-      display: inline-block;
-      margin-bottom: 0.25em;
-      //padding-right: 20px;
-    }
-    &:checked {
-      + span {
-        opacity: 1;
-      }
-    }
-  }
-
-  // push these items to the right to mimic hiearchy (indent)
-  input#Inputfield_RenoTweaks_sbSingleClickHeads,
-    //input#Inputfield_RenoTweaks_sbItemsInline,
-  input#Inputfield_RenoTweaks_miniScrollSb,
-  input#Inputfield_RenoTweaks_miniScrollMain,
-  input#Inputfield_RenoTweaks_headStickyCompact,
-  input#Inputfield_RenoTweaks_stickyCKEBar,
-  input#Inputfield_CKEaddons_plugins_div_toolbar,
-  input#Inputfield_CKEaddons_plugins_justify_toolbar {
-    margin-left: 21px;
   }
 }
+
+.Inputfields .InputfieldRadiosColumns {
+  >li {
+    width: auto !important;
+    padding-right: 3%;
+  }
+
+}
+
+// fieldsets need extra styling not to look different
+#Inputfield_tweaks {
+
+  #Inputfield_InputfieldURLChecker,
+  #Inputfield_CKEaddons,
+  #Inputfield_NavItems,
+  #Inputfield_ListerTweaks,
+  #Inputfield_AddNewChildFirst,
+  #Inputfield_PageListThumbs {
+
+    //label {
+    //  background: transparent;
+    //}
+    .Inputfields {
+      margin-left: -1em;
+      margin-right: -0.33em;
+
+      label,
+      .InputfieldContent {
+        padding-top: 0;
+        //padding-left: 0;
+        border: none;
+      }
+    }
+  }
+
+  .InputfieldContent .Inputfield li:last-child .InputfieldContent.uk-form-controls {
+    padding-bottom: 0;
+  }
+
+  .Inputfield {
+    .Inputfield {
+      outline: none;
+
+      .InputfieldHeader {
+        padding-top: 0;
+      }
+    }
+  }
+
+  .ui-slider-handle {
+    top: -9px;
+  }
+
+  .sliderTooltip-inner {
+    line-height: 1.25;
+    white-space: nowrap;
+    padding: 3px 5px;
+  }
+
+  @media only screen and (min-width: 960px) {
+
+    >.InputfieldContent>.Inputfields {
+
+      >li {
+        position: relative;
+        break-inside: avoid;
+
+        >label.InputfieldHeader,
+        >.InputfieldContent {
+          padding-top: 1.5em;
+          padding-bottom: 1.5em;
+        }
+
+        >label.InputfieldHeader {
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          right: 0;
+          font-size: 94%;
+          line-height: 1;
+          background: white;
+        }
+
+        >.InputfieldContent {
+          padding-left: 300px;
+          position: relative;
+          background: transparent;
+          width: 100%;
+          //top: 1px;
+          //border-left: none;
+          //border: 1px solid #fff;
+          //border: none;
+        }
+      }
+    }
+  }
+}
+
+label {
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+.InputfieldCheckboxesStacked {
+  li.disabled {
+    opacity: 0.7;
+
+    label {
+      &:hover {
+        cursor: not-allowed !important;
+      }
+    }
+  }
+}
+
+//.AdminDataTable tr td:first-child {
+//  color: inherit !important;
+//}
+
+input[type="radio"],
+input[type="checkbox"] {
+  vertical-align: top;
+  position: relative;
+  top: 5px;
+
+  &:hover {
+    cursor: pointer;
+  }
+
+  +span {
+    //opacity: 0.7;
+    white-space: normal;
+    display: inline-block;
+    margin-bottom: 0.25em;
+    //padding-right: 20px;
+  }
+
+  &:checked {
+    +span {
+      opacity: 1;
+    }
+  }
+}
+
+// push these items to the right to mimic hiearchy (indent)
+input#Inputfield_RenoTweaks_sbSingleClickHeads,
+input#Inputfield_RenoTweaks_miniScrollSb,
+input#Inputfield_RenoTweaks_miniScrollMain,
+input#Inputfield_RenoTweaks_headStickyCompact,
+input#Inputfield_RenoTweaks_stickyCKEBar,
+input#Inputfield_CKEaddons_plugins_div_toolbar,
+input#Inputfield_Misc_inputMaskPhoneLib,
+input#Inputfield_CKEaddons_plugins_justify_toolbar,
+input#Inputfield_AsmTweaks_asmSearchBoxKeepListOpen,
+input#Inputfield_AsmTweaks_asmSearchBoxKeepTerm {
+  margin-left: 21px;
+}
+
+//}
 
 #asset-check-button {
   .InputfieldStateCollapsed & {
     display: none;
   }
+
   position: absolute;
   margin-left: 14px;
   border: 1px solid #c4c4c4;
@@ -514,44 +573,73 @@ form[action*="AdminOnSteroids"] {
   padding: 3px 6px 3px 5px;
   font-size: 0.9em;
   cursor: pointer;
+
   i {
     font-size: 11px !important;
     margin-left: 4px;
     top: -1px;
     position: relative;
   }
+
   &:hover {
     background: #f8f8f8;
   }
+
   &.success,
   &.forbidden,
   &.error {
     color: white;
+
     i::before {
       color: white;
     }
   }
+
   &.success {
     background: #3EB998;
     border-color: #3EB998;
   }
+
   &.forbidden {
     background: #F0AB4E;
     border-color: #F0AB4E;
   }
+
   &.error {
     background: #cf3a3a;
     border-color: #cf3a3a;
   }
 }
 
+.aos-highlight-section>.InputfieldContent {
+  outline: 1px solid #3EB998;
+  animation: highlightConfigTarget 2.4s linear forwards;
+  z-index: 20;
+}
+
+.pw-no-select {
+  user-select: text;
+}
+
 @keyframes focusOut {
   0% {
     outline-color: transparent;
   }
+
   2% {
     outline-color: #3EB998;
   }
+
+  100% {
+    outline-color: transparent;
+  }
+}
+
+@keyframes highlightConfigTarget {
+  0% {
+    outline-color: #3EB998;
+  }
+
   100% {
     outline-color: transparent;
   }

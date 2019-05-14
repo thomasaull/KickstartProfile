@@ -61,7 +61,12 @@ class Router
     $url = wire('sanitizer')->url(wire('input')->url);
     
     // strip /api from request url:
-    $regex = '/\/api\/?/';
+    $endpoint = wire('modules')->RestApi->endpoint;
+    
+    // support / in endpoint url:
+    $endpoint = str_replace("/", "\/", $endpoint);
+
+    $regex = '/\/'.$endpoint.'\/?/';
     $url = preg_replace($regex, '/', $url);
 
     // add trailing slash if not present:
@@ -93,7 +98,7 @@ class Router
     $return = new \StdClass();
     $vars = (object) $vars;
 
-    $authActive = wire('modules')->RestApi->useJwtAuth == true;
+    $authMethod = wire('modules')->RestApi->authMethod;
     $routeNeedsAuth = true; // By default every route needs auth if not specified otherwise
 
     // check if particular route does not need auth
@@ -103,8 +108,7 @@ class Router
     }
 
     // if auth is active (in module settings) and this particular route needs auth (default)
-    if($authActive && $routeNeedsAuth)
-    {
+    if($authMethod === 'jwt' && $routeNeedsAuth) {
       try {
         // check for auth header
         $authHeader = self::getAuthorizationHeader();
@@ -126,6 +130,10 @@ class Router
       {
         throw new \Exception($e->getMessage());
       }
+    }
+
+    if($authMethod === 'session' && $routeNeedsAuth) {
+      if(wire('user')->isGuest()) self::displayError('user does not have authorization', 401);
     }
 
     // If the code runs until here, the request is authenticated 
@@ -269,8 +277,6 @@ class Router
   }
 
   public static function handleException(\Throwable $e) {
-    echo "handle exception";
-
     $message = $e->getMessage();
     self::displayOrLogError($message);
   }
@@ -292,6 +298,8 @@ class Router
   }
 
   public static function displayError ($message, $status = 500) {
+    if(error_reporting() === 0) return;
+    
     http_response_code($status);
     $return = new \StdClass();
     $return->error = $message;

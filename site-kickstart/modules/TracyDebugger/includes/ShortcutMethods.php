@@ -7,7 +7,7 @@ use Tracy\Debugger;
  */
 
 function tracyUnavailable() {
-    if(!\TracyDebugger::getDataValue('enabled') || !\TracyDebugger::allowedTracyUsers() || !class_exists('\TD')) {
+    if(!\TracyDebugger::getDataValue('enabled') || !\TracyDebugger::$allowedTracyUser || !class_exists('\TD')) {
         return true;
     }
     else {
@@ -38,17 +38,6 @@ if(!function_exists('barDump') && in_array('barDump', $this->data['enabledShortc
 }
 
 /**
- * TD::barDump() shortcut with live dumping.
- * @tracySkipLocation
- */
-if(!function_exists('barDumpLive') && in_array('barDumpLive', $this->data['enabledShortcutMethods'])) {
-    function barDumpLive($var, $title = NULL) {
-        if(tracyUnavailable()) return false;
-        return TD::barDumpLive($var, $title);
-    }
-}
-
-/**
  * TD::barDump() shortcut dumping with maxDepth = 6 and maxLength = 999.
  * @tracySkipLocation
  */
@@ -67,6 +56,17 @@ if(!function_exists('dump') && in_array('dump', $this->data['enabledShortcutMeth
     function dump($var, $title = NULL, array $options = NULL, $return = FALSE) {
         if(tracyUnavailable()) return false;
         return TD::dump($var, $otions, $return);
+    }
+}
+
+/**
+ * TD::dump() shortcut dumping with maxDepth = 6 and maxLength = 999.
+ * @tracySkipLocation
+ */
+if(!function_exists('dumpBig') && in_array('dumpBig', $this->data['enabledShortcutMethods'])) {
+    function dumpBig($var, $title = NULL, array $options = NULL, $return = FALSE) {
+        if(tracyUnavailable()) return false;
+        return TD::dumpBig($var, $otions, $return);
     }
 }
 
@@ -114,7 +114,6 @@ if(!function_exists('templateVars') && in_array('templateVars', $this->data['ena
     }
 }
 
-
 /**
  * really short alias methods for really lazy typists :)
  */
@@ -142,17 +141,6 @@ if(!function_exists('bd') && in_array('bd', $this->data['enabledShortcutMethods'
 }
 
 /**
- * TD::barDump() shortcut with live dumping.
- * @tracySkipLocation
- */
-if(!function_exists('bdl') && in_array('bdl', $this->data['enabledShortcutMethods'])) {
-    function bdl($var, $title = NULL) {
-        if(tracyUnavailable()) return false;
-        return TD::barDumpLive($var, $title);
-    }
-}
-
-/**
  * TD::barDump() shortcut dumping with maxDepth = 6 and maxLength = 999.
  * @tracySkipLocation
  */
@@ -171,6 +159,17 @@ if(!function_exists('d') && in_array('d', $this->data['enabledShortcutMethods'])
     function d($var, $title = NULL, array $options = NULL, $return = FALSE) {
         if(tracyUnavailable()) return false;
         return TD::dump($var, $title, $options, $return);
+    }
+}
+
+/**
+ * TD::dump() shortcut dumping with maxDepth = 6 and maxLength = 999.
+ * @tracySkipLocation
+ */
+if(!function_exists('db') && in_array('db', $this->data['enabledShortcutMethods'])) {
+    function db($var, $title = NULL, array $options = NULL, $return = FALSE) {
+        if(tracyUnavailable()) return false;
+        return TD::dumpBig($var, $title, $options, $return);
     }
 }
 

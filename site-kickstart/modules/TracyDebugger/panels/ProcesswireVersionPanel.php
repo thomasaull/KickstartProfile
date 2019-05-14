@@ -6,6 +6,7 @@ class ProcesswireVersionPanel extends BasePanel {
     protected $versions;
 
     public function getTab() {
+
         if(\TracyDebugger::isAdditionalBar()) return;
         \Tracy\Debugger::timer('processwireVersion');
 
@@ -13,6 +14,7 @@ class ProcesswireVersionPanel extends BasePanel {
         foreach(new DirectoryIterator($this->wire('config')->paths->root) as $fileInfo) {
             if($fileInfo->isDot()) continue;
             $filePath = $fileInfo->getPathname();
+            $filePath = \TracyDebugger::forwardSlashPath($filePath);
             $version = str_replace($this->wire('config')->paths->root, '', $filePath);
             $version = str_replace('.wire-', '', $version);
             if(strpos($filePath, 'wire') === false) continue;
@@ -25,10 +27,10 @@ class ProcesswireVersionPanel extends BasePanel {
         $latestVersion = end($this->versions);
 
         if($latestVersion == $this->wire('config')->version) {
-            $iconColor = '#009900';
+            $iconColor = \TracyDebugger::COLOR_NORMAL;
         }
         else {
-            $iconColor = '#FF9933';
+            $iconColor = \TracyDebugger::COLOR_WARN;
         }
 
         $this->icon = '
@@ -70,7 +72,8 @@ class ProcesswireVersionPanel extends BasePanel {
                 </form>
             </fieldset>';
 
-            $out .= \TracyDebugger::generatedTimeSize('processwireVersion', \Tracy\Debugger::timer('processwireVersion'), strlen($out));
+            $out .= \TracyDebugger::generatePanelFooter('processwireVersion', \Tracy\Debugger::timer('processwireVersion'), strlen($out));
+
         $out .= '
         </div>';
 

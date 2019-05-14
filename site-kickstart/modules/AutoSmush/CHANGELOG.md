@@ -1,5 +1,17 @@
 # Changelog
 
+### 1.1.4 (2019-04-07)
+- split "Automatic mode" to "Automatic mode in Admin" and "Automatic mode in Templates"
+- add optimize on Pageimage->url()/add()/size()/width()/height()/crop() in "Automatic mode in Templates"
+- fix count() warning on PHP 7.2
+- removed svgo.exe binary as it's flagged as suspicious by some antivirus software
+
+### 1.1.3 (2019-01-21)
+- bug fix
+
+### 1.1.2 (2018-03-09)
+- support for AdminThemeUikit
+
 ### 1.1.1 (2017-11-29)
 - support for svg (suggested by adrian)
 

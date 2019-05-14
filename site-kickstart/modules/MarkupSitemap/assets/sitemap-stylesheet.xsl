@@ -17,7 +17,6 @@
                     <xsl:if test="sitemap:sitemapindex">Index</xsl:if>
                 </title>
                 <link rel="stylesheet" href="https://unpkg.com/tachyons@4.6.1/css/tachyons.min.css"/>
-                <style>td{vertical-align:top}</style>
             </head>
             <body class="ph3 pb3 mid-gray">
                 <header class="mw8 pv4 center">
@@ -44,7 +43,7 @@
                                 sitemaps.
                             </xsl:when>
                             <xsl:otherwise>
-                                This index contains
+                                This sitemap contains
                                 <strong class="blue"><xsl:value-of select="count(sitemap:urlset/sitemap:url)"/></strong>
                                 URLs.
                             </xsl:otherwise>
@@ -52,7 +51,7 @@
                     </h2>
                     <p>
                         This is an XML sitemap, meant for consumption by search engines.<br/>
-                        You can find more information about XML sitemaps at <a href="https://www.sitemaps.org" class="link blue">www.sitemaps.org</a>.
+                        You can find more information about XML sitemaps on <a href="https://sitemaps.org" class="link blue">sitemaps.org</a>.
                     </p>
                 </header>
 
@@ -112,13 +111,16 @@
     <xsl:template match="sitemap:urlset">
         <div class="mw8 center">
             <div class="overflow-auto">
-                <table class="w-100 f6 b--light-silver ba bw1" cellspacing="0">
-                    <thead class="bg-light-silver">
+                <table class="w-100 f6 b--silver ba bw1" cellspacing="0">
+                    <thead class="bg-silver">
                         <tr>
                             <th class="pa3 fw6 tl dark-gray" style="width:60px"></th>
                             <th class="pa3 fw6 tl dark-gray">URL</th>
                             <xsl:if test="sitemap:url/sitemap:changefreq">
                             <th class="pa3 fw6 tr dark-gray" style="width:130px">Change Freq.</th>
+                            </xsl:if>
+                            <xsl:if test="sitemap:url/sitemap:priority">
+                            <th class="pa3 fw6 tr dark-gray" style="width:90px">Priority</th>
                             </xsl:if>
                             <xsl:if test="sitemap:url/sitemap:lastmod">
                             <th class="pa3 fw6 tr dark-gray" style="width:200px">Last Modified</th>
@@ -139,20 +141,16 @@
                             </td>
                             <td class="pa3 bb b--silver">
                                 <p>
-                                    <a href="{$loc}" class="f5 link blue b">
+                                    <a href="{$loc}" class="link blue">
                                         <xsl:value-of select="sitemap:loc"/>
                                     </a>
-                                    <xsl:if test="sitemap:priority">
-                                        <small class="dib ml2 mr2 ph1 pv1 tracked lh-solid white bg-light-blue br-pill">
-                                            Priority: <xsl:value-of select="sitemap:priority"/>
-                                        </small>
-                                    </xsl:if>
                                 </p>
                                 <xsl:apply-templates select="xhtml:*"/>
                                 <xsl:apply-templates select="image:*"/>
                                 <xsl:apply-templates select="video:*"/>
                             </td>
                             <xsl:apply-templates select="sitemap:changefreq"/>
+                            <xsl:apply-templates select="sitemap:priority"/>
                             <xsl:if test="sitemap:lastmod">
                             <td class="pa3 tr bb b--silver">
                                 <xsl:value-of select="concat(substring(sitemap:lastmod, 0, 11), concat(' ', substring(sitemap:lastmod, 12, 5)), concat(' ', substring(sitemap:lastmod, 20, 6)))"/>
@@ -186,19 +184,19 @@
             </a>
 
             <xsl:if test="@hreflang">
-                <small class="dib mr2 ph1 pv1 tracked lh-solid white bg-green br-pill">
+                <small class="dib mr2 ph1 pv1 tracked lh-solid white bg-silver br-pill">
                     <xsl:value-of select="@hreflang"/>
                 </small>
             </xsl:if>
 
             <xsl:if test="@rel">
-                <small class="dib mr2 ph2 pv1 tracked lh-solid white bg-light-silver br-pill">
+                <small class="dib mr2 ph2 pv1 tracked lh-solid white bg-silver br-pill">
                     <xsl:value-of select="@rel"/>
                 </small>
             </xsl:if>
 
             <xsl:if test="@media">
-                <small class="dib mr2 ph2 pv1 tracked lh-solid white bg-light-silver br-pill">
+                <small class="dib mr2 ph2 pv1 tracked lh-solid white bg-silver br-pill">
                     <xsl:value-of select="@media"/>
                 </small>
             </xsl:if>
@@ -210,24 +208,17 @@
         <xsl:variable name="loc">
             <xsl:value-of select="image:loc"/>
         </xsl:variable>
-        <xsl:variable name="license_loc">
-            <xsl:value-of select="image:license"/>
-        </xsl:variable>
         <p>
             <strong>Image: </strong>
             <a href="{$loc}" class="mr2 link blue">
                 <xsl:value-of select="image:loc"/>
             </a>
-            <xsl:if test="image:license">
-                <small>
-                    <a href="{$license_loc}" class="dib mr2 ph2 pv1 tracked lh-solid link white bg-light-silver hover-bg-blue br-pill">license</a>
-                </small>
-            </xsl:if>
             <xsl:if test="image:caption">
                 <span class="i gray">
                     <xsl:value-of select="image:caption"/>
                 </span>
             </xsl:if>
+            <xsl:apply-templates/>
         </p>
     </xsl:template>
 
@@ -257,9 +248,9 @@
                     </xsl:otherwise>
                 </xsl:choose>
             </a>
-            <small>
-                <a href="{$thumb_loc}" class="dib mr2 ph2 pv1 tracked lh-solid link white bg-light-silver hover-bg-blue br-pill">thumb</a>
-            </small>
+            <a href="{$thumb_loc}" class="dib mr2 ph2 pv1 tracked lh-solid link white bg-silver hover-bg-blue br-pill">
+                thumb
+            </a>
             <xsl:if test="video:title">
                 <span class="i gray">
                     <xsl:value-of select="video:title"/>

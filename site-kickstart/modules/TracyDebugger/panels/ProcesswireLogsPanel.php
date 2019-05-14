@@ -1,14 +1,11 @@
 <?php
 
-/**
- * Processwire logs panel
- */
-
 class ProcesswireLogsPanel extends BasePanel {
 
     protected $icon;
     protected $iconColor;
     protected $logEntries;
+    protected $numLogEntries = 0;
     protected $numErrors = 0;
     protected $numOther = 0;
 
@@ -27,16 +24,28 @@ class ProcesswireLogsPanel extends BasePanel {
          */
 
         $logs = $this->wire('log')->getLogs();
-        if(empty($logs)) {
+        if($logs === null) {
+            $this->logEntries .= 'Logs directory is not readable.';
+        }
+        elseif(count($logs) == 0) {
+            $this->numLogEntries = 0;
             $this->logEntries .= 'There are no logs in the ProcessWire logs directory.';
         }
         else {
             $this->logEntries = $this->sectionHeader(array('Type', 'Date', 'User', 'URL', 'Text'));
+            $logLinesData = $this->wire('cache')->get('TracyLogData.ProcessWire');
             $entriesArr = array();
             $i=0;
             foreach($logs as $log) {
                 $x=99;
-                foreach($this->wire('log')->getEntries($log['name'], array("limit" => \TracyDebugger::getDataValue("numLogEntries"))) as $entry) {
+                if(!$logLinesData || !isset($logLinesData[$log['name']]) || filemtime($this->wire('log')->getFilename($log['name'])) > $logLinesData[$log['name']]['time']) {
+                    $logLinesData[$log['name']]['time'] = time();
+                    $logLinesData[$log['name']]['lines'] = $this->wire('log')->getEntries($log['name'], array("limit" => \TracyDebugger::getDataValue("numLogEntries")));
+                    $this->wire('cache')->save('TracyLogData.ProcessWire', $logLinesData, WireCache::expireNever);
+                }
+                $logLines = $logLinesData[$log['name']]['lines'];
+
+                foreach($logLines as $entry) {
                     $itemKey = $log['name'] . '_' . $x;
                     $entriesArr[$itemKey]['timestamp'] = @strtotime($entry['date']); // silenced in case timezone is not set
                     $entriesArr[$itemKey]['linenumber'] = 99-$x;
@@ -59,6 +68,7 @@ class ProcesswireLogsPanel extends BasePanel {
                             $this->numOther++;
                         }
                     }
+                    $this->numLogEntries++;
                 }
             }
 
@@ -89,13 +99,13 @@ class ProcesswireLogsPanel extends BasePanel {
 
         // color icon based on errors/other log entries
         if($this->numErrors > 0) {
-            $this->iconColor = '#CD1818';
+            $this->iconColor = \TracyDebugger::COLOR_ALERT;
         }
         elseif($this->numOther > 0) {
-            $this->iconColor = '#FF9933';
+            $this->iconColor = \TracyDebugger::COLOR_WARN;
         }
         else {
-            $this->iconColor = '#009900';
+            $this->iconColor = \TracyDebugger::COLOR_NORMAL;
         }
 
         $this->icon = '
@@ -143,7 +153,18 @@ class ProcesswireLogsPanel extends BasePanel {
         <div class="tracy-inner">';
             $out .= $this->logEntries;
 
-            $out .= \TracyDebugger::generatedTimeSize('processwireLogs', \Tracy\Debugger::timer('processwireLogs'), strlen($out)) . '
+            if($this->numLogEntries > 0) {
+                $out .= '
+                <p>
+                    <form method="post" action="'.\TracyDebugger::inputUrl(true).'">
+                        <input type="submit" name="deleteProcessWireLogs" value="Delete All Logs" />
+                    </form>
+                </p>';
+            }
+
+            $out .= \TracyDebugger::generatePanelFooter('processwireLogs', \Tracy\Debugger::timer('processwireLogs'), strlen($out), 'processwireAndTracyLogsPanels');
+
+        $out .= '
         </div>';
 
         return parent::loadResources() . $out;

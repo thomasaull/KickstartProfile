@@ -1,9 +1,5 @@
 <?php
 
-/**
- * Tracy logs panel
- */
-
 class TracyLogsPanel extends BasePanel {
 
     protected $icon;
@@ -40,9 +36,17 @@ class TracyLogsPanel extends BasePanel {
         }
         else {
             $this->logEntries = $this->sectionHeader(array('Type', 'Date', 'URL', 'Text'));
+            $logLinesData = $this->wire('cache')->get('TracyLogData.Tracy');
             foreach($logs as $log) {
                 $x=99;
-                foreach($this->getLines($log['name'], array("limit" => \TracyDebugger::getDataValue("numLogEntries"))) as $entry) {
+                if(!$logLinesData || !isset($logLinesData[$log['name']]) || filemtime($this->getFilename($log['name'])) > $logLinesData[$log['name']]['time']) {
+                    $logLinesData[$log['name']]['time'] = time();
+                    $logLinesData[$log['name']]['lines'] = $this->getLines($log['name'], array("limit" => \TracyDebugger::getDataValue("numLogEntries")));
+                    $this->wire('cache')->save('TracyLogData.Tracy', $logLinesData, WireCache::expireNever);
+                }
+                $logLines = $logLinesData[$log['name']]['lines'];
+
+                foreach($logLines as $entry) {
                     $logDateTime = str_replace(array('[',']'), '', substr($entry, 0 , 21)); // get the date - first 21 chars
                     $logDateParts = explode(" ", $logDateTime);
                     $logDate = $logDateParts[0];
@@ -108,13 +112,13 @@ class TracyLogsPanel extends BasePanel {
 
         // color icon based on errors/other log entries
         if($this->numErrors > 0) {
-            $this->iconColor = '#CD1818';
+            $this->iconColor = \TracyDebugger::COLOR_ALERT;
         }
         elseif($this->numOther > 0) {
-            $this->iconColor = '#FF9933';
+            $this->iconColor = \TracyDebugger::COLOR_WARN;
         }
         else {
-            $this->iconColor = '#009900';
+            $this->iconColor = \TracyDebugger::COLOR_NORMAL;
         }
 
         $this->icon = '
@@ -244,7 +248,7 @@ class TracyLogsPanel extends BasePanel {
         unset($options['pageNum']);
         $log = $this->getFileLog($name);
         $limit = isset($options['limit']) ? (int) $options['limit'] : 100;
-        return $log->find($limit, $pageNum);
+        return $log->find($limit, $pageNum, $options);
     }
 
 
@@ -255,7 +259,7 @@ class TracyLogsPanel extends BasePanel {
         $out = '<h1>' . $this->icon . ' Tracy Logs' . ($isAdditionalBar ? ' ('.$isAdditionalBar.')' : '') . '</h1>
 
         <div class="tracy-inner">';
-            $out .= $this->logEntries . '<br />';
+            $out .= $this->logEntries;
             if($this->numLogEntries > 0) {
                 $out .= '
                 <p>
@@ -264,7 +268,10 @@ class TracyLogsPanel extends BasePanel {
                     </form>
                 </p>';
             }
-            $out .= \TracyDebugger::generatedTimeSize('tracyLogs', \Tracy\Debugger::timer('tracyLogs'), strlen($out)) . '
+
+            $out .= \TracyDebugger::generatePanelFooter('tracyLogs', \Tracy\Debugger::timer('tracyLogs'), strlen($out), 'processwireAndTracyLogsPanels');
+
+        $out .= '
         </div>';
 
         return parent::loadResources() . $out;

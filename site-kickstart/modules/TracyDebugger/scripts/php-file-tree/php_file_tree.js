@@ -6,7 +6,7 @@
 		http://www.bleedingego.co.uk/webdev.php
 
 		Modified by Cory S.N. LaViska
-		http://abeautifulsite.net/
+		http://abeautifulsite.net/ (https://www.abeautifulsite.net/php-file-tree)
 
 		Modified by Adrian Jones for use with Tracy Debugger File Editor Panel
 
@@ -32,12 +32,13 @@
 
 */
 
-function init_php_file_tree() {
+function init_php_file_tree(linkedFilePath) {
 
 	if (!document.getElementsByTagName) return;
-
+	var path = '';
 	var aMenus = document.getElementById("tracyFoldersFiles").getElementsByTagName("LI");
 	for (var i = 0; i < aMenus.length; i++) {
+		var parentOpen = false;
 		var mclass = aMenus[i].className;
 		if (mclass.indexOf("tft-d") > -1) {
 			var submenu = aMenus[i].childNodes;
@@ -50,7 +51,10 @@ function init_php_file_tree() {
 						while (1) {
 							if (node != null) {
 								if (node.tagName == "UL") {
-									var d = (node.style.display == "none")
+									var d = (node.style.display == "none");
+									if(d) {
+										this.id = path = path + '/' + this.text;
+									}
 									node.style.display = (d) ? "block" : "none";
 									this.className = (d) ? "open" : "closed";
 									return false;
@@ -64,10 +68,41 @@ function init_php_file_tree() {
 					}
 
 					submenu[j].className = (mclass.indexOf("open") > -1) ? "open" : "closed";
+
+					if(document.getElementById('panelTitleFilePath').innerHTML.indexOf(submenu[j].text) > -1) {
+						submenu[j].className = "open";
+						parentOpen = true;
+					}
+
 				}
 
-				if (submenu[j].tagName == "UL")
-					submenu[j].style.display = (mclass.indexOf("open") > -1) ? "block" : "none";
+				if (submenu[j].tagName == "UL") {
+					if(parentOpen) {
+						submenu[j].style.display = "block";
+					}
+					else {
+						submenu[j].style.display = (mclass.indexOf("open") > -1) ? "block" : "none";
+					}
+				}
+
+			}
+		}
+		if (mclass.indexOf("tft-f") > -1) {
+			var items = aMenus[i].childNodes;
+			for (var j = 0; j < items.length; j++) {
+				if (items[j].tagName == "A") {
+					var parser = document.createElement('a');
+					queryStr = items[j].href.split('?')[1];
+					var currentFilePath = decodeURI(queryStr.replace('f=','').replace('&l=1',''));
+					if(document.getElementById('panelTitleFilePath').innerHTML == currentFilePath || linkedFilePath == currentFilePath) {
+						var els = document.getElementsByClassName("active");
+						[].forEach.call(els, function (el) {
+							el.classList.remove("active");
+						});
+						items[j].classList.add("active");
+						document.getElementById("tfe_recently_opened").value = currentFilePath;
+					}
+				}
 			}
 		}
 	}

@@ -18,7 +18,7 @@ class EmailObfuscation extends WireData implements Module, ConfigurableModule {
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Email Obfuscation (EMO)',
-			'version' => 110,
+			'version' => 111,
 			'summary' => 'Email Obfuscation module for plaintext emails and email links with 64 base crypting.',
 			'href' => 'https://github.com/BlowbackDesign/emo',
 			'singular' => true,
@@ -40,7 +40,7 @@ class EmailObfuscation extends WireData implements Module, ConfigurableModule {
 	 */
 	const loadManual = 0;
 	const loadScripts = 1;
-	const loadHead = 2;
+	const loadAuto = 2;
 
 	/**
 	 * default configuration options
@@ -49,7 +49,7 @@ class EmailObfuscation extends WireData implements Module, ConfigurableModule {
 	private $options = array(
 		'noscript' => 'Enable JavaScript to view protected content.',
 		'jsFile' => 'emo.min.js',
-		'jsLoad' => self::loadHead,
+		'jsLoad' => self::loadAuto,
 		'mode' => self::modeExclude,
 		'mailto' => true,
 		'debug' => false,
@@ -128,7 +128,7 @@ class EmailObfuscation extends WireData implements Module, ConfigurableModule {
 		$this->addHook('Sanitizer::emo', $this, 'emo');
 
 		// hook render method after page render to modify output
-		$this->addHookAfter('Page::render', $this, 'render');
+		$this->addHookAfter('TemplateFile::render', $this, 'render');
 	}
 
 	/**
@@ -182,6 +182,9 @@ class EmailObfuscation extends WireData implements Module, ConfigurableModule {
 		// filter out images detected as false positives (@2x file names)
 		if(preg_match('/\.(jpe?g|png|gif|bmp)$/i', $matches[0])) return $matches[0];
 
+		// set lang id for translated noscript text
+		$lang = $this->wire('languages') ? $this->user->language->isDefault() ? '' : "__{$this->user->language->id}" : '';
+
 		// counter and key array
 		if(!$this->addrCount) {
 			mt_srand((double) microtime() * 1000000); // random generator seed
@@ -211,7 +214,7 @@ class EmailObfuscation extends WireData implements Module, ConfigurableModule {
 
 		// create html of the fake link
 		$fakeLink = '<span id="emo_email_' . $this->addrCount . '" class="emo_email">';
-		$fakeLink .= preg_match(self::pattern(), $matches[2]) ? $this->noscript : $matches[2];
+		$fakeLink .= preg_match(self::pattern(), $matches[2]) ? $this->{"noscript$lang"} : $matches[2];
 		$fakeLink .= '</span>';
 
 		// did we use the same link before?
@@ -244,7 +247,7 @@ class EmailObfuscation extends WireData implements Module, ConfigurableModule {
 
 		if($this->debug) $time = self::timer();
 
-		$tags = "#((?:<head).*(?:<\/head>))|((?:<form).*(?:<\/form>))#isUu";
+		$tags = "#((?:<head).*(?:<\/head>))|((?:<form).*(?:<\/form>))|((?:<script).*(?:<\/script>))#isUu";
 		$mailto = "#<a[^>]*mailto:([^'\"@]+)@([^'\"]+)['\"][^>]*>(.*)<\/a>#isUu";
 		$output = "";
 
@@ -252,7 +255,7 @@ class EmailObfuscation extends WireData implements Module, ConfigurableModule {
 		foreach(preg_split($tags, $html, NULL, PREG_SPLIT_DELIM_CAPTURE) as $str) {
 
 			// encode mailto links and email addresses from the parts
-			if(!in_array(substr($str, 0, 5), array('<head', '<form'))) {
+			if(!in_array(substr($str, 0, 5), array('<head', '<form', '<scri'))) {
 				$str = preg_replace_callback($mailto, array($this, 'encode'), $str);
 				$str = preg_replace_callback(self::pattern(), array($this, 'encode'), $str);
 			}
@@ -272,64 +275,69 @@ class EmailObfuscation extends WireData implements Module, ConfigurableModule {
 	 */
 	public function render($event) {
 
+		if($this->obfuscated) return;
 		if($this->debug) $time = self::timer();
 
-		$page = $event->object;
-		$output = $event->return;
+		$templateFile = $event->object;
+		$options = $templateFile->options;
 
-		// prevent output re-obfuscation
-		if($this->obfuscated !== false) return;
+		// checking for $options, which we know is given to page renders
+		// this is to make sure it's not some other use of TemplateFile
+		if(is_array($options) && array_key_exists('pageStack', $options)) {
 
-		// keep output untouched at admin pages
-		if($page->template->flags & Template::flagSystem) return;
+			$output = $event->return;
+			$page = $templateFile->page;
 
-		// touch output only at complete html document
-		if(strpos($output, '</html>') === false) return;
+			// keep output untouched at admin pages
+			if($page->template->flags & Template::flagSystem) return;
 
-		// return on manual mode when no obfuscated addresses found
-		if($this->mode == self::modeManual && !$this->addrCount) return;
+			// touch output only at complete html document
+			if(strpos($output, '</html>') === false) return;
 
-		// return on include mode when page not in selected templates/pages
-		if($this->mode == self::modeInclude && !$this->addrCount) {
-			if(!in_array($page->template->id, $this->selectedTemplates)
-			&& !in_array($page->id, $this->selectedPages)) return;
+			// exit in manual mode when there's no addresses to obfuscate
+			if($this->mode == self::modeManual && !$this->addrCount) return;
+
+			// exit in include mode when page is not in selected templates/pages
+			if($this->mode == self::modeInclude && !$this->addrCount) {
+				if(!in_array($page->template->id, $this->selectedTemplates)
+				&& !in_array($page->id, $this->selectedPages)) return;
+			}
+
+			// exit in exclude mode when page is in selected templates/pages
+			if($this->mode == self::modeExclude && !$this->addrCount) {
+				if(in_array($page->template->id, $this->selectedTemplates)
+				|| in_array($page->id, $this->selectedPages)) return;
+			}
+
+			// auto obfuscate output
+			if($this->mode != self::modeManual && !$this->addrCount) {
+				$output = $this->obfuscate($output);
+			}
+
+			// create addresses script block
+			$addrScript = "\n<!-- emo -->\n<script>\n var emo_addr = new Array();\n{$this->addrScript}</script>\n";
+
+			// append emo.js to addresses if set
+			if($this->jsLoad == self::loadAuto && strpos($output, $this->jsFile) === false) {
+				$addrScript .= "<script src='{$this->jsFile}' async defer></script>\n";
+			}
+
+			// append addresses block to html body
+			if($this->addrCount && strpos($output, $addrScript) === false) {
+				$output = str_replace("</body>", "{$addrScript}\n</body>", $output);
+			}
+
+			// append debug info to output
+			if($this->debug) {
+				$this->debugTime += (self::timer() - $time);
+				$output .= "\n<!-- \n\n EMO DEBUG DATA\n\n";
+				$output .= " Email crypting took {$this->debugTime} seconds\n";
+				$output .= "\n Found " . count($this->links) . " matches:\n\n{$this->debugData}-->";
+			}
+
+			// return modified output
+			if($event->return = $output) $this->obfuscated = true;
 		}
-
-		// return on exclude mode when page is in selected templates/pages
-		if($this->mode == self::modeExclude && !$this->addrCount) {
-			if(in_array($page->template->id, $this->selectedTemplates)
-			|| in_array($page->id, $this->selectedPages)) return;
-		}
-
-		// auto obfuscate output
-		if($this->mode != self::modeManual && !$this->addrCount) {
-			$output = $this->obfuscate($output);
-		}
-
-		// create addresses script block
-		$addrScript = "\n<!-- emo -->\n<script>\n var emo_addr = new Array();\n";
-		$addrScript .= "{$this->addrScript} if(window.addLoadEvent) addLoadEvent(emo_replace());\n</script>\n";
-
-		// append debug info to output
-		if($this->debug) {
-			$this->debugTime += (self::timer() - $time);
-			$output .= "\n<!-- \n\n EMO DEBUG DATA\n\n";
-			$output .= " Email crypting took {$this->debugTime} seconds\n";
-			$output .= "\n Found " . count($this->links) . " matches:\n\n{$this->debugData}-->";
-		}
-
-		// append addresses block to html body
-		if($this->addrCount && strpos($output, $addrScript) === false) {
-			$output = str_replace("</body>", "{$addrScript}\n</body>", $output);
-		}
-
-		// append emo.js to html head if set
-		if($this->jsLoad == self::loadHead && strpos($output, $this->jsFile) === false) {
-			$output = str_replace("</head>", "<script src='{$this->jsFile}'></script>\n</head>", $output);
-		}
-
-		// return modified output
-		if($event->return = $output) $this->obfuscated = true;
 	}
 
 	/**
@@ -354,6 +362,7 @@ class EmailObfuscation extends WireData implements Module, ConfigurableModule {
 		$f->label = 'Replace text string';
 		$f->attr('name', 'noscript');
 		$f->attr('value', $this->noscript);
+		$f->useLanguages = true;
 		$inputfields->add($f);
 
 		$f = $this->modules->get('InputfieldRadios');
@@ -372,7 +381,7 @@ class EmailObfuscation extends WireData implements Module, ConfigurableModule {
 		$f->attr('value', $this->jsLoad);
 		$f->addOption(self::loadManual, 'Load file manually');
 		$f->addOption(self::loadScripts, 'Load file to `$config->scripts` array');
-		$f->addOption(self::loadHead, 'Prepend file to head section');
+		$f->addOption(self::loadAuto, 'Append file to page automatically');
 		$f->columnWidth = 50;
 		$inputfields->add($f);
 

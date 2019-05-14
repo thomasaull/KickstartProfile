@@ -1,18 +1,53 @@
+// out: ../styles/aos.min.css, compress: true, sourceMap: false, autoprefixer: last 3 versions, groupmedia: true
 @import 'includes/variables';
 @import 'includes/mixins';
 
 // general style overrides
 html.aos {
 
+  // fix hidden pagelist item text (webkit bug?)
+  .PageList .PageListItem {
+    transform: scale3d(1, 1, 1);
+  }
+
+  .btn-hidden-alt {
+    position: relative !important;
+    z-index: -1 !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .ui-dialog-buttonset {
+    max-width: 1600px;
+    margin: 0 auto !important;
+  }
+
+  .force-inline-block {
+    display: inline-block !important;
+  }
+
+  .InputfieldPageListSelect,
+  .InputfieldPageListSelect .InputfieldContent {
+    @include clearfix();
+  }
+
+  //overflow-x: hidden; // note: this makes asmselect weird on moving items
   // on pagelist item hover underline only the first span (added by the module)
   .pw-content .PageList .PageListItem > a.PageListPage {
     &:hover {
       text-decoration: none;
+
       > span {
         position: relative; // make sure data-pid (pagelist IDs) are correctly positioned
         text-decoration: underline;
       }
     }
+  }
+
+  // RestrictTreeDropdown: hide empty submenu (#105)
+  ul.pw-dropdown-menu.prnav:empty {
+    display: none !important;
   }
 
   // add some space between the top bar and page content (default theme, sticky header disabled)
@@ -25,6 +60,7 @@ html.aos {
   }
 
   &.BrandingLogo {
+
     // Reno + Default themes
     &.AdminThemeReno {
       a#logo {
@@ -38,6 +74,7 @@ html.aos {
         background-repeat: no-repeat;
         background-position: left center;
         background-size: contain;
+
         img {
           display: none;
         }
@@ -47,8 +84,9 @@ html.aos {
     &.AdminThemeDefault {
       a#logo {
         margin-top: 0.75em;
-        margin-bottom: 0.25;
+        margin-bottom: 0.25em;
         margin-right: 0.5rem;
+
         img {
           width: auto;
           height: 24px;
@@ -64,11 +102,6 @@ html.aos {
     }
   }
 
-  // ensure case changer positioning
-  .InputfieldPageTitle {
-    position: relative;
-  }
-
   // fix strike-through missing on double spans
   .PageListStatusUnpublished a.PageListPage span {
     text-decoration: line-through;
@@ -77,32 +110,50 @@ html.aos {
   .PageListPage {
     line-height: 1.5em !important;
   }
+
   &.AdminThemeReno {
+
+    body,
+    .ui-dialog {
+      font-size: .951em; // makes equal height inputfields (instead .95)
+    }
+
+    #wrap {
+      z-index: 1; // avoid Tracy panel overlaps
+    }
+
     #search {
       z-index: 8;
     }
+
     .quicklinks {
       z-index: 100000 + 30000;
     }
+
     #sidebar {
       backface-visibility: hidden;
       min-width: 210px !important;
     }
+
     @media only screen and (min-width: 1200px) {
       #sidebar {
         min-width: 230px !important;
       }
     }
   }
+
   #content {
     clear: both;
   }
+
   &.AdminThemeDefault {
+
     // fix for third menu nav items
     .topnav {
       border-right: 1px solid transparent;
     }
   }
+
   // fix hover dropdown menus not having right padding
   &.AdminThemeReno .pw-dropdown-menu,
   &.AdminThemeReno .dropdown-menu {
@@ -110,6 +161,7 @@ html.aos {
       margin-right: 14px;
     }
   }
+
   #headline {
     #title {
       // prevent title overlap with head buttons (on screen size < 960px)
@@ -131,7 +183,9 @@ html.aos {
   //.PageListRoot [data-pid]:after {
   .quicklinks,
   .PageListRoot,
-  .ui-menu { // restrict to given parents to avoid appear elsewehere (eg Users list)
+  .ui-menu {
+
+    // restrict to given parents to avoid appear elsewehere (eg Users list)
     [data-pid]:after {
       content: attr(data-pid);
       text-decoration: none !important;
@@ -146,7 +200,10 @@ html.aos {
       color: rgba(28, 40, 54, .57);
     }
   }
-  .ui-menu { // AdminThemeDefault menu item overrides
+
+  .ui-menu {
+
+    // AdminThemeDefault menu item overrides
     [data-pid]:after {
       margin-left: 1px;
       margin-right: 0;
@@ -159,14 +216,17 @@ html.aos {
 
   // allow template edit links to appear
   //.PageList:not(.PageListSortingList) {
-  .PageListItem > .PageList,
-  .PageList:hover {
+  //.PageListItem>.PageList,
+  //.PageList:hover {
+  //    overflow: visible !important;
+  //}
+
+  .InputfieldStateCollapsed {
     overflow: visible !important;
   }
 
-  .InputfieldStateCollapsed,
-  .InputfieldStateWasCollapsed {
-    overflow: visible !important;
+  .InputfieldStateCollapsed {
+    overflow: hidden !important;
   }
 
   h1:not(.pwapi-headline) {
@@ -178,7 +238,9 @@ html.aos {
     //h1#title,
   #breadcrumbs li.title span {
     position: relative;
+
     &:hover {
+
       ~ .aos_EditTemplate,
       .aos_EditTemplate {
         display: inline-block;
@@ -191,8 +253,8 @@ html.aos {
   }
 
   .aos_EditTemplate {
-    min-width: 4rem;
-    // keep visible on hover (workaround for h1 span overflow: hidden)
+    min-width: 4rem; // keep visible on hover (workaround for h1 span overflow: hidden)
+
     &:hover {
       display: inline-block;
       visibility: visible;
@@ -211,11 +273,11 @@ html.aos {
   }
 
   .PageListRoot.PageListSorting {
-
     #PageListMoveFrom {
       // allow moving out sort item from its container (though disables nice animation)
       overflow: visible !important;
     }
+
     .PageListItem {
       display: block;
     }
@@ -228,23 +290,27 @@ html.aos {
       border: none;
       position: relative;
       transition: all 0.25s;
+
       &.narrow {
         max-height: 0;
       }
     }
+
     .PageListItem.PageListSortItem {
       background: transparent !important;
       position: relative;
       z-index: 100000 + 5000 !important;
+
       &.ui-sortable-helper {
         border-bottom-color: transparent !important;
       }
     }
+
     .sortableHover {
       background-color: rgba(#2C3E50, 0.05) !important;
       position: relative;
-      left: 0 !important;
-      //&.loading {
+      left: 0 !important; //&.loading {
+
       &:before {
         content: "\f055";
         font-family: FontAwesome, sans-serif;
@@ -259,12 +325,14 @@ html.aos {
         backface-visibility: hidden;
         animation: pulse 0.8s ease-in-out alternate infinite !important;
       }
+
       &.PageListItemOpen {
         &:before {
           content: "\f056";
         }
       }
     }
+
     // workaround to show icons to left with overflow: hidden
     .PageList {
       .PageList {
@@ -308,14 +376,14 @@ html.aos {
     float: left;
     clear: none !important;
     margin-top: 0 !important;
+
     > .InputfieldContent {
       background: transparent;
     }
   }
 
   .aos_col_right {
-    width: 33%;
-    //float: right;
+    width: 33%; //float: right;
     margin-left: -1px !important;
   }
 
@@ -338,19 +406,15 @@ html.aos {
   .sliderTooltip {
     position: absolute;
     z-index: 1020;
-    display: block;
-    //padding: 5px;
+    display: block; //padding: 5px;
     font-size: 12px;
     visibility: visible;
-    margin-top: -2px;
-    //bottom: 120%;
-    top: -5px;
-    //left: -27px;
-    left: 0;
-    //margin-left: 8px;
+    margin-top: -2px; //bottom: 120%;
+    top: -5px; //left: -27px;
+    left: 0; //margin-left: 8px;
     white-space: nowrap;
-    border: 2px solid #fff;
-    //.sliderTooltip-arrow {
+    border: 2px solid #fff; //.sliderTooltip-arrow {
+
     //  bottom: 0;
     //  left: 50%;
     //  margin-left: -5px;
@@ -370,6 +434,7 @@ html.aos {
       text-align: center;
       font-weight: normal !important;
       text-decoration: none;
+
       span {
         font-weight: bold !important;
         font-size: 15px;
@@ -381,67 +446,10 @@ html.aos {
   .themeConfigLink {
     margin-left: 0.4rem;
     display: inline-block;
+
     &:not(:hover) {
       color: #7EA0AB;
       opacity: 0.7;
-    }
-  }
-
-  // CKE improvements
-
-  //.CodeMirror {
-  //  line-height: inherit !important;
-  //  font-family: inherit;
-  //}
-
-  //div[class*="cke_editor_"]:not(.cke_focus) .cke_floatingtools {
-  //  display: none !important;
-  //}
-  //.cke_floatingtools {
-  //  width: auto;
-  //}
-
-  .cke_screen_reader_only { // causes html to overflow
-    height: 0;
-  }
-
-  .CodeMirror-lines {
-    font-size: 13px;
-  }
-
-  // this would cause tab, space, etc not working in editors
-  //.CodeMirror-line {
-  //  span {
-  //    white-space: normal !important;
-  //  }
-  //}
-
-  .cke_reset_all .CodeMirror-scroll * {
-    word-wrap: break-word;
-    white-space: pre-wrap;
-    word-break: normal;
-  }
-
-  .cke_top .cke_button_icon.cke_button__oembed_icon {
-    background-image: url('../CKE/plugins/oembed/icons/oembed.png') !important;
-  }
-  .cke_top .cke_button_icon.cke_button__codesnippet_icon {
-    background-image: url('../CKE/plugins/codesnippet/icons/codesnippet.png') !important;
-  }
-  .cke_top .cke_button_icon.cke_button__token_icon {
-    background-image: url('../CKE/plugins/token/icons/token.png') !important;
-  }
-
-  .cke_combo_text {
-    white-space: nowrap;
-  }
-
-  .cke_dialog_body {
-    //.cke_dialog_contents * {
-    //  box-sizing: border-box !important;
-    //}
-    label {
-      display: inline-block !important;
     }
   }
 
@@ -450,6 +458,7 @@ html.aos {
       opacity: 0.5;
       border-bottom: 3em solid transparent;
     }
+
     tbody tr.hidden {
       display: none;
     }
@@ -476,30 +485,41 @@ html.aos {
   }
 
   body.AdminThemeUikit {
+    .uk-form-controls {
+      min-height: initial !important; // fixes Tooltips large blanks
+    }
+
     .filterbox-wrapper {
       margin-bottom: 1em;
       outline: none;
       border: none;
+
       .counter {
         margin-left: 12px;
-        em, strong {
+
+        em,
+        strong {
           display: inline-block;
         }
+
         em {
           font-style: normal;
           opacity: 0.66;
           font-size: 12px;
         }
+
         strong {
           font-size: 16px;
           margin-right: 2px;
         }
       }
     }
+
     .filterbox {
       padding: 0;
       background: transparent;
       margin: 0 0 24px;
+
       > input {
         width: 100% !important;
         max-width: 360px !important;
@@ -507,6 +527,7 @@ html.aos {
         border-bottom: 1px solid #D9E1EA !important;
         padding-left: 35px !important;
       }
+
       > input:focus,
       &.hasValue input {
         border-color: #8d939e !important;
@@ -519,35 +540,26 @@ html.aos {
     margin-top: 8px;
     margin-bottom: 10px;
     clear: both;
-    padding: 6px;
+    padding: 6px !important;
     background: #EAF0F2;
-    //color: #6c96a4;
-
-    &:before {
-      // search character icon
-      content: "\1F50E";
-      position: absolute;
-      padding: 6px 11px;
-      top: 51%;
-      transform: translateY(-50%);
-      font-size: 15px;
-      color: #6c96a4;
-      pointer-events: none;
-    }
 
     input {
       width: auto !important;
       padding-right: 32px !important;
       min-width: 250px;
       display: inline-block;
-      background: rgba(#fff, 0.5) !important;
-      padding-left: 33px !important;
+      background: rgba(#fff, 0.5) url('../images/search.svg') 0.48rem 48% no-repeat !important;
+      background-size: 1.24rem 1.24rem !important;
+      padding-left: 2rem !important;
+
       &:focus {
-        background: #fff !important;
+        background-color: #fff !important;
       }
+
       &.empty {
         border-color: $colorDelete !important;
       }
+
       + .fa-close {
         color: inherit;
         margin-left: -30px;
@@ -557,21 +569,25 @@ html.aos {
         top: 50%;
         transform: translateY(-50%);
         position: absolute;
+
         &:hover {
           cursor: pointer;
           opacity: 0.84;
         }
       }
     }
+
     &.hasValue {
       input + .fa-close {
         display: inline-block;
       }
+
       .counter {
         opacity: 1;
         visibility: visible;
       }
     }
+
     .counter {
       opacity: 0;
       visibility: hidden;
@@ -580,15 +596,18 @@ html.aos {
       transition: opacity $defaultTransition;
       position: relative;
       top: 1px;
-      em, strong {
+
+      em,
+      strong {
         display: inline-block;
       }
+
       em {
         font-style: normal;
         opacity: 0.66;
-        font-size: 12px;
-        //word-spacing: -1px;
+        font-size: 12px; //word-spacing: -1px;
       }
+
       strong {
         font-size: 16px;
         margin-right: 2px;
@@ -597,10 +616,10 @@ html.aos {
   }
 
   // fixes height issue on filtered table (filterbox)
-  .tablesorter-resizable-container {
-    position: static;
-  }
-
+  // ...but also makes impossible to resize columns (eg. ListerPro)
+  //.tablesorter-resizable-container {
+  //  position: static;
+  //}
   .modules_section.hidden {
     display: none;
   }
@@ -609,9 +628,9 @@ html.aos {
   .checkAllFieldToRemoveBtn {
     display: inline-block;
     margin-left: 5px;
+
     span {
-      display: none;
-      //  display: inline-block;
+      display: none; //  display: inline-block;
       //  margin-left: 0.5em;
       //  font-size: 0.9em;
       //  transition: all $defaultTransition;
@@ -619,16 +638,19 @@ html.aos {
       //  //transform: scaleX(0);
       //  opacity: 0;
     }
+
     i {
       //font-size: 17px !important;
       transition: all $defaultTransition;
       backface-visibility: hidden;
       padding: 5px;
+
       &:not(:hover) {
         opacity: 0.5;
         color: #2A3C51;
       }
     }
+
     //&:not(:hover) {
     //  color: inherit;
     //}
@@ -637,10 +659,12 @@ html.aos {
     //  //transform: scaleX(1);
     //}
   }
+
   .checkAllFieldToRemoveBtn {
     margin-left: 10px;
     padding: 6px 8px;
   }
+
   #abandoned_fieldset .checkAllFieldToRemoveBtn {
     margin-left: 0;
     margin-bottom: 10px;
@@ -651,6 +675,7 @@ html.aos {
   html.aos h1 {
     max-width: calc(100% - 120px);
   }
+
   html.aos body.AdminThemeUikit h1 {
     max-width: calc(100% - 400px);
   }
@@ -667,6 +692,7 @@ html.aos {
 // CKEditor html source dialog
 .cke_dialog_background_cover {
   z-index: 100000 + 3000 !important;
+
   + .cke_reset_all > table {
     z-index: 100000 + 3050 !important;
   }
@@ -689,18 +715,24 @@ html.aos {
   z-index: 100000 + 1000 !important;
 }
 
-// confirm button
 .PageListItem {
-  position: relative;
+  // confirm button
+  position: relative; // z-index fix after moving page (uikit theme)
+
+  &[style] {
+    z-index: inherit !important;
+  }
 }
 
 // inline confirm for PageTrash, PageListActionDelete, etc (pagelist and recent list)
 .aos-pagelist-confirm {
   white-space: nowrap;
+
   + [href*="force=1"] {
     margin-left: 6px;
     color: #fff !important;
     background-color: #BC283D !important;
+
     .PageListItem & {
       &::after {
         // red background on hover: only in normal pagelists (not in Lister)
@@ -720,13 +752,17 @@ html.aos {
 
 .PageList .aos-pagelist-confirm.cancel {
   font-weight: 700 !important;
-  &, &:hover {
+
+  &,
+  &:hover {
     background-color: transparent !important;
     color: #BC283D !important;
   }
+
   &:hover {
     text-decoration: underline;
   }
+
   i {
     display: none !important;
   }
@@ -735,30 +771,31 @@ html.aos {
 //table.ProcessListerTable tr.open > td {
 //  position: relative;
 //}
-
 // AsmTweaks
-
 html.editFieldWidth {
-
   .asmList {
     .asmFieldsetEnd {
       .asmListItemStatus {
         display: none;
       }
     }
+
     .asmListItemStatus {
       span.ui-priority-secondary {
         color: inherit !important;
       }
+
       em {
         opacity: 0.57;
         font-size: 12px;
         margin-left: -2px;
         letter-spacing: -0.5px;
       }
+
       &:hover {
         text-decoration: underline;
         cursor: pointer;
+
         em {
           opacity: 1;
         }
@@ -770,36 +807,22 @@ html.editFieldWidth {
     &:hover {
       cursor: pointer;
     }
+
     &:before {
       @media only screen and (min-width: 600px) {
         content: url('../images/scale-mobile.svg');
       }
+
       @media only screen and (min-width: 960px) {
         content: url('../images/scale.svg');
       }
+
       @media only screen and (min-width: 1440px) {
         content: url('../images/scale-hd.svg');
       }
+
       @media only screen and (min-width: 1800px) {
         content: url('../images/scale-uhd.svg');
-      }
-    }
-  }
-}
-
-html.emptyTrashTop {
-  body.id-301 {
-    form > ul {
-      display: flex;
-      flex-direction: column;
-      li {
-        order: 1;
-        &:nth-child(1) {
-          order: 2;
-        }
-        &:last-child {
-          margin-bottom: 1em;
-        }
       }
     }
   }
@@ -809,9 +832,11 @@ html.asmLeftX {
   body {
     .Inputfields .asmListItem {
       padding-left: 24px;
+
       span.asmListItemStatus {
         right: 12px;
       }
+
       .asmListItemRemove {
         left: 12px;
         right: auto;
@@ -831,11 +856,14 @@ html.asmLeftX {
     //  }
     //}
   }
+
   &.asmCollapse {
     body {
+
       .Inputfields .asmFieldsetStart,
       .Inputfields .asmFieldsetStart ~ .asmListItem {
         padding-left: 48px;
+
         .asmListItemRemove {
           left: 34px;
         }
@@ -851,48 +879,60 @@ html.asmLeftX {
   text-overflow: ellipsis;
 }
 
+.aos-language-translator-intro {
+  float: left;
+  margin: 0;
+  margin-right: 10px;
+  font-size: .92em;
+}
+
 // translator links
 .aos-language-translator-links {
   @include clearfix;
   margin-left: -8px;
+  list-style: none;
+  padding-left: 0;
+
   li {
     float: left;
     line-height: 1;
+
     &:not(:last-child) {
       margin-right: 0.5em;
-      padding-right: 0.5em;
-      border-right: 1px solid #7EA0AB;
     }
   }
+
   a {
-    font-size: 0.9em;
+    font-size: .92em;
     display: inline-block;
-    padding: 0.16em 10px;
-    vertical-align: middle;
+    padding: 0.4rem 0.64rem;
+    background: #f0f3f7;
+    border-radius: 2px;
+    text-decoration: none;
+    margin-top: -2px;
+
+    &:hover {
+      background: darken(#f0f3f7, 3%);
+    }
+
     &:not(:hover) {
       color: inherit;
-    }
-    span {
-      opacity: 0.66;
-      font-size: 0.9em;
-      text-transform: uppercase;
     }
   }
 }
 
 // Tooltips
 @media only screen and (min-width: 960px) {
-
   #content {
-
     .WireTabs {
       // disable active tab having bottom border
       z-index: 2;
     }
 
     //li:not(.translated):not(.untranslated):not(.noTooltip) { // disable in Language Translator
-    form:not([action^="./?textdomain"]) { // disable in Language Translator
+    form:not([action^="./?textdomain"]) {
 
+      // disable in Language Translator
       .aos_tooltips_blueprint {
         position: absolute;
         bottom: 100%;
@@ -903,15 +943,13 @@ html.asmLeftX {
         margin: 0 0 -5px 0;
         width: 0;
         line-height: 1.45;
-        height: 0;
-        //z-index: 100000 + 1;
-        backface-visibility: hidden;
-
-        // IE hack
+        height: 0; //z-index: 100000 + 1;
+        backface-visibility: hidden; // IE hack
         pointer-events: none;
         font-size: 1px;
         letter-spacing: -1px;
         color: transparent;
+
         * {
           visibility: hidden;
         }
@@ -935,15 +973,16 @@ html.asmLeftX {
           font-size: 14px;
           line-height: 14px;
           text-align: center;
-          border-radius: 100%;
-          //z-index: 9980;
+          border-radius: 100%; //z-index: 9980;
           transform-origin: 50% 50%;
         }
+
         &:hover,
         &.tooltip-active {
           * {
             visibility: visible;
           }
+
           text-indent: 0;
           padding: 8px 12px;
           width: auto;
@@ -952,16 +991,20 @@ html.asmLeftX {
           cursor: pointer;
           font-size: 14px;
           letter-spacing: 0;
-          z-index: 100000 + 10000;
-          &, *:not(a) {
+          z-index: 100000+10000;
+
+          &,
+          *:not(a) {
             // set everything white but links
             color: #f8f8f8;
           }
+
           &:before {
             color: rgba(#000, 0.66);
             cursor: pointer;
             z-index: -1;
           }
+
           // arrow
           &:after {
             $size: 6px;
@@ -973,6 +1016,7 @@ html.asmLeftX {
             border-top-color: #1C2836;
           }
         }
+
         &.tooltip-active {
           //  // enable selection
           pointer-events: all;
@@ -988,16 +1032,19 @@ html.asmLeftX {
         margin: 0 !important;
         font-size: 90%;
         background-color: rgba(#1C2836, 0.88) !important;
+
         &:hover,
         &.tooltip-active {
           padding: 12px 24px !important;
         }
+
         &:before {
           left: -10px !important;
           bottom: auto !important;
           top: -4px !important;
           margin: 0 !important;
         }
+
         &:after {
           display: none;
         }
@@ -1009,13 +1056,16 @@ html.asmLeftX {
 html.tooltipDesc,
 html.tooltipNotes {
 
-  li[id^="wrap_Inputfield"], li.Inputfield {
+  li[id^="wrap_Inputfield"],
+  li.Inputfield {
     position: relative;
   }
 
   // fix repeater/matrix repeater icon cutoffs
   li.InputfieldStateWasCollapsed {
-    &, .InputfieldContent {
+
+    &,
+    .InputfieldContent {
       overflow: visible !important;
     }
   }
@@ -1026,6 +1076,7 @@ html {
     p.description {
       @extend .aos_tooltips_blueprint;
     }
+
     &.tooltipOverlay {
       p.description {
         @extend .aos_tooltips_blueprint_overlay;
@@ -1034,10 +1085,12 @@ html {
   }
 
   &.tooltipNotes {
+
     //li:not(.translated):not(.untranslated):not(.noTooltip) {
     form:not([action^="./?textdomain"]) {
       p.notes {
         @extend .aos_tooltips_blueprint;
+
         &:before {
           content: "\f27a" !important;
           font-size: 13px !important;
@@ -1045,14 +1098,17 @@ html {
         }
       }
     }
+
     &.tooltipOverlay {
       p.notes {
         @extend .aos_tooltips_blueprint_overlay;
         transform: translateY(0) !important;
+
         &:before {
           transform: translateY(17px) !important;
         }
       }
+
       &.tooltipDesc {
         p.notes:before {
           transform: translateY(39px) !important;
@@ -1063,6 +1119,7 @@ html {
 
   // move down notes only if there's description
   &.tooltipNotes.tooltipDesc {
+
     //li:not(.translated):not(.untranslated):not(.noTooltip) {
     form:not([action^="./?textdomain"]) {
       p.notes {
@@ -1080,45 +1137,164 @@ html {
   transition-duration: 0.1s !important;
   max-width: 60px;
   line-height: 1 !important;
+
   i {
     padding: 3px 5px !important;
     display: inline-block;
   }
-  &, &:hover {
+
+  &,
+  &:hover {
     padding: 0 !important;
   }
+
   &.empty,
   &.initial {
     pointer-events: none;
-    opacity: 0.33;
+    opacity: 0.3;
     filter: saturate(0);
     border-color: inherit;
   }
+
   &.clear {
     background-color: transparent !important;
     margin-left: -3px;
     margin-right: 5px;
     float: left;
     color: #8d939e !important;
+
     &:hover {
       color: $colorDelete !important;
       background-color: transparent !important;
+
       i {
         transform: scale(1.2);
         transform-origin: center;
       }
+
       ~ .PageListRoot .PageListSelectName {
         text-decoration: line-through;
       }
     }
+
     ~ .PageListRoot {
       float: left;
-      width: calc(100% - 64px);
+      width: calc(100% - 54px);
+      margin-bottom: 1rem;
+    }
+
+    ~ .notes {
+      width: 100%;
+      clear: both;
     }
   }
+
   &.restore {
     position: relative;
-    top: -1px;
+    top: -3px;
+    margin-right: 0;
+  }
+}
+
+html.asmCounter {
+
+  .InputfieldPage,
+  .Inputfield.InputfieldAsmSelect {
+    position: relative;
+
+    > .InputfieldStateCollapsed .asmList {
+      counter-reset: pageRefCounter;
+    }
+
+    // if not collapsed, display the counter on the bottom
+    // (cannot be positioned on the top)
+    &:not(.InputfieldStateCollapsed) {
+      .asmListItem:last-child {
+        &::before {
+          margin-top: 7px;
+          font-size: 0.9rem;
+          top: 100%;
+          right: 0;
+        }
+      }
+
+      p.notes {
+        margin-top: 1rem;
+      }
+    }
+
+    &.InputfieldStateCollapsed {
+      > .InputfieldContent {
+        // override default display: none to be able to move counter out of the div
+        display: block;
+        height: 0;
+        padding: 0;
+        border: none; // hide description and notes too when collapsed
+
+        > p,
+        > ul {
+          display: none;
+        }
+      }
+
+      .asmContainer * {
+        height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+      }
+
+      .asmListItem {
+        * {
+          display: none;
+        }
+
+        &:last-child::before {
+          top: -91px;
+          right: 32px;
+        }
+      }
+    }
+
+    .asmListItem {
+      &:not(.ui-sortable-helper):not(.asmListItemDeleted) {
+        counter-increment: pageRefCounter;
+      }
+
+      &:not(.ui-state-highlight):last-child {
+        margin-bottom: 2rem !important; // place for the bottom counter
+
+        &::before {
+          content: counter(pageRefCounter) ' selected';
+          position: absolute;
+          color: #8d939e;
+          pointer-events: none;
+        }
+      }
+    }
+  }
+
+  /* Uikit theme */
+  &.AdminThemeUikit {
+
+    .InputfieldPage,
+    .Inputfield.InputfieldAsmSelect {
+      .asmListItem:last-child::before {
+        top: 100%;
+        right: 0;
+      }
+
+      &.InputfieldStateCollapsed .asmListItem:last-child::before {
+        top: -101px !important;
+        right: 48px !important;
+      }
+
+      &:not(.InputfieldStateCollapsed) {
+        .asmListItem:last-child::before {
+          margin-top: 5px;
+        }
+      }
+    }
   }
 }
 
@@ -1126,8 +1302,8 @@ html {
 //a.aos_toggle {
 //  color: inherit !important;
 //}
-
 html.asmCollapse {
+
   .Inputfields .asmFieldsetStart ~ .asmListItem,
   .Inputfields .asmFieldsetEnd,
   .Inputfields .asmFieldsetStart {
@@ -1147,19 +1323,28 @@ html.asmCollapse {
       position: absolute;
       color: rgba(255, 255, 255, 0.66);
     }
+
     &.collapsed {
-      a, i, span, &:before {
+
+      a,
+      i,
+      span,
+      &:before {
         color: rgba(255, 255, 255, 0.66);
       }
+
       &:hover {
         cursor: pointer;
+
         &:before {
           color: inherit;
         }
       }
+
       &:before {
         content: '\f055';
       }
+
       &:after {
         content: '';
         position: absolute;
@@ -1176,9 +1361,7 @@ html.asmCollapse {
 // login page (both Default and Reno themes)
 @media only screen and (min-width: 960px) {
   html.centerLogin:not(.modal) {
-
     body.id-23 {
-
       text-align: center;
 
       #headline {
@@ -1202,15 +1385,18 @@ html.asmCollapse {
         > ul {
           width: 300px;
           display: inline-block;
+
           li {
             float: none;
             width: 100%;
+
             label {
               padding-left: 1em;
               padding-right: 1em;
             }
           }
         }
+
         + * {
           margin-top: 32px;
         }
@@ -1226,6 +1412,7 @@ html.asmCollapse {
       }
 
       ul.Inputfields {
+
         #login_name,
         #login_pass {
           text-align: center;
@@ -1244,23 +1431,27 @@ html.asmCollapse {
       }
 
       // forgot password module
-
       .pw-content.content {
         max-width: 680px;
         margin: 0 auto;
       }
 
       #wrap_username {
-        label, .InputfieldContent {
+
+        label,
+        .InputfieldContent {
           border: none;
         }
+
         .toggle-icon {
           display: none !important;
         }
       }
+
       #wrap_submit_forgot {
         width: 100%;
       }
+
       input#username {
         text-align: center;
         max-width: 270px;
@@ -1281,10 +1472,11 @@ html.hideAddNewDropdown body.id-3 {
 .aos_adminLangSwitcher {
   position: relative;
   z-index: 100000 + 100;
-  margin-right: 2px;
-  //text-align: right;
+  margin-right: 2px; //text-align: right;
+
   > a {
     position: relative;
+
     &:after {
       content: "" !important;
       border: 4px solid transparent !important;
@@ -1295,18 +1487,22 @@ html.hideAddNewDropdown body.id-3 {
       right: 4px !important;
       left: auto !important;
       margin-top: -2px;
+
       body.AdminThemeDefault & {
         position: relative;
         top: 2px;
         margin-top: 0;
         right: -4px !important;
       }
+
       body.AdminThemeUikit & {
         margin-top: 0;
         right: 1px !important;
       }
     }
+
     &:before {
+
       // hover fix z-index
       body.AdminThemeDefault & {
         content: "";
@@ -1320,9 +1516,11 @@ html.hideAddNewDropdown body.id-3 {
       }
     }
   }
+
   &:hover {
     cursor: pointer;
   }
+
   ul {
     filter: drop-shadow(0 0 1px rgba(0, 0, 0, .36));
     padding: 0;
@@ -1337,12 +1535,15 @@ html.hideAddNewDropdown body.id-3 {
     transition: 0.075s $defaultTransition;
     transform: scaleY(0);
     transform-origin: center top;
+
     li {
       display: block;
     }
+
     body.AdminThemeDefault & {
       top: 47px;
     }
+
     &:before {
       content: "";
       border: 7px solid transparent;
@@ -1352,6 +1553,7 @@ html.hideAddNewDropdown body.id-3 {
       top: -14px;
       right: 20px;
     }
+
     li {
       a {
         opacity: 0.84;
@@ -1360,12 +1562,13 @@ html.hideAddNewDropdown body.id-3 {
         display: flex;
         justify-content: space-between;
         font-weight: normal;
-        text-decoration: none !important;
-        //width: 100%;
+        text-decoration: none !important; //width: 100%;
+
         .lang-title {
           display: inline-block;
           font-weight: normal;
         }
+
         .lang-name {
           display: inline-block;
           font-size: 84%;
@@ -1373,19 +1576,24 @@ html.hideAddNewDropdown body.id-3 {
           opacity: 0.6;
           font-weight: normal !important;
         }
+
         &:hover {
           background: rgba(#1C2836, 0.05);
+
           span.title {
             opacity: 1;
           }
         }
+
         &:active {
           background: rgba(#1C2836, 0.1);
         }
       }
+
       &.active {
         a {
           opacity: 1;
+
           .lang-title {
             font-weight: bold;
           }
@@ -1393,6 +1601,7 @@ html.hideAddNewDropdown body.id-3 {
       }
     }
   }
+
   &:hover {
     ul {
       opacity: 1;
@@ -1414,6 +1623,7 @@ html.hideAddNewDropdown body.id-3 {
 .aos_hasTooltip .title,
 .InputfieldCheckbox label {
   display: inline-block;
+
   &:hover {
     .aos_EditField {
       display: inline-block;
@@ -1423,12 +1633,20 @@ html.hideAddNewDropdown body.id-3 {
       transition: 0.07s all 1s;
     }
   }
+
   .aos_EditField {
     font-style: normal;
     @include aos_tooltip($margin: 0 0 8px -4px);
+
     &:hover {
       cursor: pointer;
     }
+  }
+}
+
+.aos_hasTooltip {
+  .InputfieldRepeaterItem:hover .InputfieldContent {
+    overflow: visible !important;
   }
 }
 
@@ -1438,6 +1656,7 @@ html.hideAddNewDropdown body.id-3 {
 }
 
 html.AdminThemeReno {
+
   .PageListActionEdit a[href*="setup/template/edit"],
   .PageListerActions .PageEdit[href*="setup/template/edit"] {
     &:not(:hover) {
@@ -1445,6 +1664,7 @@ html.AdminThemeReno {
       opacity: 0.5;
       font-size: 13px;
     }
+
     &:hover {
       font-size: 13px !important;
     }
@@ -1454,6 +1674,7 @@ html.AdminThemeReno {
 // Hotkeys
 body.aos_saving {
   pointer-events: none;
+
   &::after {
     content: "\f0c7";
     font-family: FontAwesome;
@@ -1468,15 +1689,13 @@ body.aos_saving {
     text-align: center;
     z-index: 25000;
     color: rgba(black, 0.7);
-    background: transparent;
-    //animation: pulse 0.4s steps(12, end) forwards;
+    background: transparent; //animation: pulse 0.4s steps(12, end) forwards;
     animation: pulse 1.25s ease-in-out alternate infinite;
     transform-origin: 50% 0;
   }
 }
 
 // FileFieldTweaks
-
 // template edit link on ProcessPageEdit template select field (Settings tab)
 .aos-template-edit-settings {
   padding: 6px;
@@ -1488,17 +1707,20 @@ html.noFilenameTruncate {
   p.InputfieldFileInfo.InputfieldItemHeader {
     padding: 6px 34px 6px 25px;
     position: relative;
+
     i[class*="fa-file-"],
     .InputfieldFileInfo i {
       left: -21px !important;
       top: 3px;
       float: left;
     }
+
     a.InputfieldFileName {
       line-height: 1.33;
       margin-left: -22px;
       word-wrap: break-word;
     }
+
     label.InputfieldFileDelete {
       position: absolute;
       top: 8px;
@@ -1509,7 +1731,6 @@ html.noFilenameTruncate {
 
 // FileFieldTweaks filterbox
 html.filterbox {
-
   .Inputfield.filterbox_loaded {
     > label {
       padding-top: 14px;
@@ -1522,6 +1743,7 @@ html.filterbox {
     transition: all $defaultTransition;
     transform-origin: center center;
     height: auto;
+
     &.hidden {
       transform: scale(0);
       width: 0;
@@ -1539,42 +1761,37 @@ html.filterbox {
   }
 
   .InputfieldFileFieldFilter {
-
     position: absolute;
     margin-left: 24px;
     display: inline-block;
     margin-top: -4px;
 
-
     input {
       transition: all $defaultTransition;
-      // placeholder hack
-      //text-align: right;
-      //max-width: 160px;
     }
 
     input:focus::-webkit-input-placeholder {
       color: transparent;
     }
+
     input:focus:-moz-placeholder {
       color: transparent;
     }
+
     /* FF 4-18 */
     input:focus::-moz-placeholder {
       color: transparent;
     }
+
     /* FF 19+ */
     input:focus:-ms-input-placeholder {
       color: transparent;
     }
-    /* IE 10+ */
 
+    /* IE 10+ */
     &.hasValue input,
     input:focus {
       background: #fff !important;
-      //text-align: left !important;
-
-      //max-width: 300px;
       outline: none;
     }
 
@@ -1591,6 +1808,7 @@ html.filterbox {
       transform: translateY(-50%);
       padding: 12px;
       opacity: 0.5;
+
       &:hover {
         opacity: 1;
       }
@@ -1615,6 +1833,7 @@ html.aos body.AdminThemeUikit .InputfieldFileFieldFilter {
   margin-left: 32px;
   margin-top: -6px;
   margin-bottom: 0;
+
   input {
     padding-left: 10px !important;
     padding-right: 4px !important;
@@ -1622,6 +1841,7 @@ html.aos body.AdminThemeUikit .InputfieldFileFieldFilter {
     background: #FAFBFC !important;
     height: 36px;
     line-height: 32px;
+
     &:focus {
       background: white !important;
     }
@@ -1629,18 +1849,19 @@ html.aos body.AdminThemeUikit .InputfieldFileFieldFilter {
 }
 
 // ModuleTweaks
-
-//html.noModuleTabs {
 html.flatModules body.id-21 {
   #add_new_button.active:not(:hover) {
     opacity: 0.4;
   }
+
   .WireTabs.nav {
     display: none;
   }
+
   // hide last row's border-bottom
   #tab_site_modules .Inputfields .InputfieldContent {
     padding-bottom: 10px !important;
+
     &:after {
       content: "";
       height: 1px;
@@ -1652,6 +1873,7 @@ html.flatModules body.id-21 {
       background: #fff;
     }
   }
+
   // always hide modules category and table headers
   #modules_form {
     h2 {
@@ -1662,6 +1884,7 @@ html.flatModules body.id-21 {
   .modules_section:not(:first-of-type) thead {
     display: none !important;
   }
+
   // hide unnecessary links from sidebar Modules section
   //#main-nav a.module + ul > li:not(:first-child):not(:last-child) {
   //  display: none !important;
@@ -1672,72 +1895,76 @@ html.flatModules body.id-21 {
   #modules_form #tab_site_modules {
     display: block !important;
   }
+
   #modules_form > .Inputfields > .Inputfield {
+
     &#tab_configurable_modules,
     &#tab_install_modules {
       display: none !important;
     }
+
     &:not(:first-child) thead {
       display: none !important;
     }
+
     .AdminDataTable,
     .Inputfields .InputfieldMarkup .InputfieldHeader + .InputfieldContent {
       margin-bottom: 0;
       padding-bottom: 0;
-
     }
+
     .InputfieldContent > p:first-child {
       display: none;
     }
+
     > .Inputfields > .Inputfield:not(.InputfieldFieldset) .InputfieldHeader:not(.uk-form-label) {
       height: 0;
       overflow: hidden;
       position: relative;
       top: -1px;
       margin-bottom: -1px;
-      //padding: 0;
-      //border: none;
-      //border-bottom: none;
     }
   }
 
   #tab_new_modules {
     margin-bottom: 1em;
     display: block !important;
+
     .InputfieldMarkup {
       display: none;
     }
+
     + #tab_site_modules {
       display: none !important;
     }
   }
+
   li + #tab_new_modules {
     margin-top: 1em;
   }
 }
 
-//}
-
 html.moduleModal {
-
   .ui-dialog-buttonpane {
     border-top: 1px solid rgba(#000, 0.12);
     width: 100%;
+
     .ui-dialog-buttonset {
-      float: none;
-      //text-align: center;
+      float: none; //text-align: center;
       margin-left: 12px;
+
       button {
-        display: inline-block !important;
-        //opacity: 1 !important;
+        display: inline-block !important; //opacity: 1 !important;
         visibility: visible !important;
         min-width: 92px;
         margin-right: 8px;
+
         &:not(:first-child) {
           span {
             font-weight: normal;
           }
         }
+
         i {
           margin: 0 4px 0 -6px;
           position: relative;
@@ -1753,60 +1980,76 @@ html.moduleCompact {
     .modules_filter {
       display: none;
     }
+
     .modules_section:not(:first-of-type) thead {
       display: none;
     }
+
     .modules_section + p {
       margin-top: 2em;
     }
+
     //.AdminDataTable {
     //  margin-bottom: 0 !important;
     //}
     h2 {
       display: none;
     }
+
     table.AdminDataList {
       .buttons {
         float: right;
         margin: 0;
+
         button {
           + button {
             margin-left: 4px;
           }
         }
+
         button[name="delete"] {
           background: $colorDelete !important;
           border-color: $colorDelete !important;
+
           &:hover {
             background: saturate($colorDelete, 20%) !important;
             border-color: saturate($colorDelete, 20%) !important;
           }
         }
       }
+
       p.module-summary {
-        &, + span {
+
+        &,
+        + span {
           float: left;
-          display: inline-block;
+          display: block;
           max-width: calc(100% - 120px);
         }
+
         + span {
           clear: left;
+
           + .buttons {
             // pull up
             margin-top: -20px;
           }
         }
       }
+
       @media only screen and (min-width: 960px) {
         td:first-child {
           position: relative;
+
           i {
             position: absolute;
             right: 8px;
             top: 11px;
           }
+
           a {
             display: block;
+
             span {
               position: static;
               display: block;
@@ -1814,22 +2057,26 @@ html.moduleCompact {
             }
           }
         }
+
         td:last-child {
-          position: relative;
-          //display:flex;
+          position: relative; //display:flex;
           //flex-direction: column-reverse;
         }
+
         td:nth-child(2) {
           br {
             display: none;
           }
+
           small {
             margin-left: 8px;
             opacity: 0.7;
           }
         }
+
         span.ConfigurableModule {
           position: relative;
+
           &:after {
             transform-origin: center;
             backface-visibility: hidden;
@@ -1844,9 +2091,11 @@ html.moduleCompact {
             animation: spinOut 0.5s forwards;
           }
         }
+
         span.not_installed > span.ConfigurableModule:after {
           display: none;
         }
+
         td a:hover {
           span.ConfigurableModule {
             &:after {
@@ -1854,12 +2103,14 @@ html.moduleCompact {
             }
           }
         }
+
         button.ProcessModuleSettings {
           display: none;
         }
       }
     }
   }
+
   &.noAnim {
     form#modules_form {
       table.AdminDataList {
@@ -1877,7 +2128,6 @@ html.moduleCompact {
 
 // tweak styles
 //html.PagePreviewBtn {
-
 body.AdminThemeDefault {
   #aos_PagePreviewBtn {
     i {
@@ -1890,10 +2140,12 @@ body.AdminThemeDefault {
 #aos_PagePreviewBtn {
   margin-left: 0.5em;
   position: absolute;
+
   i {
     color: rgba(0, 0, 0, 0.33);
     font-size: 0.7em !important;
   }
+
   &:hover {
     i {
       color: inherit !important;
@@ -1902,7 +2154,6 @@ body.AdminThemeDefault {
 }
 
 //}
-
 // Reno theme search tweaks on lower resolutions
 //@media only screen and (max-width: 960px) {
 //
@@ -1922,10 +2173,10 @@ body.AdminThemeDefault {
 //}
 //
 @media only screen and (max-width: 1100px) {
-
   #search {
     width: auto;
   }
+
   #ProcessPageSearchForm {
     width: auto;
   }
@@ -1934,18 +2185,18 @@ body.AdminThemeDefault {
 // adminColumns (Split.js)
 html.adminColumns {
   .Inputfields {
-    @include clearfix;
-    //  position: relative;
+    @include clearfix; //  position: relative;
     //  overflow: hidden;
   }
+
   .gutter {
     //background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==') no-repeat 47% 180px;
     cursor: ew-resize;
     float: left;
     min-height: 200px;
     position: relative;
-    z-index: 300;
-    //&:hover:after {
+    z-index: 300; //&:hover:after {
+
     //  content: "";
     ////  left: 3px;
     //  background: #f8f8f8;
@@ -1956,7 +2207,6 @@ html.adminColumns {
     //  right: 0;
     //  display: block;
     //  transition: background 0.7s;
-
     //}
     //&:active:after {
     //  border-right: 5px double rgba(#d9e1ea, 0.4);
@@ -1975,10 +2225,11 @@ html.adminColumns {
 
 // PageListThumbs
 html.PageListThumbs {
-
   @media only screen and (max-width: 960px) {
     .PageListItem {
-      figure, i {
+
+      figure,
+      i {
         display: none !important;
       }
     }
@@ -1989,8 +2240,8 @@ html.PageListThumbs {
 
     .PageListItem {
       @include clearfix;
-      width: 100%;
-      //a {
+      width: 100%; //a {
+
       //  border-radius: 0 !important;
       //}
       > a {
@@ -1998,36 +2249,36 @@ html.PageListThumbs {
           vertical-align: middle;
         }
       }
+
       figure {
-        padding: 0;
-        //background: #F0F3F7;
+        padding: 0; //background: #F0F3F7;
         display: inline-block;
-        line-height: $thumbSize;
-        //height: $thumbSize;
+        line-height: $thumbSize; //height: $thumbSize;
         min-width: $thumbSize;
         min-height: $thumbSize;
         text-align: center;
         font-style: normal;
         position: relative;
-        margin: -5px 20px -5px 0;
-        // required for cropping with border-radius
+        margin: -5px 20px -5px 0; // required for cropping with border-radius
         z-index: 20;
+
         a {
           display: block;
           padding: 0;
           position: relative;
           height: $thumbSize;
         }
+
         img {
           vertical-align: middle;
           height: 100%;
         }
+
         // create a pseudo to make items align vertically (:before on next item)
         // exclude the page icon (.fa)
         + *:not(.fa):before {
           content: "";
-          height: $thumbSize - 10px;
-          //height: $thumbSize;
+          height: $thumbSize - 10px; //height: $thumbSize;
           display: inline-block;
           width: 0;
           visibility: hidden !important;
@@ -2036,17 +2287,20 @@ html.PageListThumbs {
           margin: 0;
           padding: 0 !important;
         }
+
         &.square,
         &.circle {
-          width: $thumbSize;
-          //min-width: $thumbSize;
+          width: $thumbSize; //min-width: $thumbSize;
           //min-height: $thumbSize;
           //img {
           //  display: block;
           //}
         }
+
         &.circle {
-          &, a:after {
+
+          &,
+          a:after {
             border-radius: 100% !important;
             overflow: hidden;
           }
@@ -2063,6 +2317,7 @@ html.PageListThumbs {
             backface-visibility: hidden;
             overflow: hidden;
             position: relative;
+
             &:after {
               text-align: center;
               content: "\f044";
@@ -2083,6 +2338,7 @@ html.PageListThumbs {
               visibility: hidden;
               transition: all $defaultTransition;
             }
+
             &:hover {
               &:after {
                 opacity: 1;
@@ -2092,16 +2348,18 @@ html.PageListThumbs {
             }
           }
         }
-
       }
+
       img {
         display: block;
         margin: 0 auto;
       }
     }
+
     &.pListCompact,
     body.AdminThemeDefault {
       $thumbSize: 32px;
+
       .PageListItem {
         figure {
           //height: $thumbSize;
@@ -2109,16 +2367,20 @@ html.PageListThumbs {
           min-width: $thumbSize;
           min-height: $thumbSize;
           margin: -2px 16px -2px 0;
+
           a {
             height: $thumbSize;
           }
+
           + *:before {
             height: $thumbSize - 4px;
           }
+
           &.square,
           &.circle {
             width: $thumbSize;
           }
+
           &.addlink {
             a {
               &:after {
@@ -2129,12 +2391,14 @@ html.PageListThumbs {
         }
       }
     }
+
     // disable in PageListSelect field
     .PageListSelectHeader {
       figure {
         display: none !important;
       }
     }
+
     // but allow the image in the pagelist without edit link
     .PageListSelectHeader ~ .PageList {
       figure a {
@@ -2153,42 +2417,58 @@ html.PageListThumbs {
   display: none;
 }
 
+.icons-filter-wrap {
+  display: inline-block;
+  background: transparent !important;
+}
+
 #icons-filter {
   display: inline-block;
-  padding: 2px 5px;
-  margin-left: 30px;
+  padding: 0.33rem 0.45rem;
+  width: auto;
+  margin-left: 1rem;
+
   &.hidden {
-    display: none;
+    //padding: 0;
+    visibility: hidden;
   }
 }
 
 html.noAnim {
-  *, *:after, *:before {
+  scroll-behavior: auto !important;
+
+  *,
+  *:after,
+  *:before {
     transition-duration: 0s !important;
     animation: none !important;
   }
 }
 
 html.highlightRows {
+
   .PageListItem:hover,
   .AdminDataTable.AdminDataList tr:hover td {
     background: rgba(#EAF0F2, 0.48);
   }
-
 }
 
 html.pListShowActions {
   .content .PageList {
     .PageListItem {
       display: inline-block !important;
+      width: 100% !important;
+
       .PageListActions {
         display: inline-block !important;
         opacity: 1 !important;
+
         > [class^="PageListAction"]:not(:hover) {
           filter: saturate(0.5);
           opacity: 0.5;
         }
       }
+
       &:hover {
         [class^="PageListAction"] {
           filter: saturate(1) !important;
@@ -2201,12 +2481,14 @@ html.pListShowActions {
 
 html.pListActiveBold {
   .PageListItemOpen:not(.PageListSortItem) {
+
     //border-bottom-color: rgba(#2F4248, 0.15) !important;
     a.PageListPage {
       font-weight: bold;
       background-color: transparent !important;
     }
   }
+
   .content .PageList .PageListID1 {
     background: transparent;
   }
@@ -2218,19 +2500,23 @@ html.pListActiveBold {
     display: inline-block;
     vertical-align: top;
     margin-top: 0.33em;
+
     a {
       display: block;
     }
+
     img {
       float: none !important;
       margin: 0 0 0.42em;
     }
   }
+
   .imageSelectLabel {
     display: inline-block;
     margin-right: 1em;
     max-width: 200px;
     line-height: 1.4;
+
     small {
       display: block;
       margin-top: 0.25em;
@@ -2240,48 +2526,189 @@ html.pListActiveBold {
   }
 }
 
-a.case-toggle {
-  position: absolute;
-  right: 16px;
+.asmSelect[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+// select2.js
+.select2-selection.select2-selection--single,
+.select2.select2-container,
+span.select2-dropdown {
+  width: auto !important;
+  min-width: 300px !important;
+  max-width: 640px;
+}
+
+.select2-results__option {
   white-space: nowrap;
-  .LanguageSupport & {
-    right: 0;
+}
+
+.select2-dropdown--above {
+  border-bottom: 1px solid #aaa !important;
+}
+
+.select2-container--default .select2-selection--single {
+  border-radius: 2px !important;
+}
+
+.select2-search--dropdown {
+  padding: 0 !important;
+
+  input {
+    padding-top: 0.36em !important;
+    padding-bottom: 0.36em !important;
   }
+}
+
+.select2-container--default .select2-results__option[aria-disabled=true] {
+  color: #b4b4b4 !important;
+}
+
+.select2-container--default .select2-search--dropdown .select2-search__field {
+  border-left: none !important;
+  border-right: none !important;
+}
+
+//.select2-selection__rendered {
+//  line-height: inherit !important;
+//}
+.select2-container--default .select2-results > .select2-results__options {
+  max-height: 360px !important;
+}
+
+.select2-results__option {
+  padding: 2px 6px !important;
+}
+
+// hide the tags
+ol.asmList + select + .select2-container {
+  display: none !important;
+}
+
+.select2-results__option {
+  &:empty {
+    display: none;
+  }
+
+  //&[aria-disabled="true"] {
+  //  display: none !important;
+  //}
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+  right: 4px !important;
+}
+
+.select2-container .select2-selection--single .select2-selection__rendered {
+  padding-right: 24px !important;
+}
+
+.AdminThemeUikit {
+  .select2-container .select2-selection--single {
+    height: 32px;
+  }
+
+  .select2-selection__rendered {
+    line-height: 30px;
+  }
+
+  .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 30px;
+    right: 6px;
+  }
+
+  .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 30px;
+  }
+
+  .select2-container .select2-selection--single .select2-selection__rendered {
+    padding-left: 10px;
+  }
+}
+
+a.case-toggle {
+  float: right;
+  height: 0;
+  white-space: nowrap;
+  padding: 0;
+  z-index: 5;
+  top: 4px;
+  position: relative;
+
   .langTabsOff & {
     right: 16px;
   }
-  padding: 5px 8px;
+
   html.AdminThemeDefault & {
-    padding: 1px 6px;
-    right: 16px !important;
+    top: 0;
   }
+
+  html.AdminThemeDefault .langTabsOff & {
+    right: -1px;
+  }
+
+  html.AdminThemeReno .langTabsOff & {
+    right: 0;
+  }
+
+  html.AdminThemeUikit .langTabsOff & {
+    top: 28px;
+    right: 2px;
+  }
+
+  html.AdminThemeUikit & {
+    &:before {
+      line-height: 2.7;
+    }
+  }
+
+  .batchChildTableContainer & {
+    right: 19px;
+  }
+
   + input {
     padding-right: 36px !important;
   }
+
   i {
-    &:before {
+    padding: 6px 12px;
+
+    &::before {
       font-size: 12px;
     }
-    + i:before {
-      font-size: 9px;
+
+    + i {
+      margin-left: -25px;
+
+      &::before {
+        font-size: 9px;
+      }
     }
   }
-  &:not(:hover) {
-    color: rgba(#2C3E55, 0.5);
 
+  &:not(:hover) {
+    color: inherit !important;
+    opacity: 0.4;
   }
+
   &:hover {
     cursor: pointer;
+
     &:before {
       width: auto;
-      margin-right: 8px;
       transform: scaleX(1);
     }
   }
+
   &:before {
+    content: attr(data-case);
+    position: absolute;
+    right: 100%;
+    margin-right: -4px;
+    line-height: 2.5;
     width: 0;
     display: inline-block;
-    content: attr(data-case);
     font-size: 12px;
     color: rgba(#2C3E55, 0.7);
     transform-origin: right;
@@ -2290,6 +2717,7 @@ a.case-toggle {
 }
 
 /*RenoTweaks Reno theme tweaks*/
+
 html.AdminThemeReno {
 
   // fix light blue ui dialog header
@@ -2305,7 +2733,12 @@ html.AdminThemeReno {
 
   // disable all animations
   body:not(.pw-ready) {
-    #branding:not(.hide), #masthead:not(.full), #sidebar:not(.hide), #main:not(.full), .main-nav-toggle:not(.full) {
+
+    #branding:not(.hide),
+    #masthead:not(.full),
+    #sidebar:not(.hide),
+    #main:not(.full),
+    .main-nav-toggle:not(.full) {
       //#branding, #masthead, #sidebar, #main, .main-nav-toggle {
       //transition: none;
       transition-duration: 0s;
@@ -2314,6 +2747,7 @@ html.AdminThemeReno {
 
   // headSticky
   &.hoverTopSubmenus:not(.modal) {
+
     #topnav .pw-dropdown,
     #topnav .dropdown {
       ul {
@@ -2322,10 +2756,12 @@ html.AdminThemeReno {
         transform-origin: center top;
         padding: 0 !important;
         box-shadow: none !important;
+
         &:before {
           top: -16px !important;
         }
       }
+
       &:hover {
         ul {
           transform: scaleY(1);
@@ -2336,8 +2772,8 @@ html.AdminThemeReno {
       }
     }
   }
-  &.headSticky:not(.modal) {
 
+  &.headSticky:not(.modal) {
     @media only screen and (min-width: 960px) {
 
       // System Notifications module
@@ -2361,6 +2797,7 @@ html.AdminThemeReno {
         max-height: 75vh;
         overflow-x: hidden !important;
         overflow-y: auto !important;
+
         li:first-child {
           box-shadow: inset 0 3px 3px rgba(#000, 0.075);
         }
@@ -2370,15 +2807,13 @@ html.AdminThemeReno {
         z-index: 100000 + 20000 !important;
       }
 
-      .tracy-panel {
-        z-index: 100000 + 20000 !important;
-      }
-
-      .ui-widget-overlay, .mfp-bg {
+      .ui-widget-overlay,
+      .mfp-bg {
         z-index: 100000 + 1002;
       }
 
-      .ui-dialog, .mfp-wrap {
+      .ui-dialog,
+      .mfp-wrap {
         z-index: 100000 + 1022;
       }
 
@@ -2402,24 +2837,26 @@ html.AdminThemeReno {
         position: fixed;
         backface-visibility: hidden;
       }
+
       #masthead {
         width: 100%;
         z-index: 100000 + 60;
+
         * {
           z-index: 100000 + 70;
         }
       }
+
       #breadcrumbs {
         backface-visibility: hidden;
         position: fixed;
-        top: 50px;
-        //height: 47px;
+        top: 50px; //height: 47px;
         width: 100%;
-        z-index: 100000 + 11;
-        //padding-top: 1em;
+        z-index: 100000 + 11; //padding-top: 1em;
         //padding-bottom: 0.25em;
         border-bottom: none;
       }
+
       #headline {
         top: 86px;
         position: fixed;
@@ -2428,42 +2865,36 @@ html.AdminThemeReno {
         left: 0;
         z-index: 100000 + 11;
         border-bottom: 1px solid rgba(#000, 0.1);
-        padding: 1.33em 0 1.33em 1.33em;
-        //transition: padding-top 0.12s, padding-bottom 0.12s !important;
+        padding: 1.33em 0 1.33em 1.33em; //transition: padding-top 0.12s, padding-bottom 0.12s !important;
       }
+
       #main {
         &:not(.closed) {
           #headline {
             padding-left: 232px;
           }
         }
+
         position: absolute;
         top: 0;
         left: 0;
-        right: 0;
-        // this would crop the footer
+        right: 0; // this would crop the footer
         //bottom: 0;
-        padding-top: 0;
-        //height: 100%;
+        padding-top: 0; //height: 100%;
         //overflow-y: hidden;
         border-top: 156px solid transparent;
         max-height: 100%;
-        min-height: 100%;
-        //overflow: auto;
-        overflow-y: auto;
-        // disable page jump
+        min-height: 100%; //overflow: auto;
+        overflow-y: auto; // disable page jump
+
         //overflow-y: scroll;
         #content {
           // layout scrolbar fix
           //border-top: 156px solid transparent;
-          top: 0;
-          //max-height: 100%;
+          top: 0; //max-height: 100%;
           //overflow: auto;
-          &.ps-theme-pw-scrollbar {
-            overflow: hidden !important;
-          }
-          padding-bottom: 0;
-          // placeholder to push down bottom (Firefox)
+          padding-bottom: 0; // placeholder to push down bottom (Firefox)
+
           &:after {
             content: "";
             display: block;
@@ -2487,13 +2918,13 @@ html.AdminThemeReno {
         max-width: calc(100% - 180px);
         line-height: 1.25em !important;
         margin-top: -0.25em !important;
+
         > span {
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
           max-width: 100%;
-          display: inline-block;
-          //max-width: calc(100% - 40px);
+          display: inline-block; //max-width: calc(100% - 40px);
           vertical-align: bottom;
         }
       }
@@ -2531,10 +2962,9 @@ html.AdminThemeReno {
 
   // headStickyCompact
   &.headSticky.headStickyCompact:not(.modal) {
-
     @media only screen and (min-width: 960px) {
+      overflow: hidden; // System Notifications module
 
-      // System Notifications module
       #NotificationGhosts {
         top: 48px !important;
       }
@@ -2544,11 +2974,14 @@ html.AdminThemeReno {
         position: fixed;
         backface-visibility: hidden;
         z-index: 100000 + 220;
+
         select {
           padding: 3px 1px 3px 3px;
+
           &:hover {
             cursor: pointer;
           }
+
           &:not(:focus) {
             border-color: transparent;
           }
@@ -2563,12 +2996,14 @@ html.AdminThemeReno {
         position: relative;
         margin: 0 0 0 40px;
         padding: 0;
-        display: inline-block !important;
+        display: block !important;
+
         .qty {
           //color: #fff;
           font-weight: normal;
           background: #E2E9EF;
         }
+
         // do not show quantity if it's 0
         //&[data-qty="0"] {
         //  display: none !important;
@@ -2579,6 +3014,7 @@ html.AdminThemeReno {
         //  //}
         //}
       }
+
       .NotificationMenu {
         left: 210px;
         top: 100px;
@@ -2593,24 +3029,27 @@ html.AdminThemeReno {
         top: -52px;
         z-index: 100000 + 250;
       }
+
       #breadcrumbs {
         backface-visibility: hidden;
         position: fixed;
         top: 0;
         width: 100%;
-        z-index: 100000 + 182;
-        //padding-top: 1em;
+        z-index: 100000 + 182; //padding-top: 1em;
         //padding-bottom: 0.25em;
         border-bottom: none;
         background: #fff;
       }
+
       #sidebar {
         padding-top: 0;
         z-index: 100000 + 300;
       }
+
       ul.quicklinks {
         top: 0 !important;
       }
+
       #headline {
         box-shadow: $defaultBoxShadow;
         top: 33px;
@@ -2619,17 +3058,19 @@ html.AdminThemeReno {
         width: 100%;
         left: 0;
         z-index: 100000 + 200;
-        border-bottom: 1px solid rgba(#000, 0.1);
-        //padding: 1.33em 0 1.33em 1.33em;
+        border-bottom: 1px solid rgba(#000, 0.1); //padding: 1.33em 0 1.33em 1.33em;
         //transition: padding-top 0.12s, padding-bottom 0.12s !important;
         background: #fff;
       }
+
       #main {
         border-top: 103px solid transparent;
+
         &:not(.closed) #headline {
           padding-left: 232px;
         }
       }
+
       #wrap {
         #search {
           left: auto;
@@ -2638,15 +3079,16 @@ html.AdminThemeReno {
           max-width: 360px;
           z-index: 100000 + 210;
           position: fixed;
-          backface-visibility: hidden;
-          //right: -8px;
+          backface-visibility: hidden; //right: -8px;
           right: 8px;
           text-align: right;
           width: auto;
+
           form {
             display: inline-block;
             width: auto;
           }
+
           input {
             background: transparent;
             border-bottom: 1px solid rgba(0, 0, 0, 0.16);
@@ -2658,14 +3100,17 @@ html.AdminThemeReno {
             color: inherit;
             position: relative;
             z-index: 100000 + 220;
+
             &:not(:focus) {
               color: rgba(#2A3C51, 0.42);
             }
+
             &:focus {
               background: rgba(#F0F3F7, 0.5);
               max-width: 100%;
             }
           }
+
           label {
             right: 0;
             left: auto !important;
@@ -2684,8 +3129,7 @@ html.AdminThemeReno {
         backface-visibility: hidden;
         left: auto !important;
         right: 26px !important;
-        top: 41px !important;
-        //z-index: 100000 + 20000 !important;
+        top: 41px !important; //z-index: 100000 + 20000 !important;
         box-shadow: 0 1px 3px 1px rgba(0, 0, 0, 0.12) !important;
       }
 
@@ -2696,22 +3140,30 @@ html.AdminThemeReno {
       #masthead #topnav {
         top: 50px;
         z-index: 100000 + 260;
+
         .avatar.pw-dropdown,
         .avatar.dropdown {
           margin-right: -0.5em !important;
+
           a {
             padding-right: 0.5em;
           }
         }
+
         .avatar img {
           margin-top: -1px;
         }
-        a, a:hover, a:after {
+
+        a,
+        a:hover,
+        a:after {
           color: inherit !important;
         }
+
         a {
           margin-left: 1px;
         }
+
         li.pw-dropdown ul,
         li.dropdown ul {
           //box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.12);
@@ -2721,7 +3173,6 @@ html.AdminThemeReno {
           border: none;
           z-index: 100000 + 3300;
         }
-
       }
 
       &.openSearch {
@@ -2739,6 +3190,7 @@ html.AdminThemeReno {
           padding-left: 252px;
         }
       }
+
       .NotificationMenu {
         left: 230px;
       }
@@ -2748,6 +3200,7 @@ html.AdminThemeReno {
       #headline {
         padding-left: 24px !important;
       }
+
       .NotificationMenu {
         left: 0 !important;
       }
@@ -2757,6 +3210,7 @@ html.AdminThemeReno {
       #headline {
         transition: padding-left $defaultTransition;
       }
+
       #wrap #search input {
         transition: background $defaultTransition;
       }
@@ -2787,10 +3241,12 @@ html.AdminThemeReno {
             background: #fff;
             border-top: 1px solid rgba(0, 0, 0, .1);
             border-bottom: 1px solid rgba(0, 0, 0, .1);
+
             a {
               padding: 0.42em 1em 0.33em;
               border: none;
             }
+
             li:first-child {
               a {
                 padding-left: 1.5em;
@@ -2798,12 +3254,14 @@ html.AdminThemeReno {
             }
           }
         }
+
         //&.scrolled {
         #main {
           .WireTabs {
             box-shadow: $defaultBoxShadow;
           }
         }
+
         //}
         .NotificationMenu {
           top: 137px;
@@ -2817,6 +3275,7 @@ html.AdminThemeReno {
               left: 230px;
             }
           }
+
           //.WireTabs {
           //  left: 0;
           //}
@@ -2848,69 +3307,33 @@ html.AdminThemeReno {
         left: 50%;
         transform: translateX(-50%);
         transition: none !important;
+
         form {
           max-width: 100%;
         }
+
         &:before {
           display: none;
         }
+
         #ProcessPageSearchForm label {
           width: 24px;
         }
+
         .search-close {
           display: none;
         }
       }
     }
+
     #topnav .search-toggle {
       display: none !important;
     }
   }
 
   // custom miniScrollbar theme
-
   #main-nav {
     position: relative;
-  }
-
-  @import '../scripts/vendor/perfect-scrollbar/css/mixins';
-  @import '../scripts/vendor/perfect-scrollbar/css/variables';
-
-  $ps-theme-default: (
-          border-radius: $ps-border-radius,
-          rail-default-opacity: $ps-rail-default-opacity,
-          rail-container-hover-opacity: $ps-rail-container-hover-opacity,
-          rail-hover-opacity: $ps-rail-hover-opacity,
-          bar-bg: $ps-bar-bg,
-          bar-container-hover-bg: $ps-bar-container-hover-bg,
-          bar-hover-bg: $ps-bar-hover-bg,
-          rail-hover-bg: $ps-rail-hover-bg,
-          scrollbar-x-rail-bottom: $ps-scrollbar-x-rail-bottom,
-          scrollbar-x-rail-height: $ps-scrollbar-x-rail-height,
-          scrollbar-x-bottom: $ps-scrollbar-x-bottom,
-          scrollbar-x-height: $ps-scrollbar-x-height,
-          scrollbar-y-rail-right: $ps-scrollbar-y-rail-right,
-          scrollbar-y-rail-width: $ps-scrollbar-y-rail-width,
-          scrollbar-y-right: $ps-scrollbar-y-right,
-          scrollbar-y-width: $ps-scrollbar-y-width,
-  );
-
-  .ps-theme-pw-scrollbar {
-    @include ps-container(map-merge($ps-theme-default, (
-            border-radius: 2,
-            rail-default-opacity: 0,
-            bar-bg: transparent,
-            bar-container-hover-bg: rgba(#2F4248, 0.4),
-            rail-hover-bg: rgba(#2F4248, 0.2),
-            bar-hover-bg: rgba(#2F4248, 0.5),
-            scrollbar-y-rail-width: 6px,
-            scrollbar-y-width: 6px
-    )));
-
-    //.ps-theme-pw-scrollbar {
-    //  overflow-x: visible !important;
-    //}
-
   }
 
   ul.quicklinks {
@@ -2924,8 +3347,8 @@ html.AdminThemeReno {
       min-width: 250px;
       max-width: 500px;
       width: auto !important;
-      display: inline-block !important;
-      //&:after {
+      display: inline-block !important; //&:after {
+
       //  content: "";
       //  position: absolute;
       //  left: 100%;
@@ -2942,8 +3365,8 @@ html.AdminThemeReno {
 
   // sbAutoHide
   &.sbAutoHide:not(.modal) {
-
     &.noticeLeftX #notices {
+
       //left: -1em;
       //padding-left: 1em;
       .NoticeMessage {
@@ -2979,7 +3402,8 @@ html.AdminThemeReno {
         margin-left: 0;
       }
 
-      #sidebar.closed, #sidebar.hide,
+      #sidebar.closed,
+      #sidebar.hide,
       #branding.closed {
         left: 0 !important;
       }
@@ -2992,6 +3416,7 @@ html.AdminThemeReno {
         padding-top: 0;
         transform: translateX(-100%);
         z-index: 100000 + 8000 !important;
+
         &:before {
           content: "";
           position: absolute;
@@ -3001,10 +3426,12 @@ html.AdminThemeReno {
           height: 100%;
           background: transparent;
         }
+
         &:hover {
           transform: translateX(0);
         }
       }
+
       body.pw-ready {
         #sidebar {
           transition: transform $defaultTransition;
@@ -3019,12 +3446,12 @@ html.AdminThemeReno {
       #sidebar {
         position: fixed;
         backface-visibility: hidden;
-        z-index: 9;
-        //.quicklinks {
+        z-index: 9; //.quicklinks {
         //  top: 50px !important;
         //}
       }
     }
+
     &:not(.headSticky):not(.sbAutoHide) {
       #branding {
         position: fixed;
@@ -3041,40 +3468,48 @@ html.AdminThemeReno {
           > li {
             > a {
               font-weight: 600;
+
               > i {
                 margin: 5px 8px 0 0;
                 float: right;
               }
             }
+
             a {
               padding: 0.27em 0.5em 0.27em 1.3em;
+
               &.parent {
                 background: transparent;
+
                 &:hover {
                   background-color: inherit !important;
                 }
               }
+
               &:after {
                 display: none;
               }
             }
+
             > ul {
-              display: block !important;
-              //padding-bottom: 0.2em;
+              display: block !important; //padding-bottom: 0.2em;
               padding-bottom: 0;
+
               &:empty {
                 display: none !important;
               }
+
               overflow: visible !important;
-              height: auto !important;
-              //padding: 8px 12px 2px 12px !important;
+              height: auto !important; //padding: 8px 12px 2px 12px !important;
+
               > li {
                 a {
                   padding-top: 0.275em;
-                  padding-bottom: 0.275em;
-                  //font-size: 0.94em;
+                  padding-bottom: 0.275em; //font-size: 0.94em;
                   margin-bottom: 0;
+
                   &.current {
+
                     //background: transparent;
                     //color: inherit !important;
                     //opacity: 1;
@@ -3085,6 +3520,7 @@ html.AdminThemeReno {
                       }
                     }
                   }
+
                   //  &:hover {
                   //    opacity: 1;
                   //    background-color: inherit !important;
@@ -3095,6 +3531,7 @@ html.AdminThemeReno {
                   //  }
                 }
               }
+
               //ul.quicklinks {
               //  width: auto !important;
               //  a {
@@ -3129,35 +3566,44 @@ html.AdminThemeReno {
                   padding-right: 18px;
                 }
               }
+
               i.quicklink-open {
                 visibility: visible;
                 opacity: 0.33;
                 padding: 5px 10px;
                 color: inherit !important;
+
                 &:hover {
                   opacity: 1;
                   color: inherit !important;
                 }
               }
             }
+
             > ul {
               padding: 8px 12px 2px 12px !important;
+
               > li {
                 display: inline-block;
                 font-size: 0.94em;
+
                 a {
                   padding: 0.2em 0.5em;
+
                   &:hover {
                     opacity: 1;
                     background-color: inherit !important;
+
                     span {
                       text-decoration: underline;
                     }
                   }
                 }
               }
+
               ul.quicklinks {
                 width: auto !important;
+
                 a {
                   min-width: 250px;
                   padding: 0.25em 20px;
@@ -3172,15 +3618,18 @@ html.AdminThemeReno {
 
   // sbQuickLinksHide
   &.sbQuickLinksHide {
+
     //@media only screen and (min-width: 960px) {
     #sidebar #main-nav > li a {
       span {
         padding-right: 0 !important;
       }
+
       i.quicklink-open {
         display: none;
       }
     }
+
     //}
   }
 
@@ -3188,6 +3637,7 @@ html.AdminThemeReno {
   &.noticeLeftX {
     #notices li {
       padding-left: 50px;
+
       .notice-remove {
         position: absolute;
         left: 10px;
@@ -3198,85 +3648,119 @@ html.AdminThemeReno {
 
 html.headBtnToTitle {
   @media only screen and (min-width: 960px) {
+
     #pw-content-head-buttons,
     #head_button {
       float: none;
       margin-left: 1rem;
       margin-top: 0.2rem;
-      display: inline-block;
-      //> button {
+      display: inline-block; //> button {
       //  float: none;
       //}
     }
+
     &.AdminThemeReno {
       #head_button {
-        margin-top: 0;
+        margin-top: -2px;
+        margin-bottom: -12px !important;
+      }
+
+      #breadcrumbs ul.nav {
+        float: none;
       }
     }
+
     #pw-content-head h1,
     #headline h1,
     #breadcrumbs ul.nav {
       float: left;
     }
+
     #breadcrumbs {
       #head_button {
         margin-bottom: -23px;
         top: -9px;
       }
+
       //ul.nav {
       //      margin-top: 2px;
       //    }
     }
+
     #pw-content-body {
       clear: both;
     }
   }
 }
 
+// ensure head buttons are above h1
+#pw-content-head-buttons {
+  position: relative;
+  z-index: 1;
+}
+
 // UikitTweaks (AdminThemeUikit theme tweaks)
 html.AdminThemeUikit {
   @media only screen and (min-width: 960px) {
+
     // headSticky
     &.headSticky {
       body:not(.modal):not(.id-23) {
-        padding-top: 73px;
-        #pw-masthead {
-          position: fixed !important;
-          top: 0 !important;
-          left: 0;
-          width: 100%;
+
+        #pw-mastheads {
+          position: sticky !important;
           backface-visibility: hidden;
-          z-index: 30;
+          top: 0 !important; //width: 100%;
+          z-index: 6;
+        }
+
+        .pw-dropdown-menu.prnav.pw-dropdown-ready {
+          position: fixed !important;
+          top: 75px !important;
         }
       }
-      &.headSticky.headCompact {
-        body:not(.modal):not(.id-23) {
-          padding-top: 54px;
+    }
+
+    &.headSticky.headCompact {
+      body:not(.modal):not(.id-23) {
+        .pw-dropdown-menu.prnav.pw-dropdown-ready {
+          top: 56px !important;
         }
       }
     }
   }
+
   &.headCompact {
     body:not(.modal) {
+
+      $height: 54px;
+
       #pw-masthead,
       #pw-masthead-mobile {
-        height: 54px;
+        height: $height;
+        min-height: $height;
+
         .uk-navbar a {
-          height: 54px;
+          height: $height;
+          min-height: $height;
         }
       }
+
       .pw-logo {
         margin-top: 6px;
       }
     }
+
     body.id-23 {
       .pw-logo {
         margin-top: -23px;
       }
     }
   }
+
   &.centerLogin {
     body.id-23 {
+
       #wrap_login_name,
       #wrap_login_pass,
       #ProcessLoginForm {
@@ -3292,14 +3776,18 @@ html.AdminThemeUikit {
   padding: 0 0.3rem;
   position: relative;
   top: 1px;
+
   &:not(:hover) {
     color: #ccc;
   }
+
   i {
     font-size: 17px !important;
   }
+
   html:not(.AdminThemeDefault) & {
     padding: 0 0.5rem;
+
     i {
       font-size: 27px !important;
     }
@@ -3323,18 +3811,17 @@ html.AdminThemeUikit {
 //    }
 //  }
 //}
-
 // AdminTweaks (default theme tweaks)
 // note: the default theme adds theme name class (and .modal class) to body, AOS adds to html
 html.AdminThemeDefault {
   @media only screen and (min-width: 960px) {
-
     &.leftTopnav #masthead #topnav {
       float: left;
       margin-left: 32px;
     }
 
     body:not(.modal) {
+
       // topnav flicker fix until better solution
       #masthead #topnav {
         margin-top: 8px;
@@ -3342,10 +3829,8 @@ html.AdminThemeDefault {
 
       // fix for PrevNextTabs module
       #content {
-
         ul.WireTabs {
-          overflow: hidden !important;
-          // override default -2.6em (allows active tab having no border & works with PrevNextTabs fix)
+          overflow: hidden !important; // override default -2.6em (allows active tab having no border & works with PrevNextTabs fix)
           margin-bottom: calc(-2.6em - 1px);
         }
       }
@@ -3353,9 +3838,7 @@ html.AdminThemeDefault {
 
     // headSticky
     &.headSticky {
-
       body:not(.modal) {
-
         .NotificationMenu {
           z-index: 9;
           margin-top: 3px;
@@ -3366,12 +3849,11 @@ html.AdminThemeDefault {
         #masthead {
           position: fixed;
           backface-visibility: hidden;
-          z-index: 30;
-          //z-index: 100000 + 1000;
-          width: 100%;
+          z-index: 30; //z-index: 100000 + 1000;
+          width: 100vw;
           top: 0;
-          left: 0;
-          // adminlangswitcher fix
+          left: 0; // adminlangswitcher fix
+
           &:hover {
             z-index: 31;
           }
@@ -3379,18 +3861,18 @@ html.AdminThemeDefault {
 
         #breadcrumbs {
           backface-visibility: hidden;
-          position: fixed;
-          //z-index: 100000 + 1000;
+          position: fixed; //z-index: 100000 + 1000;
           z-index: 30;
           top: 47px;
           left: 0;
-          width: 100%;
+          width: 100vw;
           border: none;
         }
 
         #notices {
           position: relative;
           z-index: 19;
+
           & ~ #content {
             padding-top: 20px;
           }
@@ -3402,6 +3884,7 @@ html.AdminThemeDefault {
               padding-top: 52px;
             }
           }
+
           #content {
             padding-top: 52px;
           }
@@ -3417,6 +3900,7 @@ html.AdminThemeDefault {
         }
       }
     }
+
     &.wide {
       body:not(.modal) {
         .container {
@@ -3436,33 +3920,42 @@ html.stickyCKE {
       z-index: 5;
       margin-bottom: -1px;
     }
-    .cke_top, .cke_contents, .cke_bottom {
+
+    .cke_top,
+    .cke_contents,
+    .cke_bottom {
       float: none;
       @include clearfix();
     }
+
     .cke_contents {
       width: calc(100% - 1px);
     }
+
     .cke_bottom {
       position: sticky;
       bottom: 0;
       line-height: 1;
       z-index: 2;
     }
+
     [id*="cke_"].cke_chrome {
       margin-bottom: 1em !important;
     }
+
     // default theme tweaks for sticky cke
     &.AdminThemeDefault.headSticky {
       .cke_top {
         top: 102px;
       }
     }
+
     &.AdminThemeUikit.headSticky {
       &.headSticky {
         .cke_top {
           top: 73px;
         }
+
         &.headCompact {
           .cke_top {
             top: 54px;
@@ -3493,10 +3986,12 @@ html.downloadAssetButton {
 html.moveAssetButtons {
   .ImageData {
     margin-right: -6%; // fix for inline css 78% width
+
     h2 {
       white-space: pre-wrap;
       margin-top: 4px !important;
       max-width: calc(100% - 70px) !important;
+
       + span {
         display: block;
       }
@@ -3505,45 +4000,55 @@ html.moveAssetButtons {
 }
 
 // order: move, download
-
 .aos_moveAssets {
   position: absolute;
   z-index: 99;
   right: 56px;
   color: white;
+
   i {
     padding: 9px 7px 8px;
     margin-right: 1px;
+
     &::before {
       transform: rotate(-90deg);
       display: inline-block;
     }
+
     &:hover {
       cursor: pointer;
       opacity: 0.7;
     }
   }
+
   .InputfieldImage & {
     right: 8px;
+
     i {
       float: right;
       padding: 8px 5px;
+
       &:before {
         transform: rotate(180deg);
       }
     }
   }
-  .InputfieldImageEditAll & { // Image field, full-width row
+
+  .InputfieldImageEditAll & {
+    // Image field, full-width row
     opacity: 0.5;
     right: 34px;
     color: inherit;
+
     i {
       padding: 9px 7px 8px;
+
       &:before {
         transform: rotate(-90deg);
       }
     }
   }
+
   ~ .aos_downloadAsset ~ p.InputfieldFileInfo {
     padding-right: 104px !important;
   }
@@ -3552,6 +4057,7 @@ html.moveAssetButtons {
 .InputfieldFileList,
 .InputfieldImage {
   li {
+
     &:first-child [data-up],
     &:last-of-type [data-down] {
       opacity: 0.33;
@@ -3562,32 +4068,36 @@ html.moveAssetButtons {
 }
 
 .aos_downloadAsset {
-  //position: absolute;
-  //z-index: 99;
-  //top: 1px;
+
   .gridImage--delete &,
   .InputfieldImageEdit__buttons & {
     display: none;
   }
+
   .InputfieldImage & {
     margin-top: -2px;
   }
+
   .InputfieldFileItem & {
     right: 27px;
     top: auto;
     position: absolute;
+    z-index: 1;
+
     i {
       color: #fff;
     }
   }
+
   ~ p.InputfieldFileInfo {
     padding-right: 54px !important;
   }
+
   i {
     padding: 9px 8px 10px;
     display: inline-block;
-
   }
+
   &:hover {
     opacity: 0.7;
     color: inherit !important;
@@ -3599,6 +4109,7 @@ html.moveAssetButtons {
 html.moveAssetButtons:not(.downloadAssetButton) {
   .aos_moveAssets {
     right: 28px;
+
     ~ p.InputfieldFileInfo {
       padding-right: 74px !important;
     }
@@ -3624,6 +4135,7 @@ html.AdminThemeUikit .aos_no-inputfield-padding#FieldsetTools {
   > .InputfieldContent {
     background: transparent;
   }
+
   button[id^="Inputfield_submit_"] {
     margin-left: 20px;
     margin-bottom: 20px;
@@ -3637,9 +4149,11 @@ html.AdminThemeUikit .aos_no-inputfield-padding#FieldsetTools {
       .ProcessListerTable tr td:first-child:hover {
         .PageListerActions {
           display: inline-block !important;
+
           .PageExtras ~ a {
             display: none;
           }
+
           .PageExtras.extras-open,
           .PageExtras.extras-open ~ a {
             display: inline-block;
@@ -3655,6 +4169,7 @@ html.AdminThemeUikit .aos_no-inputfield-padding#FieldsetTools {
   font-size: 0.92em;
   color: rgba(0, 0, 0, 0.75);
   font-style: normal;
+
   &:not(:empty):before {
     content: "•";
     opacity: 0.5;
@@ -3662,6 +4177,7 @@ html.AdminThemeUikit .aos_no-inputfield-padding#FieldsetTools {
     padding: 0 5px 0 4px;
     font-weight: normal;
   }
+
   &:empty {
     display: none;
   }
@@ -3674,10 +4190,12 @@ html.pListFullRowHover:not(.pListShowActions) {
         display: inline-block !important;
       }
     }
+
     .PageListItemOpen {
       .PageListActions {
         display: none !important;
       }
+
       &:hover {
         .PageListActions {
           display: inline-block !important;
@@ -3688,6 +4206,7 @@ html.pListFullRowHover:not(.pListShowActions) {
 }
 
 html.pListCounters {
+
   // add pagelist counters
   .PageListRoot > .PageList > .PageListItem ~ .PageList:not(.PageListPlaceholder) {
     .PageListItem {
@@ -3699,23 +4218,31 @@ html.pListCounters {
         top: -1px;
         display: inline-block;
       }
+
       &:hover {
         &:before {
           opacity: 0.8;
         }
       }
     }
+
     @include pListNum('pl1');
+
     > .PageList {
       @include pListNum('pl2');
+
       > .PageList {
         @include pListNum('pl3');
+
         > .PageList {
           @include pListNum('pl4');
+
           > .PageList {
             @include pListNum('pl5');
+
             > .PageList {
               @include pListNum('pl6');
+
               > .PageList {
                 @include pListNum('pl7');
               }
@@ -3725,6 +4252,7 @@ html.pListCounters {
       }
     }
   }
+
   // only if unpublished-hidden pages aren't included in pListCounter
   //.PageListItem.PageListStatusHidden,
   //.PageListItem.PageListStatusUnpublished {
@@ -3738,93 +4266,171 @@ html.pListCounters {
 //    float: right;
 //  }
 //}
-
 // icons for pagelist, ProcessListerTable
-
 // disable white font color when hovering on Lister actions
 //html.aos .pw-content .AdminDataList td a:not(.PageExtras):hover {
 //  color: inherit !important;
 //}
-
 html.pListIconOnly {
+  .PageListActions a {
+    max-width: 30px;
+    overflow: hidden;
+    white-space: nowrap;
+    vertical-align: middle;
+    margin-bottom: 0 !important;
+    position: relative;
+    z-index: 2;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1;
+
+    &:not(.PageExtras) {
+      color: #7ea0ab !important;
+      background: transparent !important;
+
+      &:hover {
+        color: #E83561 !important;
+        z-index: 20;
+      }
+    }
+
+    &:before {
+      font-family: Fontawesome;
+      padding: 0 4px;
+      text-align: center;
+      margin-right: 5px;
+      min-width: 30px;
+      display: inline-block;
+      font-size: 15px;
+      margin-left: 0;
+    }
+
+    tr.open & {
+      display: inline-block !important;
+    }
+  }
+
   // for default theme
   .PageExtras.extras-open ~ a {
     display: inline-block !important;
   }
+
   .PageListerActions,
   .PageListActions {
     > li {
       margin-right: 1px;
     }
+
     .PageListActionEdit > a[href*="page/edit"],
     a.PageEdit {
       @include pageListIcon("\f040");
     }
+
+    .PageListActionEdit > a[href*="template/edit?"],
+      // template edit action
+    a.PageEdit {
+      max-width: unset;
+    }
+
     .PageListActionView > a,
     a.PageView {
       @include pageListIcon("\f14c");
     }
+
     .PageListActionNew > a,
     a.PageNew {
       @include pageListIcon("\f055");
     }
+
     .PageListActionMove > a {
       @include pageListIcon("\f0dc");
     }
+
     .PageListActionHide > a,
     .PageHide {
       @include pageListIcon("\f070");
     }
+
     .PageListActionCopy > a,
     .PageCopy {
       //@include pageListIcon("\f067");
       @include pageListIcon("\f0c5");
     }
+
     .PageListActionUnhide > a,
     .PageUnhide {
       @include pageListIcon("\f06e");
     }
+
     .PageListActionPublish > a,
     .PagePublish {
       //@include pageListIcon("\f058");
       @include pageListIcon("\f05d");
     }
+
     .PageListActionUnpublish > a,
     .PageUnpublish {
       //@include pageListIcon("\f057");
       @include pageListIcon("\f05c");
     }
+
     .PageListActionLock > a,
     .PageLock {
       @include pageListIcon("\f023");
     }
+
     .PageListActionUnlock > a,
     .PageUnlock {
       @include pageListIcon("\f13e");
     }
+
     .PageListActionRefresh > a,
     .PageRefresh {
       @include pageListIcon("\f021");
     }
+
     .PageListActionEmpty > a,
     .PageEmpty {
       @include pageListIcon("\f057");
     }
+
     .PageListActionTrash > a,
     .PageTrash {
       position: static !important; // allow full-row red bg color
+
       &:not(.cancel):not([href*="force=1"]) {
         @include pageListIcon("\f1f8");
+
         i {
           display: none;
         }
       }
     }
+
     .PageListActionDelete > a,
     .PageDelete {
       position: static !important; // allow full-row red bg color
+
       &:not(.cancel):not([href*="force=1"]) {
         @include pageListIcon("\f12d");
+      }
+    }
+
+    .PageListActionSticky > a,
+    a.PageSticky {
+      @include pageListIcon("\f006");
+
+      &:hover {
+        @include pageListIcon("\f005");
+      }
+    }
+
+    .PageListActionUnsticky > a,
+    a.PageUnsticky {
+      @include pageListIcon("\f005");
+
+      &:hover {
+        @include pageListIcon("\f006");
       }
     }
   }
@@ -3833,15 +4439,19 @@ html.pListIconOnly {
 @media only screen and (min-width: 960px) {
   li.navItem {
     position: relative;
+
     html.AdminThemeReno:not(.sbItemsInline) & {
       &.first {
         border-top: 1px solid rgba(#51739D, 0.2);
       }
     }
-    > ul.ui-menu { // uikit
+
+    > ul.ui-menu {
+      // uikit
       box-shadow: none;
       border: none !important;
     }
+
     .page-list {
       &:hover {
         + .page-edit {
@@ -3849,17 +4459,20 @@ html.pListIconOnly {
         }
       }
     }
+
     .page-edit {
       opacity: 0;
       position: absolute !important;
       right: 0;
       top: 0;
       z-index: 5;
+
       &:hover {
         opacity: 1 !important;
         background: transparent !important;
       }
     }
+
     &.hasSubmenu {
       ul {
         position: relative !important;
@@ -3874,6 +4487,7 @@ html.pListIconOnly {
         padding: 0 !important;
         overflow: hidden !important;
       }
+
       &:hover,
       &.active {
         ul {
@@ -3881,40 +4495,49 @@ html.pListIconOnly {
         }
       }
     }
+
     html.AdminThemeReno & {
       &.hasSubmenu {
         ul {
           background: rgba(#1C2836, 0.05) !important;
+
           li {
             position: relative;
           }
+
           a:not(.current):hover {
             background: rgba(#1C2836, 0.08) !important;
           }
+
           a {
             padding-left: 2.4em !important;
             position: relative;
+
             &:first-child:before {
               content: "•";
               position: absolute;
               left: 1.5em;
             }
+
             &.page-edit {
               position: absolute;
               top: 0;
               bottom: 0;
+
               &:hover {
                 background: transparent !important;
               }
             }
           }
         }
+
         i {
           vertical-align: middle;
           font-size: 12px !important;
         }
       }
     }
+
     html.AdminThemeDefault & {
       &.hasSubmenu {
         ul {
@@ -3922,10 +4545,12 @@ html.pListIconOnly {
           position: absolute !important;
           top: 2px !important;
         }
+
         i {
           position: absolute;
           right: 11px;
           top: 12px;
+
           &:before {
             content: "\f105";
           }
@@ -3940,11 +4565,13 @@ html.pListIconOnly {
         a:not(.current) {
           font-weight: normal !important;
         }
+
         .page-edit {
           padding: 5px 17px !important;
         }
       }
     }
+
     &:not(.sbItemsInline) {
       ul li ul {
         li.navItem {
@@ -3954,16 +4581,19 @@ html.pListIconOnly {
         }
       }
     }
+
     &.sbItemsInline {
       ul li ul {
         li.navItem {
           .page-list {
             //margin-right: 21px;
             display: inline-block !important;
+
             &:hover {
               text-decoration: underline;
             }
           }
+
           .page-edit {
             display: inline-block !important;
             position: relative !important;
@@ -3971,6 +4601,7 @@ html.pListIconOnly {
             top: 3px;
             margin-left: -6px;
             padding: 5px 5px !important;
+
             i {
               font-size: 92% !important;
             }
@@ -3982,77 +4613,203 @@ html.pListIconOnly {
 }
 
 html.hoverDropdown {
+
   //@media only screen and (min-width: 960px) {
   .ui-button {
-
     &.pw-button-dropdown-main {
-      border-radius: 4px !important;
+      position: relative; //border-radius: 4px !important;
+
+      //padding-right: 16px !important;
+      // extend the main button to overlap the menu opening button
+      &::after {
+        content: '';
+        position: absolute;
+        left: 100%;
+        top: 0;
+        bottom: 0;
+        width: 1.7rem;
+        display: inline-block;
+      }
+
       span {
-        pointer-events: none;
-        &:after {
-          content: "\f107";
-          font-family: 'FontAwesome', sans-serif;
-          position: relative;
-          margin-left: 6px;
-          font-size: 12px;
-          line-height: 12px; //set this the same as font-size
-          margin-right: 1px;
-          //top: 0;
-          display: inline-block;
-        }
+        pointer-events: none; //&:after {
+        //  content: "\f107";
+        //  font-family: 'FontAwesome', sans-serif;
+        //  position: relative;
+        //  margin-left: 6px;
+        //  font-size: 12px;
+        //  line-height: 12px; //set this the same as font-size
+        //  margin-right: 1px;
+        //  //top: 0;
+        //  display: inline-block;
+        //}
       }
     }
 
-    &[id^="pw-dropdown-toggle-"] {
-      &, span {
-        width: 0 !important;
-        overflow: hidden;
-        visibility: hidden;
-        padding-right: 0 !important;
-        padding-left: 0 !important;
-        pointer-events: none;
-        border: none !important;
-        &:after {
-          display: none !important;
-        }
+    &.pw-button-dropdown-toggle {
+      pointer-events: none;
+      position: relative;
+      z-index: 5; //border-left: none !important;
+      //span {
+      //  left: -8px;
+      //  position: relative;
+      //}
+    }
+  }
+
+  //&.AdminThemeUikit {
+  //  .ui-button {
+  //    &.pw-button-dropdown-main {
+  //      // https://github.com/rolandtoth/AdminOnSteroids/issues/89#issuecomment-373186490
+  //      /* override AdminThemeUiKit css so the page edit hover dropdown buttons don't touch together */
+  //      //margin-right: 10px !important;
+  //      /* override the rule above so page edit head hover dropdown buttons don't space out to much */
+  //      //#pw-content-head-buttons .ui-button {
+  //      //  margin-right: 0 !important;
+  //      //}
+  //      padding-right: 20px;
+  //
+  //      //padding-right: 42px !important;
+  //      + button {
+  //        //margin-left: -24px !important;
+  //        //text-indent: -24px;
+  //      }
+  //    }
+  //    &.pw-button-dropdown-toggle {
+  //      span {
+  //        left: -18px;
+  //      }
+  //    }
+  //  }
+  //}
+  //#submit_publish {
+  //  float: none;
+  //+ button {
+  //  margin-right: 0 !important;
+  //  float: left;
+  //}
+  //}
+  // fix wrong positioning of button menu
+  //&:not(.AdminThemeReno) {
+  //  li.InputfieldSubmit {
+  //    position: relative;
+  //    [id^="pw-dropdown-toggle-"] {
+  //      position: absolute;
+  //      left: 0;
+  //    }
+  //  }
+  //}
+}
+
+#checkAllCheckboxes {
+  display: inline-block;
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  float: none;
+  margin-left: -0.45rem !important;
+  cursor: pointer;
+  border: 3px solid white;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 100%;
+  background: #E2E9EF;
+  text-align: center;
+  padding: 0 !important;
+  user-select: none;
+  backface-visibility: hidden;
+  z-index: 3;
+
+  i {
+    pointer-events: none;
+    position: relative;
+    top: -2px;
+
+    &::before {
+      font-size: 0.75rem;
+      color: #3EB998;
+      text-shadow: 0 0 2px rgba(white, 0.7);
+    }
+  }
+
+  &:hover {
+    background: #3EB998;
+
+    i {
+      &::before {
+        color: white;
+        text-shadow: none;
       }
+    }
+  }
+
+  &[data-checked-all="1"] {
+    i::before {
+      content: '\f00d' !important;
+    }
+  }
+}
+
+ul[class*="InputfieldCheckboxes"] {
+  //.AdminDataList {
+  position: relative; // extra padding on top to avoid disappearing toggle button
+
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    height: 1.4rem;
+  }
+
+  &:hover {
+    #checkAllCheckboxes {
+      opacity: 1;
+      visibility: visible;
     }
   }
 }
 
 // InputfieldURLChecker
-
 .iuc-button {
   position: absolute;
   margin-top: 1px;
   right: 18px;
   padding: 0 12px;
   background: transparent;
-  z-index: 20;
+  z-index: 2;
+
   &.button-left {
     right: auto;
     left: auto;
   }
+
   &.iuc-hide {
     pointer-events: none !important;
   }
+
   &.button-left ~ input {
     padding-left: 36px !important;
   }
+
   &.button-right ~ input {
     padding-right: 36px !important;
   }
+
   &:not(.iuc-hide):hover i {
     color: inherit !important;
   }
+
   &:active i {
     font-size: 0.88em !important;
   }
+
   i {
     color: rgba(0, 0, 0, 0.2);
     text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.4);
-    -webkit-transition: color 0.2s;
-    -moz-transition: color 0.2s;
     transition: color 0.2s;
   }
 }
@@ -4060,7 +4817,6 @@ html.hoverDropdown {
 //.InputfieldContent .InputfieldAssistedURL {
 //  width: 100% !important;
 //}
-
 html.aos .InputfieldAssistedUrlText {
   padding-top: 0;
 }
@@ -4069,12 +4825,14 @@ html.aos .InputfieldAssistedUrlText {
   .button-left {
     left: auto;
   }
+
   //.InputfieldMaxWidth {
   //  width: calc(100% - 50px) !important;
   //}
 }
 
 .InputfieldContent {
+
   .InputfieldURL,
   .InputfieldAssistedURL {
     position: relative;
@@ -4087,29 +4845,36 @@ html.aos .InputfieldAssistedUrlText {
 
 .InputfieldMultiplierInput {
   position: relative;
+
   .iuc-button.button-left {
     left: 8px;
   }
+
   .iuc-button.button-right {
     right: 8px;
   }
 }
 
 #wrap_link_page_url {
+
   .InputfieldPageAutocomplete,
   .InputfieldURL {
     .InputfieldContent {
       position: relative;
     }
   }
+
   .iuc-button.button-left {
     left: 40px;
+
     ~ p #link_page_url_input {
       padding-left: 56px !important;
     }
   }
+
   .iuc-button.button-right {
     right: 34px;
+
     ~ p #link_page_url_input {
       padding-right: 56px !important;
     }
@@ -4133,15 +4898,14 @@ html.aos .InputfieldAssistedUrlText {
 }
 
 //end of InputfieldURLChecker
-
 //.AdminThemeUikit form[action*=AdminOnSteroids] #Inputfield_tweaks #Inputfield_CKEaddons .Inputfields label {
 //  padding-top: 40px;
 //}
-
 @keyframes spinIn {
   0% {
     transform: rotate(0.01deg) translate3d(0, 0, 1px);
   }
+
   //50% {
   //}
   100% {
@@ -4154,6 +4918,7 @@ html.aos .InputfieldAssistedUrlText {
   100% {
     transform: rotate(0.01deg) translate3d(0, 0, 1px);
   }
+
   //50% {
   //}
   0% {
@@ -4167,10 +4932,12 @@ html.aos .InputfieldAssistedUrlText {
     opacity: 0;
     transform: scale(0.95);
   }
+
   50% {
     opacity: 1;
     transform: scale(1);
   }
+
   100% {
     opacity: 0;
     transform: scale(0.95);
@@ -4179,11 +4946,158 @@ html.aos .InputfieldAssistedUrlText {
 
 @keyframes showText {
   0% {
-    max-width: 24px;
-    //overflow: hidden;
+    max-width: 24px; //overflow: hidden;
   }
+
   100% {
-    max-width: 100px;
-    //overflow: visible;
+    max-width: 100px; //overflow: visible;
+  }
+}
+
+// CKE improvements
+//.CodeMirror {
+//  line-height: inherit !important;
+//  font-family: inherit;
+//}
+//div[class*="cke_editor_"]:not(.cke_focus) .cke_floatingtools {
+//  display: none !important;
+//}
+//.cke_floatingtools {
+//  width: auto;
+//}
+.cke_screen_reader_only {
+  // causes html to overflow
+  height: 0;
+}
+
+.CodeMirror-lines * {
+  font-size: 0.96rem !important;
+  font-family: -apple-system,
+  BlinkMacSystemFont,
+  "Segoe UI",
+  Roboto,
+  "Helvetica Neue",
+  Arial,
+  sans-serif !important;
+}
+
+// this would cause tab, space, etc not working in editors
+//.CodeMirror-line {
+//  span {
+//    white-space: normal !important;
+//  }
+//}
+
+.cke_reset_all .CodeMirror-scroll * {
+  word-wrap: break-word;
+  white-space: pre-wrap !important;
+  word-break: normal;
+  // override black font color for the default dark theme
+  color: white;
+}
+
+.cke_top .cke_button_icon.cke_button__oembed_icon {
+  background-image: url('../CKE/plugins/oembed/icons/oembed.png') !important;
+}
+
+.cke_top .cke_button_icon.cke_button__codesnippet_icon {
+  background-image: url('../CKE/plugins/codesnippet/icons/codesnippet.png') !important;
+}
+
+.cke_top .cke_button_icon.cke_button__token_icon {
+  background-image: url('../CKE/plugins/token/icons/token.png') !important;
+}
+
+.cke_top .cke_button_icon.cke_button__mathjax_icon {
+  background-image: url('../CKE/plugins/mathjax/icons/mathjax.png') !important;
+}
+
+.cke_top .cke_button_icon.cke_button__linkfilesmenu_icon {
+  background-image: url('../CKE/plugins/linkfilesmenu/icons/linkfilesmenu.png') !important;
+}
+
+.cke_combo_text {
+  white-space: nowrap;
+}
+
+.cke_dialog_body {
+
+  //.cke_dialog_contents * {
+  //  box-sizing: border-box !important;
+  //}
+  label {
+    display: inline-block !important;
+  }
+}
+
+.cke_button_label {
+  white-space: nowrap;
+
+  + .cke_button_label {
+    display: none !important; // LightWire skin
+  }
+}
+
+// CkeLinkFiles
+[id^="link-files-menu"] {
+  position: absolute;
+  z-index: 10000;
+  display: none;
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  ul {
+    display: inline-block;
+    border: 1px solid #d1d1d1;
+    list-style: none;
+  }
+
+  li {
+    margin: 0;
+    border-top: 1px solid #ebebeb;
+    background: #fff;
+    white-space: nowrap;
+    padding: 3px 12px 3px 6px;
+    cursor: pointer;
+
+    strong {
+      font-size: 0.9rem;
+      display: block;
+      font-weight: 700;
+    }
+
+    span {
+      display: block;
+      font-size: 0.75rem;
+      line-height: 1.2;
+      padding-bottom: 3px;
+    }
+
+    &:first-child {
+      border-top: 0;
+    }
+
+    &.all-files {
+      font-size: 0.75rem;
+      font-style: italic;
+    }
+
+    &.no-files {
+      font-size: 0.75rem;
+      font-style: italic;
+      cursor: default;
+
+      &:hover {
+        background: #fff;
+      }
+    }
+
+    &:hover {
+      background: #ebebeb;
+    }
   }
 }

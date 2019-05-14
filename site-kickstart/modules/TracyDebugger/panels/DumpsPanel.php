@@ -13,21 +13,11 @@ class DumpsPanel extends BasePanel {
         \Tracy\Debugger::timer('dumps');
 
         $this->data = \TracyDebugger::$dumpItems;
+        $data = $this->data;
 
-        if(\TracyDebugger::isAdditionalBar() == 'ajax') {
-            $dumpItemsAjax = wire('session')->tracyDumpItemsAjax ?: array();
-            foreach($this->data as $item) {
-                array_push($dumpItemsAjax, $item);
-            }
-            wire('session')->tracyDumpItemsAjax = $data = $dumpItemsAjax;
-        }
-        else {
-            $data = $this->data;
-        }
         $this->dumpCount = is_array($data) ? count($data) : 0;
-        if(\TracyDebugger::isAdditionalBar() == 'ajax') $this->entries .= '<div>'.($this->dumpCount > 0 ? '<span id="clearDumpsButton" style="display:inline-block;float:right"><input type="submit" onclick="clearDumps()" value="Clear Dumps" /></span>' : '') . '</div><div style="clear:both; margin-bottom:5px"></div>';
         if($this->dumpCount > 0) {
-            $this->iconColor = '#CD1818';
+            $this->iconColor = \TracyDebugger::COLOR_WARN;
             $this->entries .= '
             <div class="dump-items">';
             foreach($data as $item) {
@@ -56,12 +46,6 @@ class DumpsPanel extends BasePanel {
         <span title="Dumps">
             ' . $this->icon . (\TracyDebugger::getDataValue('showPanelLabels') ? 'Dumps' : '') . ' ' . ($this->dumpCount > 0 ? '<span id="'.(\TracyDebugger::isAdditionalBar() == 'ajax' ? 'ajaxDumpCount' : 'dumpCount').'">' . $this->dumpCount . '</span>' : '') . '
         </span>
-
-        <script>
-            window.addEventListener("beforeunload", function () {
-                document.cookie = "tracyClearDumpItemsAjax=true;expires=0;path=/";
-            });
-        </script>
         ';
     }
 
@@ -69,31 +53,13 @@ class DumpsPanel extends BasePanel {
     public function getPanel() {
         $isAdditionalBar = \TracyDebugger::isAdditionalBar();
         $out = '
-        <h1>' . $this->icon . ' Dumps' . ($isAdditionalBar ? ' ('.$isAdditionalBar.')' : '') . '</h1>
-
-        <script>
-            function clearDumps() {
-                document.cookie = "tracyClearDumpItemsAjax=true;expires=0;path=/";
-                document.getElementById("clearDumpsButton").innerHTML="";
-                var elements = document.getElementsByClassName("dump-items");
-                while(elements.length > 0) {
-                    elements[0].parentNode.removeChild(elements[0]);
-                }
-                var icons = document.getElementsByClassName("ajaxDumpIconPath");
-                i=0;
-                while(i < icons.length) {
-                    icons[i].style.fill="#009900";
-                    i++;
-                }
-                document.getElementById("ajaxDumpCount").innerHTML="";
-            }
-        </script>
+        <h1>' . $this->icon . ' Dumps' . ($isAdditionalBar ? ' ('.$isAdditionalBar.')' : '') . '</h1><span class="tracy-icons"><span class="resizeIcons"><a href="#" title="Maximize / Restore" onclick="tracyResizePanel(\'DumpsPanel'.($isAdditionalBar ? '-'.$isAdditionalBar : '').'\')">+</a></span></span>
 
         <div class="tracy-inner tracy-DumpPanel">
 
             <div id="tracyDumpEntries">' . $this->entries . '</div>';
 
-            $out .= \TracyDebugger::generatedTimeSize('dumps', \Tracy\Debugger::timer('dumps'), strlen($out));
+        $out .= \TracyDebugger::generatePanelFooter('dumps', \Tracy\Debugger::timer('dumps'), strlen($out), 'dumpsPanel');
 
         $out .= '
         </div>';

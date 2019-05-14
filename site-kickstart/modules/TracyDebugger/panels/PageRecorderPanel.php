@@ -1,4 +1,5 @@
 <?php
+
 use Tracy\Dumper;
 
 class PageRecorderPanel extends BasePanel {
@@ -29,11 +30,11 @@ class PageRecorderPanel extends BasePanel {
                     $this->pageCount++;
                 }
             }
-            $this->iconColor = '#CD1818';
+            $this->iconColor = \TracyDebugger::COLOR_WARN;
         }
         else {
             $this->recordedPages .= '<p>There are currently no recorded pages</p>';
-            $this->iconColor = '#009900';
+            $this->iconColor = \TracyDebugger::COLOR_NORMAL;
         }
 
         $this->icon = '
@@ -59,7 +60,7 @@ class PageRecorderPanel extends BasePanel {
 
             $out .= $this->recordedPages;
 
-            $out .= \TracyDebugger::generatedTimeSize('pageRecorder', \Tracy\Debugger::timer('pageRecorder'), strlen($out));
+            $out .= \TracyDebugger::generatePanelFooter('pageRecorder', \Tracy\Debugger::timer('pageRecorder'), strlen($out));
 
             $out .= '
         </div>';

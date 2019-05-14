@@ -1,17 +1,13 @@
 <?php
 
-/**
- * Output Mode panel
- */
-
 class OutputModePanel extends BasePanel {
 
     protected $outputMode;
     protected $developmentIcon;
     protected $productionIcon;
 
-    protected $productionColor = '#009900';
-    protected $developmentColor = '#FF9933';
+    protected $productionColor = \TracyDebugger::COLOR_NORMAL;
+    protected $developmentColor = \TracyDebugger::COLOR_WARN;
 
     public function getTab() {
 
@@ -57,7 +53,6 @@ class OutputModePanel extends BasePanel {
     }
 
 
-
     public function getPanel() {
 
         $out = '<h1>' . str_replace('#FFFFFF', $this->{$this->outputMode.'Color'}, $this->{$this->outputMode.'Icon'}) . ' '.ucfirst($this->outputMode).' Mode</h1>
@@ -74,7 +69,10 @@ class OutputModePanel extends BasePanel {
             }
 
             $out .= '</p>';
-            $out .= \TracyDebugger::generatedTimeSize('outputMode', \Tracy\Debugger::timer('outputMode'), strlen($out)) . '
+
+            $out .= \TracyDebugger::generatePanelFooter('outputMode', \Tracy\Debugger::timer('outputMode'), strlen($out));
+
+        $out .= '
         </div>';
 
         return parent::loadResources() . $out;
