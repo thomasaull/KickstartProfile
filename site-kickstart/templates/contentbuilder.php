@@ -1,6 +1,6 @@
 <?php namespace ProcessWire;
 
-require_once "{$config->paths->templates}/api/Example.php";
+// require_once "{$config->paths->templates}/api/Example.php";
 require_once "{$config->paths->templates}/markup/Helper.php";
 
 // $page->main .= Helper::renderModuleTemplate('ContactForm');
@@ -12,7 +12,7 @@ $page->main .= Helper::renderModuleTemplate('TestModule', (object) ['name' => 'T
 $page->main .= Helper::renderModuleTemplate('TestModuleWithController', (object) ['name' => 'Thomas', 'age' => 29, 'location' => 'Würzburg']);
 
 // Option 3: Use the API by acessing functions directly
-$page->main .= Helper::renderModuleTemplate('TestModule', Example::getAllUsers());
+// $page->main .= Helper::renderModuleTemplate('TestModule', Example::getAllUsers());
 
 // $page->main .= Helper::renderModuleTemplate('Kitchensink');
 

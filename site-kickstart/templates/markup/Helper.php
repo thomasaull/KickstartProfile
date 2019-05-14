@@ -106,7 +106,7 @@ class Helper
 
   public static function hasModifier($selectOptions, $modifier) {
     $option = $selectOptions->get("value=$modifier");
-    if($option->id) return true;
+    if($option && $option->id) return true;
 
     return false;
   }

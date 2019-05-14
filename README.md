@@ -26,7 +26,7 @@ Grab a copy of processwire and place the contents of this repository in the root
 - create .gitkeep in site/assets/ cache, files, logs, sessions
 ```
 If Terminal is open in /
-touch site/assets/cache/.gitkeep touch site/assets/files/.gitkeep touch site/assets/logs/.gitkeep touch site/assets/sessions/.gitkeep
+touch site/assets/cache/.gitkeep site/assets/files/.gitkeep site/assets/logs/.gitkeep site/assets/sessions/.gitkeep
 ```
 - adjust .htaccess settings to your needs
 - adjust .gitignore to your needs, I usually use this as a starting point:
@@ -79,6 +79,11 @@ $config->dbPort = '3306';
 $config->debug = true;
 $config->maintenanceBackend = false;
 $config->maintenanceFrontend = false;
+
+/* 
+* Get notified about critical errors:
+*/
+$config->adminEmail = 'your@email.com';
 ```
 
 - In src/package.json change url to your local development url
