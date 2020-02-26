@@ -1,3 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30">
-  <path d="M4.12213871,6.81147854 L10.779928,0.597541882 C11.082741,0.314916409 11.5573326,0.331281639 11.8399581,0.634094646 C12.1225836,0.936907653 12.1062184,1.41149931 11.8034054,1.69412478 L4.61590535,8.40245812 C4.32044684,8.6782194 3.85961623,8.6702764 3.57383658,8.38449675 L1.17800325,5.98866342 C0.885110029,5.6957702 0.885110029,5.22089647 1.17800325,4.92800325 C1.47089647,4.63511003 1.9457702,4.63511003 2.23866342,4.92800325 L4.12213871,6.81147854 Z" transform="translate(8.5 10.5)"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53.2 (72643) - https://sketchapp.com -->
+    <title>checkNaked</title>
+    <desc>Created with Sketch.</desc>
+    <g id="checkNaked" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+        <g id="check-copy" transform="translate(7.000000, 8.000000)" stroke="#000000" stroke-width="1.5">
+            <polyline id="Stroke-1" points="10 0.5 2.5 7.5 0 5"></polyline>
+        </g>
+    </g>
 </svg>

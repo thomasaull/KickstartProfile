@@ -1,0 +1,97 @@
+@mixin svgIcon {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2px;
+  overflow: visible;
+  display: block;
+
+  & [id*='.fill'] {
+    fill: currentColor;
+    stroke: none;
+  }
+
+  & * {
+    vector-effect: non-scaling-stroke;
+  }
+}
+
+@mixin transition-hover {
+  transition: all 0.2s;
+  transition-property: color;
+
+  &:hover {
+    transition-duration: 0.1s;
+  }
+}
+
+@mixin container {
+  width: 100%;
+  max-width: $contentMaxWidth;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@mixin containerWrap {
+  padding-left: var(--spaceSmallest);
+  padding-right: var(--spaceSmallest);
+}
+
+@mixin fullWidth {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+
+// https://css-tricks.com/aspect-ratio-boxes/#article-header-id-6
+@mixin aspectRatioFlexible($ratio) {
+  display: flex;
+
+  &::before {
+    content: '';
+    width: 1px;
+    margin-left: -1px;
+    height: 0;
+    padding-bottom: 100% / $ratio;
+    pointer-events: none;
+  }
+}
+
+// https://css-tricks.com/aspect-ratio-boxes/#article-header-id-7
+@mixin aspectRatio($ratio) {
+  position: relative;
+  display: block;
+
+  &::before {
+    content: '';
+    display: block;
+    padding-bottom: 100% / $ratio;
+  }
+
+  & > :first-child {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+// Usage:
+// @include font-face("Meta", "/fonts/MetaPro-Normal");
+// @include font-face("Meta", "/fonts/MetaPro-Bold", bold);
+@mixin font-face($name, $file, $weight: null, $style: null) {
+  @font-face {
+    font-family: $name;
+    src: url($file+'.eot');
+    src: url($file+'.eot?#iefix') format('embedded-opentype'),
+      url($file+'.woff2') format('woff2'), url($file+'.woff') format('woff'),
+      url($file+'.ttf') format('truetype');
+    font-weight: $weight;
+    font-style: $style;
+  }
+}

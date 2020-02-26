@@ -9,6 +9,14 @@
   --fontSize-large: 20px;
   --lineHeight-default: 1.4;
 
+  @include interpolate(
+    --spaceSmallest,
+    $contentMinWidth,
+    $contentMaxWidth,
+    10px,
+    20px
+  );
+
   // Media Queries für responsive Anpassung hier
 }
 
@@ -35,13 +43,14 @@ body {
   -webkit-text-size-adjust: none;
 
   /* Adds a hyphen where the word breaks, if supported (No Blink) */
-  @include media("<=600px") {
+  @include media('<=600px') {
     /* Adds a hyphen where the word breaks, if supported (No Blink) */
     hyphens: auto;
   }
 
   // Using CSS Variables to avoid Flash of Invisible Text
   font: var(--fontSize-default) / var(--lineHeight-default) $fontStack-system; // Fallback
+  font-display: swap;
 
   --fontStack-default: #{$fontStack-system};
 
@@ -50,31 +59,4 @@ body {
 
     --fontStack-default: #{$fontStack-default};
   }
-}
-
-// Border Box Everything
-* { box-sizing: border-box; }
-
-// Default Styles for Buttons
-button {
-  border: none;
-  background: none;
-  font: var(--fontSize-default) var(--fontStack-defualt);
-}
-
-// Defaults for Form
-input,
-textarea {
-  font: var(--fontSize-default) var(--fontStack-defualt);
-}
-
-// No Focus outlines, don't forget to define by yourself!
-input:focus,
-textarea:focus,
-button:focus { outline: none; }
-
-// Default Styles for Links
-a {
-  text-decoration: none;
-  color: currentColor;
 }

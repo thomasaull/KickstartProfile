@@ -1,19 +1,36 @@
 $contentMinWidth: 320px;
 $contentMaxWidth: 1200px;
-$breakpoints: (mobile: 700px);
+
+$breakpoints: (
+  mobile: 700px
+);
 // $breakpoints: map-merge($breakpoints, (tablet: 768px)); // to extend array use map-merge
 
 // Typography:
-$fontStack-system: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+$fontStack-system: -apple-system, 'BlinkMacSystemFont', 'Segoe UI', 'Roboto',
+  'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  sans-serif;
 
-$fontStack-default: 'Kreon', $fontStack-system;
+$fontStack-default: 'Helvetica', $fontStack-system;
 
 // Colors
+$color-grey-100: hsl(0, 0, 97);
+$color-grey-200: hsl(0, 0, 92);
+$color-grey-300: hsl(0, 0, 85);
+$color-grey-400: hsl(0, 0, 60);
+$color-grey-500: hsl(0, 0, 50);
+$color-grey-600: hsl(0, 0, 40);
+$color-grey-700: hsl(0, 0, 30);
+$color-grey-800: hsl(0, 0, 20);
+$color-grey-900: hsl(0, 0, 10);
+
 $color-key: red;
 
-$colorText-default: rgb(60, 60, 60);
+$colorText-default: $color-grey-900;
 
-$colorBackground-grey: rgb(250, 250, 250);
+$colorBackground-light: $color-grey-100;
+
+$colorBorder-grey: $color-grey-500;
 
 // Other Stuff
 // Based on: https://medium.com/@Florian/freebie-google-material-design-shadow-helper-2a0501295a2d
@@ -23,7 +40,8 @@ $shadow-level3: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
 $shadow-level4: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
 $shadow-level5: 0 19px 38px rgba(0, 0, 0, 0.3), 0 15px 12px rgba(0, 0, 0, 0.22);
 
-$filterShadow-level2: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.16)) drop-shadow(0 4px 2px rgba(0, 0, 0, 0.23));
+$filterShadow-level2: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.16))
+  drop-shadow(0 4px 2px rgba(0, 0, 0, 0.23));
 
 $modularscale: (
   base: 16px,
@@ -35,58 +53,5 @@ $modularscale: (
   $contentMaxWidth: (
     base: 18px,
     ratio: $major-third
-  ),
+  )
 );
-
-@mixin textLabel {
-  font: 600 $fontSize-small $fontStack-default;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  opacity: 0.5;
-}
-
-@mixin svgIcon {
-  display: flex;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5px;
-
-  & svg {
-    width: 100%;
-    height: 100%;
-  }
-
-  & svg [id*=".color"] {
-    stroke: $color-key;
-  }
-}
-
-@mixin transition-hover {
-  transition: all 0.2s;
-  transition-property: color;
-
-  &:hover {
-    transition: all 0.1s;
-    transition-property: color;
-  }
-}
-
-@mixin wrap {
-  width: 100%;
-  max-width: $contentMaxWidth;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-@mixin wrapWrapper {
-  @include interpolate(padding-left padding-right, $contentMinWidth, $contentMaxWidth, 10px, 20px);
-}
-
-@mixin wrappedButFullWidth {
-  @include interpolate(margin-left margin-right, $contentMinWidth, $contentMaxWidth, -10px, -20px);
-}
-
-@mixin wrappedFullBleedBackground {
-  @include wrappedButFullWidth;
-  @include interpolate(padding-left padding-right, $contentMinWidth, $contentMaxWidth, 10, 20px);
-}

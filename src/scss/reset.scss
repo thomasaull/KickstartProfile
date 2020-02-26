@@ -1,0 +1,37 @@
+// Border Box Everything
+* {
+  box-sizing: border-box;
+}
+
+// Default Styles for Buttons
+button {
+  border: none;
+  background: none;
+  font: var(--fontSize-default) var(--fontStack-defualt);
+  padding: 0;
+  margin: 0;
+}
+
+// Defaults for Form
+input,
+textarea {
+  font: var(--fontSize-default) var(--fontStack-defualt);
+}
+
+// No Focus outlines, don't forget to define by yourself!
+// input:focus,
+// textarea:focus,
+// button:focus {
+//   outline: none;
+// }
+
+// Default Styles for Links
+a {
+  text-decoration: none;
+  color: currentColor;
+}
+
+b,
+strong {
+  font-weight: bold;
+}

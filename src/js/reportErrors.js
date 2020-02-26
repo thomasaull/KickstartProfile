@@ -6,7 +6,7 @@ _.forEach(window.errorQueue, error => {
   logErrorToProcessWire(error.error)
 })
 
-function logErrorToProcessWire (error) {
+function logErrorToProcessWire(error) {
   const message = (error && error.stack) || '(not set)'
   axios.post('/api/error', {
     message: message

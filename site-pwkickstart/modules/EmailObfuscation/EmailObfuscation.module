@@ -1,0 +1,578 @@
+<?php
+/**
+ * Email Obfuscation (EMO)
+ *
+ * Email Obfuscation module for email addresses with 64 base crypting.
+ *
+ * @version 1.2.0
+ * @copyright Blowback https://github.com/BlowbackDesign
+ * @license MIT http://opensource.org/licenses/MIT
+ *
+ * Source for this ProcessWire module is taken from a MODX Evolution plugin:
+ * https://modx.com/extras/package/emoemailobfuscation
+ *
+ */
+
+class EmailObfuscation extends WireData implements Module, ConfigurableModule
+{
+	/**
+	 * constants for mode
+	 *
+	 */
+	const modeManual = 0;
+	const modeInclude = 1;
+	const modeExclude = 2;
+
+	/**
+	 * constants for js file loading method
+	 *
+	 */
+	const loadManual = 0;
+	const loadScripts = 1;
+	const loadAuto = 2;
+	const loadInline = 3;
+
+	/**
+	 * default configuration options
+	 *
+	 */
+	private $options = array(
+		'noscript' => 'Enable JavaScript to view protected content.',
+		'jsFile' => 'emo.min.js',
+		'jsLoad' => self::loadAuto,
+		'mode' => self::modeExclude,
+		'mailto' => false,
+		'debug' => false,
+		'useFixedKey' => false,
+		'fixedKey' => '',
+		'selectedTemplates' => array(),
+		'selectedPages' => array(),
+	);
+
+	/**
+	 * runtime encode string
+	 *
+	 */
+	private $key = null;
+
+	/**
+	 * address collection
+	 *
+	 */
+	private $address = array();
+	private $addressData = array();
+
+	/**
+	 * address counter
+	 *
+	 */
+	private $addrCount = 0;
+
+	/**
+	 * base 64 characters
+	 *
+	 */
+	private $base = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.';
+
+	/**
+	 * debug time and data
+	 *
+	 */
+	private $debugTime = 0;
+	private $debugData = array();
+
+	/**
+	 * bool value for obfuscated output
+	 *
+	 */
+	private $obfuscated = false;
+
+	/**
+	 * PW language id string
+	 *
+	 */
+	private $lang = '';
+
+	/**
+	 * constructor
+	 *
+	 */
+	public function __construct()
+	{
+		// set default config variables
+		foreach($this->options as $key => $value) {
+			$this->$key = $value;
+		}
+	}
+
+	/**
+	 * add hooks on module init
+	 *
+	 */
+	public function init()
+	{
+		// add new emo method to the sanitizer for manual obfuscation
+		$this->addHook('Sanitizer::emo', $this, 'emo');
+
+		// hook render method after page render to modify output
+		$this->addHookAfter('TemplateFile::render', $this, 'render');
+
+		// hook before module save event to modify module config data
+		$this->addHookBefore('Modules::saveModuleConfigData', $this, 'saveModuleData');
+	}
+
+	/**
+	 * set some defaults when module is ready
+	 *
+	 */
+	public function ready()
+	{
+		// set user language id string
+		$this->lang = $this->wire('languages') ? $this->user->language->isDefault() ? '' : "__{$this->user->language->id}" : '';
+
+		// prepend path to emo.js and add to scripts array when set
+		if($this->jsLoad != self::loadManual) {
+			$root = $this->jsLoad == self::loadInline ? $this->config->paths->$this : $this->config->urls->$this;
+			if(strpos($this->jsFile, $root) === false) $this->jsFile = $root . $this->jsFile;
+			if($this->jsLoad == self::loadScripts) $this->config->scripts->add($this->jsFile);
+		}
+	}
+
+	/**
+	 * set new email address to collection
+	 *
+	 */
+	private function setEmailAddress($email)
+	{
+		$this->address[] = $email;
+		$this->addressData[] = $this->base64($email);
+
+		return $this;
+	}
+
+	/**
+	 * get key for given email address
+	 *
+	 */
+	private function getEmailKey($email)
+	{
+		return array_search($email, $this->address);
+	}
+
+	/**
+	 * get email hash by given key
+	 *
+	 */
+	private function getEmailHashByKey($key)
+	{
+		if(isset($key) && isset($this->addressData[$key])) {
+			return $this->addressData[$key];
+		}
+
+		return null;
+	}
+
+	/**
+	 * set encryption key
+	 *
+	 */
+	private function setKey($key)
+	{
+		$this->key = $key;
+		$this->session->set('emokey', $key);
+
+		return $this;
+	}
+
+	/**
+	 * get encryption key
+	 *
+	 */
+	private function getKey()
+	{
+		if($this->key) return $this->key;
+
+		if($this->useFixedKey && $this->fixedKey) {
+			$key = $this->fixedKey;
+			$this->setKey($key);
+		}
+
+		if(!isset($key)) {
+			$key = $this->session->get('emokey') ?: $this->generateKey();
+			$this->setKey($key);
+		}
+
+		return $key;
+	}
+
+	/**
+	 * generate random encrypt key string based on base characters
+	 *
+	 */
+	private function generateKey()
+	{
+		mt_srand((double) microtime() * 1000000);
+		return str_shuffle($this->base);
+	}
+
+	/**
+	 * return regex pattern that matches email addresses
+	 *
+	 */
+	private static function pattern()
+	{
+		$atom = "[-!#$%'*+=?^_`{|}~0-9A-Za-zÀ-ž]+";
+		$name = $atom.'(?:\\.'.$atom.')*';
+		$domain = $atom.'(?:\\.'.$atom.')+';
+		return "<({$name}@{$domain})>";
+	}
+
+	/**
+	 * custom base 64 encoding
+	 *
+	 */
+	private function base64($data)
+	{
+		$out = '';
+		$key = $this->getKey();
+		for($i = 0; $i < strlen($data); ) {
+			$c1 = ord($data{$i++});
+			$c2 = $c3 = NULL;
+			if($i < strlen($data)) $c2 = ord($data{$i++});
+			if($i < strlen($data)) $c3 = ord($data{$i++});
+			$e1 = $c1 >> 2;
+			$e2 = (($c1 & 3) << 4) + ($c2 >> 4);
+			$e3 = (($c2 & 15) << 2) + ($c3 >> 6);
+			$e4 = $c3 & 63;
+			if(is_nan($c2)) $e3 = $e4 = 64;
+			else if(is_nan($c3)) $e4 = 64;
+			$out .= $key{$e1} . $key{$e2} . $key{$e3} . $key{$e4};
+		}
+		return $out;
+	}
+
+	/**
+	 * encrypt the match
+	 *
+	 */
+	private function encode($matches)
+	{
+		// filter out images detected as false positives (@2x file names)
+		if(preg_match('/\.(jpe?g|png|gif|bmp)$/i', $matches[0])) return $matches[0];
+
+		// debug encrypt key
+		if($this->debug && $this->addrCount === 0) {
+			$this->debugData['key'] = $this->getKey();
+		}
+
+		// normalize matches
+		if(isset($matches[2])) {
+			$matches[1] = $matches[1] . '@' . $matches[2];
+			$matches[2] = $matches[3];
+			unset($matches[3]);
+		} else {
+			$matches[2] = $matches[1];
+		}
+		list($found, $email, $anchor) = $matches;
+
+		// link string defaults to what we found
+		$link = $found;
+
+		// add mailto link to plaintext emails when enabled
+		if($this->mailto && $found === $email) {
+			$link = '<a href="mailto:' . $email . '">' . $anchor . '</a>';
+		}
+
+		// did we use the same link before?
+		if(!$key = $this->getEmailKey($link)) {
+			$this->setEmailAddress($link);
+			$key = $this->getEmailKey($link);
+		}
+
+		// get encrypted string
+		$hash = $this->getEmailHashByKey($key);
+
+		// create html of the crypted link
+		$crypted = '<span data-emo="' . $hash . '">';
+		$crypted .= preg_match(self::pattern(), $anchor) ? $this->{"noscript$this->lang"} : $anchor;
+		$crypted .= '</span>';
+
+		// create email debug data row
+		if($this->debug) {
+			$this->debugData[$this->addrCount] = array('hash'=>$hash, 'data'=>$matches);
+		}
+
+		++$this->addrCount;
+		return $crypted;
+	}
+
+	/**
+	 * obfuscate email addresses at given (html) string
+	 *
+	 */
+	private function obfuscate($html)
+	{
+		$tags = "#((?:<head).*(?:<\/head>))|((?:<form).*(?:<\/form>))|((?:<script).*(?:<\/script>))#isUu";
+		$mailto = "#<a[^>]*mailto:([^'\"@]+)@([^'\"]+)['\"][^>]*>(.*)<\/a>#isUu";
+		$output = "";
+
+		// split html to parts by tags
+		foreach(preg_split($tags, $html, NULL, PREG_SPLIT_DELIM_CAPTURE) as $str) {
+
+			// encode mailto links and email addresses from the parts
+			if(!in_array(substr($str, 0, 5), array('<head', '<form', '<scri'))) {
+				$str = preg_replace_callback($mailto, array($this, 'encode'), $str);
+				$str = preg_replace_callback(self::pattern(), array($this, 'encode'), $str);
+			}
+
+			// glue parts back to output
+			$output .= $str;
+		}
+
+		return $output;
+	}
+
+	/**
+	 * check if we're ok to proceed with render hook
+	 *
+	 */
+	private function isRenderAllowed(HookEvent $event)
+	{
+		$templateFile = $event->object;
+		$options = $templateFile->options;
+		$page = $templateFile->page;
+
+		// keep out the admin pages
+		if($page->template->flags & Template::flagSystem) {
+			return false;
+		}
+
+		// checking for $options, which we know is given to page renders
+		// this is to make sure it's not some other use of TemplateFile
+		if(!is_array($options) && !array_key_exists('pageStack', $options)) {
+			return false;
+		}
+
+		// limit render to complete html documents only
+		if(strpos($event->return, '</head>') === false || strpos($event->return, '</html>') === false) {
+			return false;
+		}
+
+		// manual mode and no addresses to obfuscate
+		if($this->mode == self::modeManual && !$this->addrCount) {
+			return false;
+		}
+
+		// include mode and page is not in selected templates/pages
+		if($this->mode == self::modeInclude && !$this->addrCount) {
+			if(!in_array($page->template->id, $this->selectedTemplates) || !in_array($page->id, $this->selectedPages)) {
+				return false;
+			}
+		}
+
+		// exclude mode and page is in selected templates/pages
+		if($this->mode == self::modeExclude && !$this->addrCount) {
+			if(in_array($page->template->id, $this->selectedTemplates) || in_array($page->id, $this->selectedPages)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * modify output at page render
+	 *
+	 */
+	public function render(HookEvent $event)
+	{
+		if($this->obfuscated) return;
+		if(!$this->isRenderAllowed($event)) return;
+		if($this->debug) $time = Debug::timer();
+
+		$page = $event->object->page;
+		$output = $event->return;
+
+		// auto obfuscate output
+		if($this->mode != self::modeManual && !$this->addrCount) {
+			$output = $this->obfuscate($output);
+		}
+
+		if($this->addrCount) {
+
+			// head script data
+			$scriptRows = array(
+				"var emo = emo || {};",
+				"emo.key = '" . $this->getKey() . "';",
+			);
+			if($this->debug) $scriptRows[] = "emo.debug = true;";
+
+			// add emo script to head
+			$script = "\n<script>";
+			foreach($scriptRows as $row) $script .= "\n{$row}";
+			$script .= "\n</script>\n";
+			if(strpos($output, '<script') !== false && (strpos($output, '<script') < strpos($output, '</head>'))) {
+				$output = substr_replace($output, "{$script}<script", strpos($output, '<script'), strlen('<script'));
+			} else {
+				$output = str_replace("</head>", "{$script}</head>", $output);
+			}
+
+			// add emo.js to body
+			if(strpos($output, $this->jsFile) === false) {
+				$script = '';
+				if($this->jsLoad == self::loadAuto) {
+					$script .= "\n<script src='{$this->jsFile}' async defer></script>\n";
+				}
+				if($this->jsLoad == self::loadInline) {
+					$script = "\n<script>\n" . file_get_contents($this->jsFile) . "</script>\n";
+				}
+				if(strlen($script)) {
+					$output = str_replace("</body>", "{$script}</body>", $output);
+				}
+			}
+
+			// append debug info to output
+			if($this->debug) {
+				$data = array();
+				foreach($this->options as $key => $val) $data[$key] = $this->$key;
+				$data = array_merge($this->debugData, $data);
+				$info = $this->modules->getModuleInfo($this);
+				$this->debugTime += Debug::timer($time);
+				$output .= "\n<!-- \n\n\t" . $info['title'] . " v.{$info['version']}";
+				$output .= "\n\n\tCrypted {$this->addrCount} email address in {$this->debugTime} seconds\n\n";
+				$output .= json_encode($data, JSON_PRETTY_PRINT);
+				$output .= "\n\n-->";
+			}
+
+			$this->obfuscated = true;
+		}
+
+		$event->return = $output;
+	}
+
+	/**
+	 * sanitizer method for manual obfuscation
+	 *
+	 */
+	public function emo(HookEvent $event)
+	{
+		if($this->debug) $time = Debug::timer();
+
+		if(count($event->arguments)) {
+			$str = $event->arguments(0);
+			$event->return = $this->obfuscate($str);
+		}
+
+		if($this->debug) $this->debugTime += Debug::timer($time);
+	}
+
+	/**
+	 * sets fixedKey value to module config when module is saved
+	 *
+	 */
+	public function saveModuleData(HookEvent $event)
+	{
+		$classname = $this->modules->getModuleClass($this);
+		if($classname === $event->arguments[0]) {
+			$data = $event->arguments(1);
+			$data['fixedKey'] = empty($data['useFixedKey']) ? '' : $this->getKey();
+			$event->arguments(1, $data);
+		}
+	}
+
+	/**
+	 * configure admin fields
+	 *
+	 */
+	public function getConfig()
+	{
+		$inputfields = new InputfieldWrapper();
+
+		$f = $this->modules->get('InputfieldText');
+		$f->label = 'Replace text string';
+		$f->attr('name', 'noscript');
+		$f->attr('value', $this->noscript);
+		$f->useLanguages = true;
+		$inputfields->add($f);
+
+		$f = $this->modules->get('InputfieldRadios');
+		$f->label = 'Obfuscation mode';
+		$f->attr('name', 'mode');
+		$f->attr('value', $this->mode);
+		$f->addOption(self::modeManual, 'Obfuscate manually by `$sanitizer->emo()`');
+		$f->addOption(self::modeInclude, 'Automatically, only at selected templates/pages');
+		$f->addOption(self::modeExclude, 'Automatically, exclude at selected templates/pages');
+		$f->columnWidth = 50;
+		$inputfields->add($f);
+
+		$f = $this->modules->get('InputfieldRadios');
+		$f->label = 'JavaScript loading method';
+		$f->attr('name', 'jsLoad');
+		$f->attr('value', $this->jsLoad);
+		$f->addOption(self::loadManual, 'Load file manually');
+		$f->addOption(self::loadScripts, 'Load file to `$config->scripts` array');
+		$f->addOption(self::loadAuto, 'Append automatically to page as external script');
+		$f->addOption(self::loadInline, 'Append automatically to page as inline script');
+		$f->columnWidth = 50;
+		$inputfields->add($f);
+
+		$f = $this->modules->get('InputfieldCheckbox');
+		$f->label = 'Force mailto';
+		$f->description = 'Makes all email addresses rendered as mailto links when enabled.';
+		$f->attr('name', 'mailto');
+		if($this->mailto) $f->attr('checked', 'checked');
+		$f->columnWidth = 50;
+		$inputfields->add($f);
+
+		$f = $this->modules->get('InputfieldCheckbox');
+		$f->label = 'Fixed encrypt key';
+		$f->description = 'Enable to lock encryption key. Reiquired for cached AJAX output.';
+		$f->attr('name', 'useFixedKey');
+		if($this->useFixedKey) $f->attr('checked', 'checked');
+		$f->columnWidth = 50;
+		$inputfields->add($f);
+
+		$f = $this->modules->get('InputfieldCheckbox');
+		$f->label = 'Debug';
+		$f->description = 'Prepends debug info to html output when enabled.';
+		$f->attr('name', 'debug');
+		if($this->debug) $f->attr('checked', 'checked');
+		$f->collapsed = 2;
+		$inputfields->add($f);
+
+		$f = $this->modules->get('InputfieldAsmSelect');
+		$f->label = 'Selected Templates';
+		$f->attr('name', 'selectedTemplates');
+		$f->attr('value', $this->selectedTemplates);
+		foreach($this->templates as $t) {
+			if(!($t->flags & Template::flagSystem)) {
+				$f->addOption($t->id, $t->name);
+			}
+		}
+		$f->collapsed = Inputfield::collapsedBlank;
+		$inputfields->add($f);
+
+		$f = $this->modules->get('InputfieldPageAutocomplete');
+		$f->label = 'Selected Pages';
+		$f->attr('name', 'selectedPages');
+		$f->attr('value', $this->selectedPages);
+		$selector = '';
+		foreach($this->templates as $t) {
+			if(!($t->flags & Template::flagSystem)) {
+				if(!in_array($t->id, $this->selectedTemplates)) $selector .= "|{$t->name}";
+			}
+		}
+		$f->findPagesSelector = "template=" . ltrim($selector, '|');
+		$f->collapsed = Inputfield::collapsedBlank;
+		$inputfields->add($f);
+
+		return $inputfields;
+	}
+
+	public static function getModuleConfigInputfields(array $data)
+	{
+		$module = wire('modules')->get(__CLASS__);
+		return $module->getConfig();
+	}
+
+}

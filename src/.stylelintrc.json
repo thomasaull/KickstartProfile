@@ -3,14 +3,21 @@
     "stylelint-scss",
     "stylelint-selector-bem-pattern"
   ],
-  "extends": "stylelint-config-standard",
+  "extends": [
+    "stylelint-config-standard",
+    "stylelint-config-prettier"
+  ],
   "rules": {
     "at-rule-no-unknown": null,
-
     "plugin/selector-bem-pattern": {
       "implicitComponents": "modules/**/*",
       "preset": "suit",
-      "ignoreSelectors": ["NoJs"]
+      "ignoreSelectors": [
+        "NoJs",
+        "lazyloading",
+        "lazyloaded",
+        "lazyload"
+      ]
     }
   }
 }
