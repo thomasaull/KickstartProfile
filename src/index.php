@@ -1,53 +1,69 @@
-<?php namespace ProcessWire; require_once("{$config->paths->templates}/markup/Helper.php"); ?>
+<?php namespace ProcessWire;
 
-<?php
-  if ($config->maintenanceFrontend === true) {
-    echo "Website is in maintenance mode";
-    if (!$user->isSuperuser()) exit();
+require_once("{$config->paths->templates}/markup/Helper.php");
+
+$useCriticalCss = false;
+
+function getLayoutPath() {
+  $userCanViewWhileInFrontendMaintenance = wire('user')->isSuperuser() || wire('user')->hasRole('redakteur');
+  $templatesPath = wire('config')->paths->templates;
+
+  if(wire('config')->maintenanceFrontend === true && !$userCanViewWhileInFrontendMaintenance) {
+    return "$templatesPath/markup/layouts/maintenanceFrontend.php";
   }
+
+  if (wire('page')->layout) {
+    return "$templatesPath/markup/layouts/{$page->layout}.php";
+  } else {
+    return "$templatesPath/markup/layouts/default.php";
+  }
+}
+
 ?>
 
 <!DOCTYPE html>
-<html lang="de" class="noJs">
+<html lang="de" class="is-noJs">
 <head>
   <?php echo Helper::renderModuleTemplate('Head');?>
 
   <?php
-    if("<%= htmlWebpackPlugin.options.env %>" === 'production') {
+    if($useCriticalCss === true && "<%= htmlWebpackPlugin.options.env %>" === 'production') {
       $criticalCss = Helper::checkForCriticalCss($page);
       if($criticalCss) echo "<style>$criticalCss</style>";
     }
   ?>
 
-  <link href="https://fonts.googleapis.com/css?family=Kreon:300,400,700" rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet';">
-  <noscript>
-    <link href="https://fonts.googleapis.com/css?family=Kreon:300,400,700" rel="stylesheet">
-  </noscript>
+  <?php if($useCriticalCss):?>
+  <?php // Source for Loading CSS async technique: https://www.filamentgroup.com/lab/load-css-simpler/ ?>
 
   <% for (var css in htmlWebpackPlugin.files.css) { %>
-    <link href="<%= htmlWebpackPlugin.files.css[css] %>" rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet';window.dispatchEvent(new Event('CSSLoaded'));">
+    <link rel="stylesheet" href="<%= htmlWebpackPlugin.files.css[css] %>" media="print" onload="this.media='all';window.dispatchEvent(new Event('CSSLoaded'))">
     <noscript>
       <link href="<%= htmlWebpackPlugin.files.css[css] %>" rel="stylesheet">
     </noscript>
   <% } %>
+  <?php else:?>
+    <% for (var css in htmlWebpackPlugin.files.css) { %>
+      <link href="<%= htmlWebpackPlugin.files.css[css] %>" rel="stylesheet">
+    <% } %>
+  <?php endif?>
 
   <script>
     <?php
       // Include errorTracking.js inline
       if ("<%= htmlWebpackPlugin.options.env %>" === 'production')
-        include("{$config->paths->root}<%= htmlWebpackPlugin.files.chunks.errorTracking.entry %>");
+        include("{$config->paths->root}<%= htmlWebpackPlugin.files.js[0] %>");
 
       // Uncomment if you want to test or get Error-Tracking in Development:
-      // else echo file_get_contents("<%= htmlWebpackPlugin.files.chunks.errorTracking.entry %>");
+      // else echo file_get_contents("<%= htmlWebpackPlugin.files.js[0] %>");
     ?>
   </script>
 
-  <script><?php include("{$config->paths->templates}/static/cssrelpreload.js"); ?></script>
   <script><?php include("{$config->paths->EmailObfuscation}/emo.min.js"); ?></script>
 
   <script type="text/javascript">
-    // Remove noJs Class:
-    document.documentElement.classList.remove('noJs')
+    // Remove is-noJs Class:
+    document.documentElement.classList.remove('is-noJs')
 
     window.lazySizesConfig = window.lazySizesConfig || {};
     // Disable Lazysizes Auto Init:
@@ -57,7 +73,6 @@
   <!-- Hide v-cloak -->
   <style>
     [v-cloak] { display: none !important; }
-    .noJs .hiddenWithoutJs { display: none !important; }
   </style>
 
 </head>
@@ -75,12 +90,13 @@
 <body class="<?=$page->bodyClass?> <?=$layoutClass?> <?=$fontsLoadedClass?>">
   <?=Helper::renderModuleTemplate('NoJsWarning');?>
 
-  <?php
-  if ($page->layout)
-    include("{$config->paths->templates}/markup/layouts/{$page->layout}.php");
-  else
-    include("{$config->paths->templates}/markup/layouts/default.php");
-  ?>
+
+  <div id="vue" class="layoutContainer">
+    <?php
+    $layoutPath = getLayoutPath();
+    include($layoutPath);
+    ?>
+  </div>
 
   <script>
     document.config = {
@@ -91,11 +107,18 @@
         title: '<?=$page->title?>'
       }
     }
-    document.jsvars = <?=json_encode($config->jsvars->getArray());?>;
+    document.jsVariables = <?=json_encode($config->jsVariables->getArray());?>;
   </script>
 
 </body>
 </html>
 
-<script type="text/javascript" src="<%= htmlWebpackPlugin.files.chunks.critical.entry %>" defer></script>
-<script type="text/javascript" src="<%= htmlWebpackPlugin.files.chunks.bundle.entry %>" defer></script>
+
+<?php
+// 0: Error Tracking
+// 1: Critical
+// 2: Bundle
+// => see webpack.config.js
+?>
+<script type="text/javascript" src="<%= htmlWebpackPlugin.files.js[1] %>" defer></script>
+<script type="text/javascript" src="<%= htmlWebpackPlugin.files.js[2] %>" defer></script>

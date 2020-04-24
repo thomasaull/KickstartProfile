@@ -1,5 +1,11 @@
 .Gallery {
-  @include interpolate(margin-top margin-bottom, $contentMinWidth, $contentMaxWidth, 30px, 60px);
+  @include interpolate(
+    margin-top margin-bottom,
+    $contentMinWidth,
+    $contentMaxWidth,
+    30px,
+    60px
+  );
 }
 
 .Gallery-text {
@@ -11,19 +17,19 @@
   grid-gap: 10px;
   grid-template-columns: 1fr 1fr 1fr;
 
-  @include media("<=1000px") {
+  @include media('<=1000px') {
     grid-template-columns: 1fr 1fr;
   }
 
-  @include media("<=mobile") {
+  @include media('<=mobile') {
     grid-template-columns: 1fr 1fr 1fr;
   }
 
-  @include media("<=500px") {
+  @include media('<=500px') {
     grid-template-columns: 1fr 1fr;
   }
 
-  @include media("<=400px") {
+  @include media('<=400px') {
     grid-template-columns: 1fr;
   }
 }
@@ -33,13 +39,15 @@
 
   &::before {
     display: block;
-    content: "";
+    content: '';
     width: 100%;
     padding-top: (3 / 4) * 100%;
   }
 
-  @include media("<=400px") {
-    &::before { display: none; }
+  @include media('<=400px') {
+    &::before {
+      display: none;
+    }
   }
 }
 
@@ -55,7 +63,7 @@
   display: block;
   cursor: zoom-in;
 
-  @include media("<=400px") {
+  @include media('<=400px') {
     position: relative;
     width: 100%;
     height: auto;

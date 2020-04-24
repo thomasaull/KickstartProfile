@@ -21,7 +21,7 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
 // CONFIG
 const useLocalIpAddress = false
 
-module.exports = env => {
+module.exports = (env) => {
   let publicPath = useLocalIpAddress
     ? `http://${ip.address()}:8080/`
     : 'http://localhost:8080/'
@@ -50,9 +50,9 @@ module.exports = env => {
           './node_modules/family.scss/source/src/_family.scss'
         ),
         path.resolve(__dirname, './scss/constants.scss'),
-        path.resolve(__dirname, './scss/mixins.scss')
-      ]
-    }
+        path.resolve(__dirname, './scss/mixins.scss'),
+      ],
+    },
   }
 
   let cssLoader =
@@ -63,39 +63,46 @@ module.exports = env => {
   let scssLoader = [...cssLoader, 'sass-loader', sassResourceLoader]
   let vueLoader = ['vue-style-loader', ...scssLoader]
 
-  const distRoot = path.resolve(__dirname, '../')
+  const distRoot = path.resolve(__dirname, '../dist')
 
   let config = {
     context: __dirname,
     devtool: '#cheap-module-eval-source-map',
 
     entry: {
+      // If you change the entry points, make sure to adjust the output in index.php aswell!
       errorTracking: [path.resolve(__dirname, './js/errorTracking.js')],
       critical: [path.resolve(__dirname, './js/critical.js')],
       bundle: [
         '@babel/polyfill',
         path.resolve(__dirname, './build/svgs.js'),
         path.resolve(__dirname, './js'),
-        path.resolve(__dirname, './scss')
-      ]
+        path.resolve(__dirname, './scss'),
+      ],
     },
 
     output: {
       path: distRoot + '/site/templates/dist',
       publicPath: publicPath,
-      filename: 'js/[name].[hash:6].js'
+      filename: 'js/[name].[hash:6].js',
     },
 
     devServer: {
       quiet: true,
       host: '0.0.0.0',
       publicPath: publicPath,
+      public: `${pkg.urls.dev}:8080`,
+      // disableHostCheck: true, // insecure
+      // allowedHosts: [ // alternative to public path
+      //   'einfachleben-unverpackt.test'
+      // ],
       proxy: {
         '**': {
-          target: pkg.urls.dev,
-          changeOrigin: true
-        }
-      }
+          target: `http://${pkg.urls.dev}`,
+          changeOrigin: true,
+          // logLevel: 'debug'
+        },
+      },
     },
 
     module: {
@@ -105,31 +112,31 @@ module.exports = env => {
           loader: 'vue-loader',
           options: {
             loaders: {
-              scss: vueLoader
-            }
-          }
+              scss: vueLoader,
+            },
+          },
         },
         {
           test: /\.js$/,
           loader: 'eslint-loader',
           enforce: 'pre',
           options: {
-            fix: true
+            fix: true,
           },
-          exclude: /node_modules/
+          exclude: /node_modules/,
         },
         {
           test: /\.js$/,
           use: 'babel-loader',
-          exclude: /node_modules/
+          exclude: /node_modules/,
         },
         {
           test: /\.css$/,
-          use: cssLoader
+          use: cssLoader,
         },
         {
           test: /\.scss$/,
-          use: scssLoader
+          use: scssLoader,
         },
         {
           test: /\.svg$/,
@@ -140,16 +147,16 @@ module.exports = env => {
                 {
                   loader: 'file-loader',
                   options: {
-                    name: 'icons/[name].[ext]'
-                  }
+                    name: 'icons/[name].[ext]',
+                  },
                 },
                 {
                   loader: 'svgo-loader',
                   options: {
-                    plugins: svgoplugins
-                  }
-                }
-              ]
+                    plugins: svgoplugins,
+                  },
+                },
+              ],
             },
             {
               resourceQuery: /\?fileNoSvgo$/,
@@ -157,26 +164,26 @@ module.exports = env => {
                 {
                   loader: 'file-loader',
                   options: {
-                    name: 'icons/[name].[ext]'
-                  }
-                }
-              ]
+                    name: 'icons/[name].[ext]',
+                  },
+                },
+              ],
             },
             {
               resourceQuery: /\?inline$/,
               use: [
                 {
-                  loader: 'raw-loader'
+                  loader: 'raw-loader',
                 },
                 {
                   loader: 'svgo-loader',
                   options: {
-                    plugins: svgoplugins
-                  }
-                }
-              ]
-            }
-          ]
+                    plugins: svgoplugins,
+                  },
+                },
+              ],
+            },
+          ],
         },
         {
           test: /\.(png|jpg|gif)$/,
@@ -184,10 +191,10 @@ module.exports = env => {
             {
               loader: 'file-loader',
               options: {
-                name: '[name].[ext]?[hash]'
-              }
-            }
-          ]
+                name: '[name].[ext]?[hash]',
+              },
+            },
+          ],
         },
         {
           test: /\.(eot|ttf|woff|woff2)$/,
@@ -195,24 +202,24 @@ module.exports = env => {
             {
               loader: 'file-loader',
               options: {
-                name: '[name].[ext]'
-              }
-            }
-          ]
-        }
-      ]
+                name: '[name].[ext]',
+              },
+            },
+          ],
+        },
+      ],
     },
 
     resolve: {
       extensions: ['.js', '.vue', '.json'],
       alias: {
         vue$: 'vue/dist/vue.esm.js',
-        '@': path.join(__dirname)
-      }
+        '@': path.join(__dirname),
+      },
     },
 
     optimization: {
-      minimizer: [new TerserPlugin(), new OptimizeCSSAssetsPlugin({})]
+      minimizer: [new TerserPlugin(), new OptimizeCSSAssetsPlugin({})],
     },
 
     plugins: [
@@ -230,40 +237,41 @@ module.exports = env => {
         //   removeAttributeQuotes: true
         // },
         // necessary to consistently work with multiple chunks via CommonsChunkPlugin
-        chunksSortMode: 'dependency'
+        // chunksSortMode: 'manual',
+        // chunks: ['errorTracking', 'bundle', 'critical'],
       }),
       new HtmlWebpackHarddiskPlugin(),
       new FriendlyErrorsWebpackPlugin(),
       new WriteFilePlugin({
         // write assets used by php to disk
         // test: /\.(php|svg)$/
-        test: /\.(?!vue|js|scss).*$/
+        test: /\.(?!vue|js|scss).*$/,
       }),
       new CopyWebpackPlugin([
         // { from: 'modules', to: 'modules', ignore: ['!*.php'] },
         { from: 'modules', to: 'modules', ignore: ['*.scss', '*.js', '*.vue'] },
-        { from: 'static', to: 'static' }
+        { from: 'static', to: 'static' },
       ]),
       new CleanWebpackPlugin({
         dry: false,
         dangerouslyAllowCleanPatternsOutsideProject: true,
-        cleanStaleWebpackAssets: false
+        cleanStaleWebpackAssets: false,
       }),
       new StyleLintPlugin(),
       new VueLoaderPlugin(),
 
       new MiniCssExtractPlugin({
-        filename: '[name].css',
-        chunkFilename: '[id].css'
-      })
-    ]
+        filename: '[name].[hash:6].css',
+        chunkFilename: '[id].[hash:6].css',
+      }),
+    ],
   }
 
   /* DEVELOPMENT */
   if (env.NODE_ENV === 'development') {
     config.plugins.push(
       new webpack.DefinePlugin({
-        'process.env.NODE_ENV': '"development"'
+        'process.env.NODE_ENV': '"development"',
       })
     )
   }
@@ -274,7 +282,7 @@ module.exports = env => {
 
     config.plugins.push(
       new webpack.DefinePlugin({
-        'process.env.NODE_ENV': '"production"'
+        'process.env.NODE_ENV': '"production"',
       })
     )
 
@@ -285,7 +293,7 @@ module.exports = env => {
           analyzerMode: 'static', // server|disabled|static
           openAnalyzer: false,
           generateStatsFile: false,
-          statsOptions: { source: false }
+          statsOptions: { source: false },
         })
       )
     }

@@ -29,28 +29,38 @@ const doSynchronousLoop = (data, processData, done) => {
 const createCriticalCSS = (element, i, callback) => {
   // const url = argv.url || pkg.urls.critical
   const criticalSrc = pkg.urls.critical + element.url + '?fontsLoaded=true'
-  const criticalDest = path.resolve(__dirname, `../../site/templates/dist/critical/${element.id}_critical.min.css`)
-  console.log(chalk`-> Generating critical CSS: {cyan ${criticalSrc}} -> {magenta ${criticalDest}}`)
-  critical.generate({
-    src: criticalSrc,
-    dest: criticalDest,
-    inline: false,
-    // ignore: ['font-face'],
-    minify: true,
-    width: 1300, // 1440,
-    height: 900, // 1280
-    include: pkg.critical.include
-  }).then((output) => {
-    console.log(chalk`-> Critical CSS generated: {green ${element.id}_critical.min.css}`)
-    callback()
-  }).error((err) => {
-    console.log(chalk`-> Something went wrong {red ${err}}`)
-  })
+  const criticalDest = path.resolve(
+    __dirname,
+    `../../site/templates/dist/critical/${element.id}_critical.min.css`
+  )
+  console.log(
+    chalk`-> Generating critical CSS: {cyan ${criticalSrc}} -> {magenta ${criticalDest}}`
+  )
+  critical
+    .generate({
+      src: criticalSrc,
+      dest: criticalDest,
+      inline: false,
+      // ignore: ['font-face'],
+      minify: true,
+      width: 1300, // 1440,
+      height: 900, // 1280
+      include: pkg.critical.include,
+    })
+    .then((output) => {
+      console.log(
+        chalk`-> Critical CSS generated: {green ${element.id}_critical.min.css}`
+      )
+      callback()
+    })
+    .error((err) => {
+      console.log(chalk`-> Something went wrong {red ${err}}`)
+    })
 }
 
 const url = `${pkg.urls.dev}/api/criticalroutes/`
 
-axios.get(url).then(response => {
+axios.get(url).then((response) => {
   const criticalPages = [...response.data.routes, ...response.data.templates]
   // console.log(criticalPages)
   doSynchronousLoop(criticalPages, createCriticalCSS, () => {

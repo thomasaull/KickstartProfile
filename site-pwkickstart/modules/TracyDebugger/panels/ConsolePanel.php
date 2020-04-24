@@ -5,7 +5,6 @@ class ConsolePanel extends BasePanel {
     private $icon;
     private $iconColor;
     private $tracyIncludeCode;
-    private $tracyPwApiData;
 
     public function getTab() {
         if(\TracyDebugger::isAdditionalBar()) {
@@ -25,7 +24,7 @@ class ConsolePanel extends BasePanel {
         $this->icon = '
             <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
                  width="16px" height="13.7px" viewBox="439 504.1 16 13.7" enable-background="new 439 504.1 16 13.7" xml:space="preserve">
-            <path fill="' . $this->iconColor . '" d="M453.9,504.1h-13.7c-0.6,0-1.1,0.5-1.1,1.1v11.4c0,0.6,0.5,1.1,1.1,1.1h13.7c0.6,0,1.1-0.5,1.1-1.1v-11.4
+            <path class="consoleIconPath" fill="' . $this->iconColor . '" d="M453.9,504.1h-13.7c-0.6,0-1.1,0.5-1.1,1.1v11.4c0,0.6,0.5,1.1,1.1,1.1h13.7c0.6,0,1.1-0.5,1.1-1.1v-11.4
                 C455,504.7,454.5,504.1,453.9,504.1z M441.3,512.1l2.3-2.3l-2.3-2.3l1.1-1.1l3.4,3.4l-3.4,3.4L441.3,512.1z M450.4,513.3h-4.6v-1.1
                 h4.6V513.3z"/>
             </svg>';
@@ -40,10 +39,9 @@ class ConsolePanel extends BasePanel {
     public function getPanel() {
 
         $pwRoot = $this->wire('config')->urls->root;
+        $rootPath = $this->wire('config')->paths->root;
         $tracyModuleUrl = $this->wire('config')->urls->TracyDebugger;
         $inAdmin = \TracyDebugger::$inAdmin;
-        $consoleAdjustment = $inAdmin ? 0 : 20;
-        $snippetsAdjustment = $inAdmin ? 20 : 0;
 
         // store various $input properties so they are available to the console
         $this->wire('session')->tracyPostData = $this->wire('input')->post->getArray();
@@ -62,6 +60,8 @@ class ConsolePanel extends BasePanel {
         else {
             $p = $this->wire('page');
         }
+
+        $pid = $p ? $p->id : 'null';
 
         if($this->wire('input')->get('id') && $this->wire('page')->process == 'ProcessField') {
             $fid = (int) $this->wire('input')->get('id');
@@ -94,11 +94,24 @@ class ConsolePanel extends BasePanel {
             $code = '""';
         }
 
-        // get snippets from DB to populate local storage
-        $snippets = \TracyDebugger::getDataValue('snippets');
-        if(!$snippets) {
-            $snippets = json_encode(array());
+        // get snippets from filesystem
+        $snippets = array();
+        $snippetsPath = \TracyDebugger::getDataValue('snippetsPath').'/TracyDebugger/snippets/';
+        if(file_exists($this->wire('config')->paths->site.$snippetsPath)) {
+            $snippetFiles = new DirectoryIterator($this->wire('config')->paths->site.$snippetsPath);
+            $i=0;
+            foreach($snippetFiles as $snippetFile) {
+                if(!$snippetFile->isDot() && $snippetFile->isFile()) {
+                    $snippetFileName = $snippetFile->getPathname();
+                    $snippets[$i]['name'] = pathinfo($snippetFileName, PATHINFO_BASENAME);
+                    $snippets[$i]['filename'] = $snippetFileName;
+                    $snippets[$i]['modified'] = filemtime($snippetFileName);
+                    $i++;
+                }
+            }
+            $snippets = json_encode($snippets);
         }
+        if(!$snippets) $snippets = json_encode(array());
 
         $out = '<script>' . file_get_contents($this->wire('config')->paths->TracyDebugger . 'scripts/get-query-variable.js') . '</script>';
 
@@ -151,13 +164,14 @@ class ConsolePanel extends BasePanel {
 
             // page fields
             $i = count($pwAutocompleteArr);
-            foreach($p->fields as $field) {
-                $pwAutocompleteArr[$i]['name'] = '$page->'.$field;
-                $pwAutocompleteArr[$i]['meta'] = 'PW ' . str_replace('Fieldtype', '', $field->type) . ' field';
-                if(\TracyDebugger::getDataValue('codeShowDescription')) $pwAutocompleteArr[$i]['docHTML'] = $field->description;
-                $i++;
+            if($p) {
+                foreach($p->fields as $field) {
+                    $pwAutocompleteArr[$i]['name'] = '$page->'.$field;
+                    $pwAutocompleteArr[$i]['meta'] = 'PW ' . str_replace('Fieldtype', '', $field->type) . ' field';
+                    if(\TracyDebugger::getDataValue('codeShowDescription')) $pwAutocompleteArr[$i]['docHTML'] = $field->description;
+                    $i++;
+                }
             }
-
             $pwAutocomplete = json_encode($pwAutocompleteArr);
         }
         else {
@@ -167,6 +181,9 @@ class ConsolePanel extends BasePanel {
         $aceTheme = \TracyDebugger::getDataValue('aceTheme');
         $codeFontSize = \TracyDebugger::getDataValue('codeFontSize');
         $codeLineHeight = \TracyDebugger::getDataValue('codeLineHeight');
+        $externalEditorLink = str_replace('"', "'", \TracyDebugger::createEditorLink($this->wire('config')->paths->site.\TracyDebugger::getDataValue('snippetsPath').'/TracyDebugger/snippets/'.'ExternalEditorDummyFile', 0, '✎', 'Edit in external editor'));
+        $colorNormal = \TracyDebugger::COLOR_NORMAL;
+        $colorWarn = \TracyDebugger::COLOR_WARN;
 
         $out .= <<< HTML
         <script>
@@ -178,14 +195,19 @@ class ConsolePanel extends BasePanel {
                 maxHistoryItems: 25,
                 historyItem: localStorage.getItem("tracyConsoleHistoryItem") ? localStorage.getItem("tracyConsoleHistoryItem") : 1,
                 historyCount: localStorage.getItem("tracyConsoleHistoryCount"),
-                loadedSnippetCode: null,
+                diskSnippetCode: null,
                 desc: false,
                 inAdmin: "$inAdmin",
                 customSnippetsUrl: "$customSnippetsUrl",
+                snippetsPath: "$snippetsPath",
+                rootPath: "$rootPath",
                 pwAutocomplete: $pwAutocomplete,
                 aceTheme: "$aceTheme",
                 codeFontSize: $codeFontSize,
                 lineHeight: $codeLineHeight,
+                externalEditorLink: "$externalEditorLink",
+                colorNormal: "$colorNormal",
+                colorWarn: "$colorWarn",
 
                 isSafari: function() {
                     if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1) {
@@ -194,6 +216,12 @@ class ConsolePanel extends BasePanel {
                     else {
                         return false;
                     }
+                },
+
+                getCookie: function(name) {
+                    var value = "; " + document.cookie;
+                    var parts = value.split("; " + name + "=");
+                    if (parts.length == 2) return parts.pop().split(";").shift();
                 },
 
                 disableButton: function(button) {
@@ -247,22 +275,47 @@ class ConsolePanel extends BasePanel {
 
                 processTracyCode: function() {
                     var code = this.tce.getSelectedText() || this.tce.getValue();
-                    document.getElementById("tracyConsoleStatus").innerHTML = "<i style='font-family: FontAwesome !important' class='fa fa-spinner fa-spin'></i> Processing";
-                    this.callPhp(code);
+                    document.getElementById("tracyConsoleStatus").innerHTML = "<span style='font-family: FontAwesome !important' class='fa fa-spinner fa-spin'></span> Processing";
+                    codeReturn = this.getCookie('tracyIncludeCode') ? false : true;
+                    this.callPhp(code, codeReturn);
                     this.saveHistory();
                     this.tce.focus();
                 },
 
+                reloadAndRun: function() {
+                    if(localStorage.getItem("tracyConsoleSelectedSnippet")) {
+                        document.getElementById("tracyConsoleStatus").innerHTML = "<span style='font-family: FontAwesome !important' class='fa fa-spinner fa-spin'></span> Processing";
+                        this.reloadSnippet(true);
+                    }
+                    else {
+                        this.processTracyCode();
+                    }
+                },
+
                 tracyIncludeCode: function(when) {
-                    params = {when: when, pid: "{$p->id}"};
+                    when = when.value;
+                    params = {when: when, pid: $pid};
+                    var icons = document.getElementsByClassName("consoleIconPath");
+                    i=0;
                     if(when === 'off') {
                         document.cookie = "tracyIncludeCode=;expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/";
+                        while(i < icons.length) {
+                            icons[i].style.fill = tracyConsole.colorNormal;
+                            i++;
+                        }
+                        document.getElementById("runInjectButton").value = 'Run';
                     }
                     else {
                         var expires = new Date();
                         expires.setMinutes(expires.getMinutes() + 5);
                         document.cookie = "tracyIncludeCode="+JSON.stringify(params)+";expires="+expires.toGMTString()+";path=/";
+                        while(i < icons.length) {
+                            icons[i].style.fill = tracyConsole.colorWarn;
+                            i++;
+                        }
+                        document.getElementById("runInjectButton").value = 'Inject';
                     }
+                    tracyConsole.tce.focus();
                 },
 
                 toggleKeyboardShortcuts: function() {
@@ -292,12 +345,21 @@ class ConsolePanel extends BasePanel {
                     tracyConsole.resizeAce();
                 },
 
-                callPhp: function(code) {
+                callPhp: function(code, codeReturn = true) {
+                    if(!codeReturn) {
+                        var expires = new Date();
+                        expires.setMinutes(expires.getMinutes() + 5);
+                        document.cookie = "tracyCodeReturn=no;expires="+expires.toGMTString()+";path=/";
+                    }
+                    else {
+                        document.cookie = "tracyCodeReturn=;expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/";
+                    }
+
                     var xmlhttp;
                     xmlhttp = new XMLHttpRequest();
                     xmlhttp.onreadystatechange = function() {
                         if(xmlhttp.readyState == XMLHttpRequest.DONE) {
-                            document.getElementById("tracyConsoleStatus").innerHTML = "Completed!";
+                            document.getElementById("tracyConsoleStatus").innerHTML = "✔ " + (codeReturn ? "Executed" : "Injected @ " + JSON.parse(tracyConsole.getCookie('tracyIncludeCode')).when);
                             var resultsDiv = document.getElementById("tracyConsoleResult");
                             if(xmlhttp.status == 200) {
                                 resultId = Date.now();
@@ -307,31 +369,26 @@ class ConsolePanel extends BasePanel {
                                     window.Tracy.Debug.panels["tracy-debug-panel-ConsolePanel"].toFloat();
                                 }
                             }
-                            // this may no longer be needed since we now have our own non-Tracy fatal error / shutdown handler
-                            // but maybe leave just in case? Maybe still relevant for init, ready, finished injecting?
                             else {
-                                var tracyBsError = new DOMParser().parseFromString(xmlhttp.responseText, "text/html");
-                                var tracyBsErrorDiv = tracyBsError.getElementById("tracy-bs-error");
-                                var tracyBsErrorType = tracyBsErrorDiv.getElementsByTagName('p')[0].innerHTML;
-                                var tracyBsErrorText = tracyBsErrorDiv.getElementsByTagName('h1')[0].getElementsByTagName('span')[0].innerHTML;
-                                var tracyBsErrorLineNum = tracyDebugger.getQueryVariable('{$lineVar}', tracyBsError.querySelector('[data-tracy-href]').getAttribute("data-tracy-href")) - 1;
-                                var tracyBsErrorStr = "<br />" + tracyBsErrorType + ": " + tracyBsErrorText + " on line: " + tracyBsErrorLineNum + "<br />";
-                                resultsDiv.innerHTML = xmlhttp.status+": " + xmlhttp.statusText + tracyBsErrorStr + "<div style='position:relative; border-bottom: 1px dotted #cccccc; padding: 3px; margin:5px 0;'></div>";
+                                var errorStr = xmlhttp.status + ': ' + xmlhttp.statusText + '<br />' + xmlhttp.responseText;
+                                resultsDiv.innerHTML = '<div style="padding: 10px 0">' + errorStr + '</div><div style="position:relative; border-bottom: 1px dotted #cccccc; padding: 3px; margin:5px 0;"></div>';
 
                                 var expires = new Date();
                                 expires.setMinutes(expires.getMinutes() + (10 * 365 * 24 * 60));
-                                document.cookie = "tracyCodeError="+xmlhttp.status+": " + xmlhttp.statusText + tracyBsErrorStr + ";expires="+expires.toGMTString()+";path=/";
+                                document.cookie = "tracyCodeError=" + errorStr + ";expires="+expires.toGMTString()+";path=/";
                             }
                             xmlhttp.getAllResponseHeaders();
                         }
                     };
 
+                    var dbBackup = document.getElementById("dbBackup").checked;
+                    var backupFilename = document.getElementById("backupFilename").value;
                     var accessTemplateVars = !this.inAdmin ? document.getElementById("accessTemplateVars").checked : "false";
 
                     xmlhttp.open("POST", "./", true);
                     xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
                     xmlhttp.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-                    xmlhttp.send("tracyConsole=1&accessTemplateVars="+accessTemplateVars+"&pid={$p->id}&fid={$fid}&tid={$tid}&mid={$mid}&code="+encodeURIComponent(code));
+                    xmlhttp.send("tracyConsole=1&codeReturn=codeReturn&dbBackup="+dbBackup+"&backupFilename="+backupFilename+"&accessTemplateVars="+accessTemplateVars+"&pid={$pid}&fid={$fid}&tid={$tid}&mid={$mid}&code="+encodeURIComponent(code));
                 },
 
                 resizeAce: function(focus = true) {
@@ -342,36 +399,59 @@ class ConsolePanel extends BasePanel {
                     }
                 },
 
-                getSnippet: function(name) {
-                    var tracyConsoleSnippets = this.getAllSnippets();
-                    for(var key in tracyConsoleSnippets) {
-                        if(!tracyConsoleSnippets.hasOwnProperty(key)) continue;
-                        var obj = tracyConsoleSnippets[key];
-                        if(obj.name === name) {
-                            return obj.code;
+                getSnippet: function(name, process = false) {
+                    var xmlhttp;
+                    xmlhttp = new XMLHttpRequest();
+                    xmlhttp.onreadystatechange = function() {
+                        if(xmlhttp.readyState == XMLHttpRequest.DONE) {
+                            if(xmlhttp.status == 200 && xmlhttp.responseText !== "[]") {
+                                tracyConsole.diskSnippetCode = xmlhttp.responseText;
+                                localStorage.setItem("diskSnippetCode", tracyConsole.diskSnippetCode);
+                                tracyConsole.tce.setValue(xmlhttp.responseText);
+                                tracyConsole.tce.gotoLine(0, 0);
+                                if(process) tracyConsole.processTracyCode();
+
+                                // set mode appropriately
+                                tracyJSLoader.load(tracyConsole.tracyModuleUrl + "scripts/ace-editor/ext-modelist.js", function() {
+                                    tracyConsole.modelist = ace.require("ace/ext/modelist");
+                                    var mode = tracyConsole.modelist.getModeForPath(tracyConsole.rootPath+tracyConsole.snippetsPath+name).mode;
+                                    if(tracyConsole.diskSnippetCode.indexOf('<?php') !== -1) {
+                                        mode = 'ace/mode/php';
+                                    }
+                                    else {
+                                        mode = mode == 'ace/mode/php' ? {path:"ace/mode/php", inline:true} : mode;
+                                    }
+                                    tracyConsole.tce.session.setMode(mode);
+                                });
+                            }
+                            xmlhttp.getAllResponseHeaders();
                         }
-                    }
+                    };
+                    xmlhttp.open("POST", "./", true);
+                    xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                    xmlhttp.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+                    xmlhttp.send("tracysnippets=1&snippetname=" + name);
                 },
 
                 getAllSnippets: function() {
                     return JSON.parse(localStorage.getItem("tracyConsoleSnippets"));
                 },
 
-                modifyConsoleSnippets: function(tracySnippetName, code) {
+                modifyConsoleSnippets: function(tracySnippetName, code, deleteSnippet) {
                     var tracyConsoleSnippets = [];
-                    if(code) {
-                        tracyConsoleSnippets.push({name: tracySnippetName, code: code, modified: Date.now()});
+                    if(deleteSnippet) {
+                        if(!confirm("Are you sure you want to delete the \"" + tracySnippetName + "\" snippet?")) return false;
                     }
                     else {
-                        if(!confirm("Are you sure you want to delete snippet \"" + tracySnippetName + "\"?")) return false;
+                        tracyConsoleSnippets.push({name: tracySnippetName, code: code, modified: Date.now()});
                     }
+
                     var existingSnippets = this.getAllSnippets();
                     for(var key in existingSnippets) {
                         if(!existingSnippets.hasOwnProperty(key)) continue;
                         var obj = existingSnippets[key];
                         if(obj.name !== tracySnippetName) tracyConsoleSnippets.push(obj);
                     }
-                    var deleteSnippet = !code;
                     this.setAllSnippets(tracySnippetName, tracyConsoleSnippets, deleteSnippet);
                 },
 
@@ -382,7 +462,7 @@ class ConsolePanel extends BasePanel {
                         if(!existingSnippets.hasOwnProperty(key)) continue;
                         var obj = existingSnippets[key];
                         if(deleteSnippet === true && obj.name === name) continue;
-                        snippetList += "<li id='"+this.makeIdFromTitle(obj.name)+"' data-modified='"+obj.modified+"'><span class='trashIcon' title='Delete this snippet' onclick='tracyConsole.modifyConsoleSnippets(\""+obj.name+"\", null)'>&#10006;</span><span style='color: #125EAE; cursor: pointer' onclick='tracyConsole.loadSnippet(\""+obj.name+"\");'>" + obj.name + "</span></li>";
+                        snippetList += "<li title='Load in console' id='"+this.makeIdFromTitle(obj.name)+"' data-modified='"+obj.modified+"'><span class='consoleSnippetIcon consoleEditIcon iconFlip'>" + this.externalEditorLink.replace('ExternalEditorDummyFile', obj.name) + "</span><span class='consoleSnippetIcon' title='Delete snippet' onclick='tracyConsole.modifyConsoleSnippets(\""+obj.name+"\", null, true)'>&#10006;</span><span style='color: #125EAE; cursor: pointer; width:200px' onclick='tracyConsole.loadSnippet(\""+obj.name+"\");'>" + obj.name + "</span></li>";
                     }
                     snippetList += "</ul>";
                     document.getElementById("tracySnippets").innerHTML = snippetList;
@@ -392,7 +472,7 @@ class ConsolePanel extends BasePanel {
                     // push to local storage for access during current page instance
                     localStorage.setItem("tracyConsoleSnippets", JSON.stringify(tracyConsoleSnippets));
 
-                    // save to DB for access on initial page load
+                    // save to or delete from filesystem
                     var xmlhttp;
                     xmlhttp = new XMLHttpRequest();
                     xmlhttp.onreadystatechange = function() {
@@ -404,11 +484,16 @@ class ConsolePanel extends BasePanel {
                             xmlhttp.getAllResponseHeaders();
                         }
                     };
-
                     xmlhttp.open("POST", "./", true);
                     xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
                     xmlhttp.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-                    xmlhttp.send("tracysnippets=1&snippets="+encodeURIComponent(JSON.stringify(tracyConsoleSnippets)));
+                    if(deleteSnippet) {
+                        document.getElementById("tracySnippetName").value = '';
+                        xmlhttp.send("tracysnippets=1&snippetname="+tracySnippetName+"&deletesnippet=1");
+                    }
+                    else {
+                        xmlhttp.send("tracysnippets=1&snippetname="+tracySnippetName+"&snippetcode="+encodeURIComponent(JSON.stringify(this.tce.getValue())));
+                    }
                 },
 
                 makeIdFromTitle: function(title) {
@@ -419,6 +504,7 @@ class ConsolePanel extends BasePanel {
                     var tracySnippetName = document.getElementById("tracySnippetName").value;
                     if(tracySnippetName != "") {
                         this.modifyConsoleSnippets(tracySnippetName, encodeURIComponent(this.tce.getValue()));
+                        localStorage.setItem("diskSnippetCode", this.tce.getValue());
                         this.disableButton("saveSnippet");
                         this.tce.focus();
                     }
@@ -438,8 +524,8 @@ class ConsolePanel extends BasePanel {
                 },
 
                 compareAlphabetical: function(a1, a2) {
-                    var t1 = a1.innerText,
-                        t2 = a2.innerText;
+                    var t1 = a1.innerText.toLowerCase(),
+                        t2 = a2.innerText.toLowerCase();
                     return t1 > t2 ? 1 : (t1 < t2 ? -1 : 0);
                 },
 
@@ -528,20 +614,36 @@ class ConsolePanel extends BasePanel {
                     this.tce.focus();
                 },
 
-                loadSnippet: function(name) {
-                    this.loadedSnippetCode = this.getSnippet(name);
+                newSnippet: function() {
+                    tracyConsole.tce.setValue('');
+                    tracyConsole.tce.session.setMode({path:"ace/mode/php", inline:true});
+                    localStorage.removeItem("tracyConsoleSelectedSnippet");
+                    if(document.querySelector(".activeSnippet")) {
+                        document.querySelector(".activeSnippet").classList.remove("activeSnippet");
+                    }
+                    document.getElementById("tracySnippetName").value = '';
+                    this.disableButton("reloadSnippet");
+                    this.resizeAce();
+                },
+
+                reloadSnippet: function(process = false) {
+                    let snippetName = localStorage.getItem("tracyConsoleSelectedSnippet");
+                    this.loadSnippet(snippetName, process);
+                },
+
+                loadSnippet: function(name, process = false) {
+                    this.getSnippet(name, process);
                     this.setActiveSnippet(name);
-                    this.tce.setValue(decodeURIComponent(this.loadedSnippetCode));
                     localStorage.setItem("tracyConsoleSelectedSnippet", name);
                     document.getElementById("tracySnippetName").value = name;
-                    this.tce.gotoLine(0,0);
+                    this.enableButton("reloadSnippet");
+                    this.disableButton("saveSnippet");
                     ++tracyConsole.historyItem;
                     this.resizeAce();
                 },
 
-                toggleSnippetButton: function() {
-                    var tracySnippetNameInputValue = document.getElementById("tracySnippetName").value;
-                    if(typeof tracyConsole.loadedSnippetCode === 'undefined' || (tracySnippetNameInputValue != '' && tracyConsole.tce.getValue() != tracyConsole.loadedSnippetCode)) {
+                toggleSaveButton: function() {
+                    if(localStorage.getItem("diskSnippetCode") != tracyConsole.tce.getValue()) {
                         tracyConsole.enableButton("saveSnippet");
                     }
                     else {
@@ -575,6 +677,19 @@ class ConsolePanel extends BasePanel {
                         this.disableButton("historyForward");
                         if(tracyConsole.historyCount > 1) this.enableButton("historyBack");
                     }
+                },
+
+                updateBackupState: function() {
+                    if(!document.getElementById("dbBackup").checked) {
+                        document.getElementById("backupFilename").value = '';
+                        document.getElementById("backupFilename").style.display = "none";
+                        document.cookie = "tracyDbBackup=;expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/";
+                        document.cookie = "tracyDbBackupFilename=;expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/";
+                    }
+                    else {
+                        document.getElementById("backupFilename").style.display = "inline-block";
+                    }
+                    tracyConsole.tce.focus();
                 }
 
             };
@@ -590,7 +705,10 @@ class ConsolePanel extends BasePanel {
 
                     tracyConsole.tce.on("beforeEndOperation", function() {
                         tracyConsole.saveToLocalStorage('tracyConsole');
-                        tracyConsole.toggleSnippetButton();
+                        if(tracyConsole.tce.getValue().indexOf('<?php') !== -1) {
+                            tracyConsole.tce.session.setMode('ace/mode/php');
+                        }
+                        tracyConsole.toggleSaveButton();
                         // focus set to false to prevent breaking the Ace search box
                         tracyConsole.resizeAce(false);
                     });
@@ -604,9 +722,6 @@ class ConsolePanel extends BasePanel {
 
                     // set theme
                     tracyConsole.tce.setTheme("ace/theme/" + tracyConsole.aceTheme);
-
-                    // set mode to php
-                    tracyConsole.tce.session.setMode({path:"ace/mode/php", inline:true});
 
                     // set autocomplete and other options
                     ace.config.loadModule('ace/ext/language_tools', function () {
@@ -624,6 +739,15 @@ class ConsolePanel extends BasePanel {
                             count = tracyConsole.tce.session.getLength();
                             tracyConsole.tce.gotoLine(count, tracyConsole.tce.session.getLine(count-1).length);
                         }
+
+                        // set mode to php
+                        if(localStorage.getItem("tracyConsole") && JSON.parse(localStorage.getItem("tracyConsole")).code.indexOf('<?php') !== -1) {
+                            var mode = 'ace/mode/php';
+                        }
+                        else {
+                            var mode = {path:"ace/mode/php", inline:true}
+                        }
+                        tracyConsole.tce.session.setMode(mode);
 
                         tracyConsole.tce.setOptions({
                             enableBasicAutocompletion: true,
@@ -866,10 +990,20 @@ class ConsolePanel extends BasePanel {
                             }
                         };
 
-                        // build snippet list, populate local storage version from database, and show last selected snippet name
+                        // build snippet list, populate local storage version from database, and show last selected snippet
                         tracyConsole.modifySnippetList(null, $snippets, false);
                         localStorage.setItem("tracyConsoleSnippets", JSON.stringify($snippets));
-                        document.getElementById("tracySnippetName").value = localStorage.getItem("tracyConsoleSelectedSnippet");
+                        let tracyConsoleSelectedSnippet = localStorage.getItem("tracyConsoleSelectedSnippet");
+                        if(tracyConsoleSelectedSnippet) {
+                            let tracyConsoleSelectedSnippetEl = document.getElementById(tracyConsole.makeIdFromTitle(localStorage.getItem("tracyConsoleSelectedSnippet")));
+                            if(tracyConsoleSelectedSnippetEl) {
+                                document.getElementById("tracySnippetName").value = localStorage.getItem("tracyConsoleSelectedSnippet");
+                                tracyConsoleSelectedSnippetEl.classList.add("activeSnippet");
+                                tracyConsole.enableButton("reloadSnippet");
+                            }
+                        }
+
+                        tracyConsole.sortList('alphabetical');
 
                         // history buttons
                         if(tracyConsole.historyCount == tracyConsole.historyItem || !tracyConsole.historyItem || !tracyConsole.historyCount) {
@@ -885,7 +1019,12 @@ class ConsolePanel extends BasePanel {
                                 if(((e.keyCode==10||e.charCode==10)||(e.keyCode==13||e.charCode==13)) && (e.metaKey || e.ctrlKey || e.altKey) && !e.shiftKey) {
                                     e.preventDefault();
                                     if(e.altKey) tracyConsole.clearResults();
-                                    tracyConsole.processTracyCode();
+                                    if(e.metaKey || e.ctrlKey) {
+                                        tracyConsole.reloadAndRun();
+                                    }
+                                    else {
+                                        tracyConsole.processTracyCode();
+                                    }
                                 }
                                 if((e.keyCode==33||e.charCode==33) && e.altKey) {
                                     tracyConsole.loadHistory('back');
@@ -898,7 +1037,7 @@ class ConsolePanel extends BasePanel {
 
                         // activate save button when typing new snippet name
                         document.getElementById("tracySnippetName").onkeyup = function() {
-                            tracyConsole.toggleSnippetButton();
+                            tracyConsole.enableButton("saveSnippet");
                         };
 
                     });
@@ -933,36 +1072,59 @@ HTML;
         </svg>
         ';
 
-        $out .= '<h1>' . $this->icon . ' Console <span title="Keyboard Shortcuts" style="display: inline-block; margin-left: 5px; cursor: pointer" onclick="tracyConsole.toggleKeyboardShortcuts()">' . $keyboardShortcutIcon . '</span></h1><span class="tracy-icons"><span class="resizeIcons"><a href="#" title="Maximize / Restore" onclick="tracyResizePanel(\'ConsolePanel\')">+</a></span></span>
+        $out .= '
+        <h1>' . $this->icon . ' Console
+            <span title="Keyboard Shortcuts" style="display: inline-block; margin-left: 5px; cursor: pointer" onclick="tracyConsole.toggleKeyboardShortcuts()">' . $keyboardShortcutIcon . '</span>
+            <span id="tracyConsoleStatus" style="padding-left: 50px"></span>
+        </h1>
+        <span class="tracy-icons"><span class="resizeIcons"><a href="#" title="Maximize / Restore" onclick="tracyResizePanel(\'ConsolePanel\')">+</a></span></span>
         <div class="tracy-inner">
 
-            <div style="position: relative; height: calc(100% - ' . (45 + $consoleAdjustment) . 'px)">
+            <div style="position: relative; height: calc(100% - 45px)">
 
                 <div id="tracyConsoleMainContainer" style="position: absolute; height: 100%">
 
-                <div id="consoleKeyboardShortcuts" class="keyboardShortcuts tracyHidden">';
-                    include($this->wire('config')->paths->TracyDebugger.'includes/AceKeyboardShortcuts.php');
-                    $out .= $aceKeyboardShortcuts . '
-                </div>';
+                    <div id="consoleKeyboardShortcuts" class="keyboardShortcuts tracyHidden">';
+                        $panel = 'console';
+                        include($this->wire('config')->paths->TracyDebugger.'includes/AceKeyboardShortcuts.php');
+                        $out .= $aceKeyboardShortcuts . '
+                    </div>
+                    ';
 
-            if(!$inAdmin) {
-                $out .= '
-                    <label style="padding-bottom: 5px"><input type="checkbox" id="accessTemplateVars" /> Access custom variables & functions from this page\'s template file & included files.</label>';
-            }
-
-                $out .= '
-                    <div style="padding: 0 0 10px 0">
-                        <input title="Run (CTRL/CMD + Enter) | Clear & Run (ALT/OPT + Enter)" type="submit" id="runCode" onclick="tracyConsole.processTracyCode()" value="Run" />&nbsp;
-                        <input style="font-family: FontAwesome !important" title="Go back (ALT + PageUp)" id="historyBack" type="submit" onclick="tracyConsole.loadHistory(\'back\')" value="&#xf060;" />&nbsp;
-                        <input style="font-family: FontAwesome !important" title="Go forward (ALT + PageDown)" class="arrowRight" id="historyForward" type="submit" onclick="tracyConsole.loadHistory(\'forward\')" value="&#xf060;" />
-                        <input title="Clear results" type="button" class="clearResults" onclick="tracyConsole.clearResults()" value="&#10006; Clear results" />
-                        <span style="float:right; padding-top: 10px">
-                            <label title="Don\'t Run on Page Load" style="display:inline !important"><input type="radio" name="includeCode" onclick="tracyConsole.tracyIncludeCode(\'off\')" value="off" ' . (!$this->tracyIncludeCode || $this->tracyIncludeCode['when'] === 'off' ? ' checked' : '') . ' /> off</label>&nbsp;
-                            <label title="Run on init" style="display:inline !important"><input type="radio" name="includeCode" onclick="tracyConsole.tracyIncludeCode(\'init\')" value="init" ' . ($this->tracyIncludeCode && $this->tracyIncludeCode['when'] === 'init' ? ' checked' : '') . ' /> init</label>&nbsp;
-                            <label title="Run on ready" style="display:inline !important"><input type="radio" name="includeCode" onclick="tracyConsole.tracyIncludeCode(\'ready\')" value="ready" ' . ($this->tracyIncludeCode && $this->tracyIncludeCode['when'] === 'ready' ? ' checked' : '') . ' /> ready</label>&nbsp;
-                            <label title="Run on finished" style="display:inline !important"><input type="radio" name="includeCode" onclick="tracyConsole.tracyIncludeCode(\'finished\')" value="finished" ' . ($this->tracyIncludeCode && $this->tracyIncludeCode['when'] === 'finished' ? ' checked' : '') . ' /> finished</label>&nbsp;
+                    $out .= '
+                    <div>
+                        <span style="display: inline-block; padding: 0 20px 10px 0">
+                            <input title="New snippet" type="submit" onclick="tracyConsole.newSnippet()" value="➕" />&nbsp;&nbsp;
+                            <input id="reloadSnippet" title="Reload current snippet from disk" class="disabledButton" style="font-weight: 600 !important" type="submit" onclick="tracyConsole.reloadSnippet()" value="↻" disabled="true" />&nbsp;&nbsp;
+                            <input style="font-family: FontAwesome !important" title="Go back (ALT + PageUp)" id="historyBack" type="submit" onclick="tracyConsole.loadHistory(\'back\')" value="&#xf060;" />&nbsp;
+                            <input style="font-family: FontAwesome !important" title="Go forward (ALT + PageDown)" class="iconFlip" id="historyForward" type="submit" onclick="tracyConsole.loadHistory(\'forward\')" value="&#xf060;" />&nbsp;
+                            <input title="Clear results" type="button" class="clearResults" onclick="tracyConsole.clearResults()" value="&#10006; Clear results" />
                         </span>
-                        <span id="tracyConsoleStatus" style="padding: 10px"></span>
+
+                        <span style="display: inline-block; padding: 0 20px 10px 0">
+                            <label title="Backup entire database before executing script.">
+                                <input type="checkbox" id="dbBackup" '.($this->wire('input')->cookie->tracyDbBackup ? 'checked="checked"' : '').' onclick="tracyConsole.updateBackupState();" /> Backup DB
+                            </label>&nbsp;&nbsp;
+                            <input id="backupFilename" type="text" placeholder="Backup name (optional)" '.($this->wire('input')->cookie->tracyDbBackup ? 'style="display:inline-block !important"' : 'style="display:none !important"').' '.($this->wire('input')->cookie->tracyDbBackupFilename ? 'value="'.$this->wire('input')->cookie->tracyDbBackupFilename.'"' : '').' />
+                        </span>';
+
+                        if(!$inAdmin) {
+                            $out .= '
+                        <span style="display: inline-block; padding: 0 20px 10px 0">
+                            <label title="Access custom variables & functions from this page\'s template file & included files."><input type="checkbox" id="accessTemplateVars" onclick="tracyConsole.tce.focus();" /> Template resources</label>
+                        </span>';
+                        }
+
+                        $out .= '
+                        <span style="display:inline-block; padding-right: 10px;">
+                            <select name="includeCode" style="height: 24px !important" title="When to execute code" onchange="tracyConsole.tracyIncludeCode(this)" />
+                                <option value="off"' . (!$this->tracyIncludeCode || $this->tracyIncludeCode['when'] === 'off' ? ' selected' : '') . '>@ Run</option>
+                                <option value="init"' . ($this->tracyIncludeCode && $this->tracyIncludeCode['when'] === 'init' ? ' selected' : '') . '>@ Init</option>
+                                <option value="ready"' . ($this->tracyIncludeCode && $this->tracyIncludeCode['when'] === 'ready' ? ' selected' : '') . '>@ Ready</option>
+                                <option value="finished"' . ($this->tracyIncludeCode && $this->tracyIncludeCode['when'] === 'finished' ? ' selected' : '') . '>@ Finished</option>
+                            </select>
+                        </span>
+                        <input id="runInjectButton" title="&bull; Run (CTRL/CMD + Enter)&#10;&bull; Clear & Run (ALT/OPT + Enter)&#10;&bull; Reload from Disk, Clear & Run&#10;(CTRL/CMD + ALT/OPT + Enter)" type="submit" onclick="tracyConsole.processTracyCode()" value="' . (!$this->tracyIncludeCode || $this->tracyIncludeCode['when'] === 'off' ? 'Run' : 'Inject') . '" />
                     </div>
 
                     <div id="tracyConsoleContainer" class="split" style="height: 100%; min-height: '.$codeLineHeight.'px">
@@ -970,6 +1132,11 @@ HTML;
                             <div id="tracyConsoleEditor" style="height: 100%; min-height: '.$codeLineHeight.'px"></div>
                         </div>
                         <div id="tracyConsoleResult" class="split" style="position:relative; padding:0 10px; overflow:auto; border:1px solid #D2D2D2;">';
+
+                if($this->dbRestoreMessage) {
+                    $out .= '<div style="padding: 10px 0">' . $this->dbRestoreMessage . '</div>' .
+                            '<div style="padding: 10px; border-bottom: 1px dotted #cccccc; padding: 3px; margin:5px 0;"></div>';
+                }
                 if($this->wire('input')->cookie->tracyCodeError) {
                     $out .= '<div style="padding: 10px 0">' . $this->wire('input')->cookie->tracyCodeError . '</div>' .
                             '<div style="padding: 10px; border-bottom: 1px dotted #cccccc; padding: 3px; margin:5px 0;"></div>';
@@ -979,20 +1146,20 @@ HTML;
                     </div>
                 </div>
 
-                <div id="tracySnippetsContainer" style="position: absolute; right:0; margin: 0 0 0 20px; width: 265px; height: calc(100% - ' . $snippetsAdjustment . 'px)">
+                <div id="tracySnippetsContainer" style="position: absolute; right:0; margin: 0 0 0 10px; width: 275px; height: calc(100% - 15px)">
                     <div style="padding-bottom:5px">
                         Sort: <a href="#" onclick="tracyConsole.sortList(\'alphabetical\')">alphabetical</a>&nbsp;|&nbsp;<a href="#" onclick="tracyConsole.sortList(\'chronological\')">chronological</a>
                     </div>
                     <div style="position: relative; width:100% !important;">
-                        <input type="text" id="tracySnippetName" placeholder="Snippet name..." />
-                        <input id="saveSnippet" type="submit" onclick="tracyConsole.saveSnippet()" value="&#128190;" title="Save snippet" />
+                        <input type="text" id="tracySnippetName" placeholder="Enter filename (eg. myscript.php)" />
+                        <input id="saveSnippet" type="submit" class="disabledButton" onclick="tracyConsole.saveSnippet()" value="&#128190;" title="Save snippet" />
                     </div>
                     <div id="tracySnippets"></div>
                 </div>
 
             </div>
             ';
-        $out .= \TracyDebugger::generatePanelFooter('console', \Tracy\Debugger::timer('console'), strlen($out), 'codeEditorSettings');
+        $out .= \TracyDebugger::generatePanelFooter('console', \Tracy\Debugger::timer('console'), strlen($out), 'consolePanel');
         $out .= '
         </div>';
 

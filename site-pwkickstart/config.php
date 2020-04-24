@@ -34,7 +34,8 @@ if(!defined("PROCESSWIRE")) die();
  */
 $config->debug = false;
 
-$config->jsvars = new ProcessWire\WireData();
+$config->defaultAdminTheme = 'AdminThemeUikit';
+$config->jsVariables = new ProcessWire\WireData();
 $config->imageSizerOptions = array(
 	'upscaling' => false,
 	'interlace' => true,

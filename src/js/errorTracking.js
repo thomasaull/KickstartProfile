@@ -4,7 +4,7 @@
 //   f.q.push(e)
 // });
 
-addEventListener('error', error => {
+addEventListener('error', (error) => {
   if (!window.errorQueue) window.errorQueue = []
   window.errorQueue.push(error)
 })

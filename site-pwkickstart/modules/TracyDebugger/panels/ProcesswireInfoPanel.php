@@ -202,7 +202,8 @@ HTML;
             $versionsDetails['Server Details']['items']['ProcessWire'] = $this->wire('config')->version;
             $versionsDetails['Server Details']['items']['PHP'] = phpversion();
             if(isset($_SERVER['SERVER_SOFTWARE'])) $versionsDetails['Server Details']['items']['Webserver'] = current(explode("PHP", $_SERVER['SERVER_SOFTWARE']));
-            $versionsDetails['Server Details']['items']['MySQL'] = $this->wire('database')->query('select version()')->fetchColumn();
+            $versionsDetails['Server Details']['items']['MySQL Server'] = $this->wire('database')->getAttribute(constant("PDO::ATTR_SERVER_VERSION"));
+            $versionsDetails['Server Details']['items']['MySQL Client'] = $this->wire('database')->getAttribute(constant("PDO::ATTR_CLIENT_VERSION"));
 
 
             // Server Settings
@@ -486,7 +487,7 @@ HTML;
                 $out .=
                 '<li ' . ($withLabels ? ' class="with-labels"' : '') . '>
                     <a onclick="tracyClosePanel(\'ProcesswireInfo\')" '.$this->newTab.' href="'.$cp->url.'"'. (!$withLabels ? ' title="'.$cp->title.'"' : '') . '>
-                        <span style="color:'.\TracyDebugger::COLOR_NORMAL.'; font-family: FontAwesome !important; font-size: 15px; margin-right: 2px" class="fa fa-fw fa-'.$icon.'"></span>'
+                        <i style="color:'.\TracyDebugger::COLOR_NORMAL.'; font-family: FontAwesome !important; font-size: 15px; font-style: normal !important; margin-right: 2px" class="fa fa-fw fa-'.$icon.'"></i>'
                         . ($withLabels ? '&nbsp;'.$cp->title.'</a>' : '</a>&nbsp;') .
                     '</a>
                 </li>';

@@ -1,5 +1,11 @@
 .Download {
-  @include interpolate(margin-top margin-bottom, $contentMinWidth, $contentMaxWidth, 30px, 60px);
+  @include interpolate(
+    margin-top margin-bottom,
+    $contentMinWidth,
+    $contentMaxWidth,
+    30px,
+    60px
+  );
 }
 
 .Download-text {
@@ -7,6 +13,6 @@
 }
 
 .Download-description {
-  color: $colorText-default;
+  color: $colorText--default;
   font-weight: normal;
 }

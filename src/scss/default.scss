@@ -1,16 +1,17 @@
 // Linear Gradients, Source: https://www.npmjs.com/package/postcss-easing-gradients
-// background: linear-gradient(90deg, rgba($colorBackground-grey, 1), ease, rgba($colorBackground-grey, 0));
+// background: linear-gradient(90deg, rgba($colorBackground--grey, 1), ease, rgba($colorBackground--grey, 0));
 
 // Interpolate Mixing
 // @include interpolate(font-size padding, 500px, 1200px, 26px, 44px);
 
 :root {
-  --fontSize-default: 16px;
-  --fontSize-large: 20px;
-  --lineHeight-default: 1.4;
+  --fontStack--default: #{$fontStack--default};
+  --fontSize--default: 16px;
+  --fontSize--large: 20px;
+  --lineHeight--default: 1.4;
 
   @include interpolate(
-    --spaceSmallest,
+    --space--smallest,
     $contentMinWidth,
     $contentMaxWidth,
     10px,
@@ -48,15 +49,7 @@ body {
     hyphens: auto;
   }
 
-  // Using CSS Variables to avoid Flash of Invisible Text
-  font: var(--fontSize-default) / var(--lineHeight-default) $fontStack-system; // Fallback
-  font-display: swap;
-
-  --fontStack-default: #{$fontStack-system};
-
-  &.-fontsLoaded {
-    font-family: $fontStack-default;
-
-    --fontStack-default: #{$fontStack-default};
-  }
+  font-family: var(--fontStack--default);
+  font-size: var(--fontSize--default);
+  line-height: var(--lineHeight--default);
 }

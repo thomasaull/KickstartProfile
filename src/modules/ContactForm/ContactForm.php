@@ -12,7 +12,7 @@
     </div>
   </noscript>
 
-  <form class="ContactForm-form hiddenWithoutJs" action="/api/contactForm" method="POST" ref="form">
+  <form class="ContactForm-form" action="/api/contactForm" method="POST" ref="form">
 
     <div class="ContactForm-inputWrapper contactForm-inputWrapper--name">
       <input class="ContactForm-inputText" placeholder="" type="text" name="name"

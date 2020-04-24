@@ -35,9 +35,9 @@ module.exports = [
   { sortAttrs: false },
   { transformsWithOnePath: false },
   { removeDimensions: true }, // Changed from default of `false`
-  { removeAttrs: {attrs: '(stroke|fill|stroke-width)'} },
+  { removeAttrs: { attrs: '(stroke|fill|stroke-width)' } },
   { removeElementsByAttr: false },
   { addClassesToSVGElement: false },
   { addAttributesToSVGElement: false },
-  { removeStyleElement: false }
+  { removeStyleElement: false },
 ]

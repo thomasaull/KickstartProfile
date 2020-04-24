@@ -5,6 +5,6 @@ import Gallery from './Gallery.vue'
 
 const els = document.querySelectorAll('.Gallery')
 
-_.each(els, el => {
+_.each(els, (el) => {
   new Vue(Gallery).$mount(el) // eslint-disable-line
 })

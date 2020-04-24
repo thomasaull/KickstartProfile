@@ -1,7 +1,6 @@
-
 <meta charset="UTF-8">
 
-<title><?=$title?> – Seitenname</title>
+<title><?=$title?> – <?=$websiteName?></title>
 
 <?php if ($canonical):?>
   <link rel="canonical" href="<?= $canonical?>"/>
@@ -18,7 +17,7 @@
 <meta name="robots" content="<?=$robots?>"/>
 
 <meta property="og:locale" content="de_DE"/>
-<meta property="og:type" content="article"/>
+<meta property="og:type" content="website"/>
 <meta property="og:title" content="<?=$title?>"/>
 
 <?php if ($ogDescription):?>
@@ -26,11 +25,19 @@
 <?php endif; ?>
 
 <meta property="og:url" content="<?=$page->httpURL?>"/>
-<meta property="og:site_name" content="DESAG"/>
+<meta property="og:site_name" content="<?=$websiteName?>"/>
 
 <?php if ($ogImage):?>
-	<meta property="og:image" content="<?=$ogImage->httpUrl?>"/>
+  <meta property="og:image" content="<?=$ogImage->httpUrl?>"/>
+  <meta property="og:image:width" content="<?=$ogImage->width?>" />
+  <meta property="og:image:height" content="<?=$ogImage->height?>" />
+  <meta name="twitter:image" content="<?=$ogImage->httpUrl?>"/>
 <?php endif; ?>
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="<?=$twitterHandle?>" />
+<meta name="twitter:creator" content="<?=$twitterHandle?>" />
+<meta name="twitter:title" content="<?=$title?>" />
 
 <meta name="language" content="de"/>
 <meta name="content-language" content="de"/>

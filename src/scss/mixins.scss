@@ -26,6 +26,41 @@
   }
 }
 
+// USAGE:
+// Default (all properties): @include transition-hover;
+// Specific properties: @include transition-hover(transform opacity);
+// Nested single: @include transition-hover(null, '.ParentClass');
+// Nested multiple: @include transition-hover(null, ($block, '.ParentClass'));
+@mixin transition-hover($properties: null, $rootElements: null) {
+  transition: all $duration-hover--out;
+
+  @if $properties {
+    transition-property: $properties;
+  }
+
+  // Default :hover
+  &:hover {
+    transition: all $duration-hover--in;
+
+    @if $properties {
+      transition-property: $properties;
+    }
+  }
+
+  // Additional :hover on rootElements
+  @if $rootElements {
+    @each $rootElement in $rootElements {
+      #{$rootElement}:hover & {
+        transition: all $duration-hover--in;
+
+        @if $properties {
+          transition-property: $properties;
+        }
+      }
+    }
+  }
+}
+
 @mixin container {
   width: 100%;
   max-width: $contentMaxWidth;
@@ -34,8 +69,8 @@
 }
 
 @mixin containerWrap {
-  padding-left: var(--spaceSmallest);
-  padding-right: var(--spaceSmallest);
+  padding-left: var(--space-smallest);
+  padding-right: var(--space--smallest);
 }
 
 @mixin fullWidth {
@@ -81,17 +116,40 @@
   }
 }
 
+@mixin visuallyHidden {
+  position: absolute;
+  top: auto;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  width: 1px;
+  height: 1px;
+  white-space: nowrap;
+}
+
+@mixin hiddenWithoutJs {
+  html.is-noJs & {
+    display: none !important;
+  }
+}
+
 // Usage:
 // @include font-face("Meta", "/fonts/MetaPro-Normal");
 // @include font-face("Meta", "/fonts/MetaPro-Bold", bold);
 @mixin font-face($name, $file, $weight: null, $style: null) {
   @font-face {
     font-family: $name;
-    src: url($file+'.eot');
-    src: url($file+'.eot?#iefix') format('embedded-opentype'),
-      url($file+'.woff2') format('woff2'), url($file+'.woff') format('woff'),
-      url($file+'.ttf') format('truetype');
+
+    // Legacy:
+    // src: url($file+'.eot');
+    // src: url($file+'.eot?#iefix') format('embedded-opentype'),
+    //   url($file+'.woff2') format('woff2'), url($file+'.woff') format('woff'),
+    //   url($file+'.ttf') format('truetype');
+
+    //Modern:
+    src: url($file + '.woff2') format('woff2'),
+      url($file + '.woff') format('woff');
     font-weight: $weight;
     font-style: $style;
+    font-display: swap;
   }
 }

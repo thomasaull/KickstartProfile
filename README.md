@@ -26,27 +26,29 @@ Grab a copy of processwire and place the contents of this repository in the root
 - create .gitkeep in site/assets/ cache, files, logs, sessions
 ```
 If Terminal is open in /
-touch site/assets/cache/.gitkeep site/assets/files/.gitkeep site/assets/logs/.gitkeep site/assets/sessions/.gitkeep
+touch dist/site/assets/cache/.gitkeep dist/site/assets/files/.gitkeep dist/site/assets/logs/.gitkeep dist/site/assets/sessions/.gitkeep
 ```
 - adjust .htaccess settings to your needs
 - adjust .gitignore to your needs, I usually use this as a starting point:
 ```
 # ProcessWire
-/site/assets/cache/*
-!/site/assets/cache/.gitkeep
+/dist/site/assets/cache/*
+!/dist/site/assets/cache/.gitkeep
 
-/site/assets/files/*
-!/site/assets/files/.gitkeep
+/dist/site/assets/files/*
+!/dist/site/assets/files/.gitkeep
 
-/site/assets/logs/*
-!/site/assets/logs/.gitkeep
+/dist/site/assets/logs/*
+!/dist/site/assets/logs/.gitkeep
 
-/site/assets/sessions/*
-!/site/assets/sessions/.gitkeep
+/dist/site/assets/sessions/*
+!/dist/site/assets/sessions/.gitkeep
 
-/site/assets/backups/
+/dist/site/assets/backups/
+/dist/site/templates/dist/
 
-/site/environment.php
+/dist/site/environment.php
+/dist/.htaccess
 
 # OSX
 .DS_Store
@@ -59,30 +61,26 @@ node_modules
 - create environment.php:
 
 ```
-<?php
+<?php namespace ProcessWire;
 
 $config->environment = 'development';
 
-/* 
- * Database
-*/ 
+// Database
 $config->dbHost = 'localhost';
-$config->dbName = 'your-database-name';
-$config->dbUser = 'user';
-$config->dbPass = 'password';
+$config->dbName = 'pwkickstart';
+$config->dbUser = 'root';
+$config->dbPass = '';
 $config->dbPort = '3306';
 
-/* 
- * Config-Flags
-*/ 
-
+// Config Flags
 $config->debug = true;
 $config->maintenanceBackend = false;
 $config->maintenanceFrontend = false;
 
-/* 
-* Get notified about critical errors:
-*/
+// HTTP Hosts
+$config->httpHosts = array('localhost:8000');
+
+// Get notified about critical errors:
 $config->adminEmail = 'your@email.com';
 ```
 
@@ -101,6 +99,8 @@ For Development run `npm run dev` and open your browser at `http://localhost:808
 Critical CSS gets generated for all visible pages automatically. If you want to add hidden pages, change `$additionalHiddenPages` in site/api/Critial.php
 
 You can decide to create the critical CSS from the live site by adjusting `urls.critical` in `package.json`
+
+Also, if you want to use critical CSS make sure to activate the flag `$useCriticalCss` in `src/index.php`
 
 ### Contentbuilder
 

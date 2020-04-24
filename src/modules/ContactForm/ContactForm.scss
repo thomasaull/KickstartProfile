@@ -1,5 +1,11 @@
 .ContactForm {
-  @include interpolate(margin-top margin-bottom, $contentMinWidth, $contentMaxWidth, 30px, 60px);
+  @include interpolate(
+    margin-top margin-bottom,
+    $contentMinWidth,
+    $contentMaxWidth,
+    30px,
+    60px
+  );
 }
 
 .ContactForm-text {
@@ -7,13 +13,17 @@
 }
 
 .ContactForm-form {
+  @include hiddenWithoutJs;
+
   // IE Styles
   // display: flex;
   // flex-direction: column;
   // .ContactForm-inputWrapper { margin-bottom: 10px;}
 
-  @supports (grid-template-areas: "area") {
-    .ContactForm-inputWrapper { margin-bottom: initial; }
+  @supports (grid-template-areas: 'area') {
+    .ContactForm-inputWrapper {
+      margin-bottom: initial;
+    }
   }
 
   display: grid;
@@ -21,22 +31,22 @@
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto auto auto auto;
   grid-template-areas:
-    "name email"
-    "subject subject"
-    "message message"
-    "note note"
-    "control control";
+    'name email'
+    'subject subject'
+    'message message'
+    'note note'
+    'control control';
 
-  @include media("<=550px") {
+  @include media('<=550px') {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto auto auto;
     grid-template-areas:
-      "name"
-      "email"
-      "subject"
-      "message"
-      "note"
-      "control";
+      'name'
+      'email'
+      'subject'
+      'message'
+      'note'
+      'control';
   }
 }
 
@@ -66,10 +76,6 @@
   display: block;
   width: 100%;
   border-radius: 0;
-  // background-color: transparent;
-  // height: 100%;
-  // font: $fontSize-default $fontStack-sans;
-  // font: $fontSize-default var(--fontStack-sans);
   padding-top: 21px;
   padding-left: 8px;
   padding-right: 10px;
@@ -117,6 +123,8 @@
 }
 
 .ContactForm-error {
+  @include hiddenWithoutJs;
+
   padding: 8px 12px;
   padding-bottom: 0;
   color: red;
@@ -124,8 +132,6 @@
   font-size: 12px;
   font-weight: bold;
   letter-spacing: 0.25px;
-
-  .NoJs & { display: none; }
 }
 
 .ContactForm-note {
@@ -138,13 +144,12 @@
   display: flex;
   justify-content: flex-end;
 
-  @include media("<=550px") {
+  @include media('<=550px') {
     flex-direction: column;
   }
 }
 
 .ContactForm-button {
-  // font: var(--fontSize-default) var(--fontStack-defualt);
   border: none;
   background-color: #fff;
   padding-left: 40px;
@@ -153,13 +158,15 @@
   height: 46px;
   flex: none;
 
-  @include media("<=550px") {
+  @include media('<=550px') {
     width: 100%;
     margin-bottom: 10px;
   }
 }
 
 .ContactForm-message {
+  @include hiddenWithoutJs;
+
   align-self: center;
   justify-self: end;
   padding-right: 20px;
@@ -169,11 +176,9 @@
     color: red;
   }
 
-  @include media("<=550px") {
+  @include media('<=550px') {
     width: 100%;
     flex: none;
     order: 1;
   }
-
-  .NoJs & { display: none; }
 }

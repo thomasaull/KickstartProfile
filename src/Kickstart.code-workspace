@@ -1,0 +1,22 @@
+{
+  "folders": [
+    {
+      "path": "./"
+    },
+    {
+      "path": "../dist/site/api"
+    },
+    {
+      "path": "../dist/site/templates"
+    }
+  ],
+  "settings": {
+    "search.exclude": {
+      "**/dist": true
+    },
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": true
+    }
+  }
+}

@@ -1,12 +1,12 @@
 {
   "title": "Email Obfuscation (EMO)",
-  "version": 120,
+  "version": 123,
   "summary": "Email Obfuscation module for email addresses with 64 base crypting.",
-  "author": "Roope",
+  "author": "Jukka Hankaniemi (Roope)",
   "href": "https://github.com/BlowbackDesign/EmailObfuscation",
   "singular": true,
-  "autoload": true,
+  "autoload": "template!=admin",
   "requires": [
-    "ProcessWire>=2.2.4"
+    "ProcessWire>=2.3.1"
   ]
 }

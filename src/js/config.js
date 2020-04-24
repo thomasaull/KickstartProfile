@@ -1,4 +1,4 @@
 export default {
   ...document.config,
-  ...document.jsvars
+  ...document.jsVariables,
 }

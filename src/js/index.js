@@ -1,12 +1,11 @@
-import axios from 'axios'
-import TweenMax from 'gsap' // eslint-disable-line
-import Vue from 'vue'
+// import axios from 'axios'
+// axios.defaults.baseURL = window.location.origin
+
+// import TweenMax from 'gsap' // eslint-disable-line
 
 import '@/js/reportErrors'
-import '@/js/fonts'
 // import '@/js/loadSvgSprite' // uncomment if you want to use an svg sprite!
-
-axios.defaults.baseURL = window.location.origin
+import '@/vue/index'
 
 // Import and initialize all files of /modules
 function importAll(r) {

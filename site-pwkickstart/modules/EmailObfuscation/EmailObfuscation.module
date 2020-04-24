@@ -4,7 +4,7 @@
  *
  * Email Obfuscation module for email addresses with 64 base crypting.
  *
- * @version 1.2.0
+ * @version 1.2.3
  * @copyright Blowback https://github.com/BlowbackDesign
  * @license MIT http://opensource.org/licenses/MIT
  *
@@ -235,18 +235,18 @@ class EmailObfuscation extends WireData implements Module, ConfigurableModule
 	{
 		$out = '';
 		$key = $this->getKey();
-		for($i = 0; $i < strlen($data); ) {
-			$c1 = ord($data{$i++});
+		for($i = 0; $i < mb_strlen($data); ) {
+			$c1 = ord($data[$i++]);
 			$c2 = $c3 = NULL;
-			if($i < strlen($data)) $c2 = ord($data{$i++});
-			if($i < strlen($data)) $c3 = ord($data{$i++});
+			if($i < mb_strlen($data)) $c2 = ord($data[$i++]);
+			if($i < mb_strlen($data)) $c3 = ord($data[$i++]);
 			$e1 = $c1 >> 2;
 			$e2 = (($c1 & 3) << 4) + ($c2 >> 4);
 			$e3 = (($c2 & 15) << 2) + ($c3 >> 6);
 			$e4 = $c3 & 63;
 			if(is_nan($c2)) $e3 = $e4 = 64;
 			else if(is_nan($c3)) $e4 = 64;
-			$out .= $key{$e1} . $key{$e2} . $key{$e3} . $key{$e4};
+			$out .= $key[$e1] . $key[$e2] . $key[$e3] . $key[$e4];
 		}
 		return $out;
 	}
@@ -338,18 +338,18 @@ class EmailObfuscation extends WireData implements Module, ConfigurableModule
 	 */
 	private function isRenderAllowed(HookEvent $event)
 	{
-		$templateFile = $event->object;
-		$options = $templateFile->options;
-		$page = $templateFile->page;
+		$options = $event->object->options;
+		$page = $event->object->page;
 
-		// keep out the admin pages
+		// while admin templates are restricted by conditional autoload we make sure
+		// that possible other custom admin templates are not triggering emo render
 		if($page->template->flags & Template::flagSystem) {
 			return false;
 		}
 
 		// checking for $options, which we know is given to page renders
 		// this is to make sure it's not some other use of TemplateFile
-		if(!is_array($options) && !array_key_exists('pageStack', $options)) {
+		if(!is_array($options) || !array_key_exists('pageStack', $options)) {
 			return false;
 		}
 
@@ -408,14 +408,8 @@ class EmailObfuscation extends WireData implements Module, ConfigurableModule
 			if($this->debug) $scriptRows[] = "emo.debug = true;";
 
 			// add emo script to head
-			$script = "\n<script>";
-			foreach($scriptRows as $row) $script .= "\n{$row}";
-			$script .= "\n</script>\n";
-			if(strpos($output, '<script') !== false && (strpos($output, '<script') < strpos($output, '</head>'))) {
-				$output = substr_replace($output, "{$script}<script", strpos($output, '<script'), strlen('<script'));
-			} else {
-				$output = str_replace("</head>", "{$script}</head>", $output);
-			}
+			$script = "\n<script>\n" . implode("\n", $scriptRows) . "\n</script>\n";
+			$output = str_replace("</head>", "{$script}</head>", $output);
 
 			// add emo.js to body
 			if(strpos($output, $this->jsFile) === false) {

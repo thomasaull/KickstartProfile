@@ -1,13 +1,60 @@
+// Based on: https://hankchizljaw.com/wrote/a-modern-css-reset/
+
 // Border Box Everything
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+}
+
+// Remove default padding and list styles
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+// Remove default margin
+body,
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol,
+li,
+figure,
+figcaption,
+blockquote,
+dl,
+dd {
+  margin: 0;
+}
+
+body {
+  scroll-behavior: smooth;
+  text-rendering: optimizeSpeed;
+}
+
+// Make images easier to work with
+img {
+  max-width: 100%;
+  display: block;
+}
+
+// Inherit fonts for inputs and buttons
+input,
+button,
+textarea,
+select {
+  font: inherit;
 }
 
 // Default Styles for Buttons
 button {
   border: none;
   background: none;
-  font: var(--fontSize-default) var(--fontStack-defualt);
   padding: 0;
   margin: 0;
 }
@@ -15,7 +62,9 @@ button {
 // Defaults for Form
 input,
 textarea {
-  font: var(--fontSize-default) var(--fontStack-defualt);
+  font-size: var(--fontSize--default);
+  line-height: var(--lineHeight--default);
+  font-family: var(--fontStack--default);
 }
 
 // No Focus outlines, don't forget to define by yourself!
@@ -34,4 +83,14 @@ a {
 b,
 strong {
   font-weight: bold;
+}
+
+// Remove all animations and transitions for people that prefer not to see them
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -13,7 +13,7 @@
       "implicitComponents": "modules/**/*",
       "preset": "suit",
       "ignoreSelectors": [
-        "NoJs",
+        "is-noJs",
         "lazyloading",
         "lazyloaded",
         "lazyload"

@@ -1,0 +1,42 @@
+.Button {
+  $block: &;
+
+  --Button-color: #{$color-key};
+  --Button-color--hover: #{$color-key};
+  --Button-colorText: #{$color-white};
+
+  @include transition-hover;
+
+  transition-property: background-color;
+  display: inline-block;
+  padding: 0.4em 1em;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--Button-colorText);
+  background-color: var(--Button-color);
+  border: $borderWidth--default solid transparent;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+
+  &:hover {
+    background-color: var(--Button-color--hover);
+  }
+
+  &--ghost {
+    --Button-color: #{$color-white};
+    --Button-color--hover: #{rgba($color-white, 0.1)};
+    --Button-colorText: #{$color-white};
+
+    border-color: var(--Button-color);
+    background-color: transparent;
+  }
+
+  &--ghostInverted {
+    --Button-colorText: #{$color-key};
+    --Button-color--hover: #{rgba($color-key, 0.1)};
+
+    border-color: var(--Button-color);
+    background-color: transparent;
+  }
+}
