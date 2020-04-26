@@ -25,7 +25,7 @@ This is mainly a personal site profile to kickstart my own ProcessWire Projects.
 - Move everything else to `/`
 - Make sure to include hidden files!
 
-Install ProcessWire as usual (don’t forget to pick the site profile).
+Install ProcessWire as usual (don’t forget to pick the site profile). Note: There seems to be a problem when picking `utf8mb4` in the database settings, maybe use `utf8` instead.
 
 - create .gitkeep in site/assets/ cache, files, logs, sessions
 ```
