@@ -97,7 +97,7 @@ npm install
 
 run `npm run build` and check if the site is working
 
-For Development run `npm run dev` and open your browser at `http://localhost:8080`
+For Development run `npm run serve` and open your browser at `http://localhost:8080`
 
 ### Critical CSS
 Critical CSS gets generated for all visible pages automatically. If you want to add hidden pages, change `$additionalHiddenPages` in site/api/Critial.php
