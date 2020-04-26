@@ -20,8 +20,12 @@ This is mainly a personal site profile to kickstart my own ProcessWire Projects.
 - create vhost
 - create hosts entry
 - create database
+- Move ProcessWire to `/dist`
+- Move site-pwkickstart to `/dist`
+- Move everything else to `/`
+- Make sure to include hidden files!
 
-Grab a copy of processwire and place the contents of this repository in the root of your ProcessWire directory (including hidden files!). Install ProcessWire as usual (don’t forget to pick the site profile). If you want to keep the .gitignore, make sure to disable the checkbox at the last step of the Processwire installation routine.
+Install ProcessWire as usual (don’t forget to pick the site profile).
 
 - create .gitkeep in site/assets/ cache, files, logs, sessions
 ```
