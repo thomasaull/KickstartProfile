@@ -6,7 +6,7 @@
   "devDependencies": {
     "lodash": ">=4.17.13",
     "uglify-js": "*",
-    "node-sass": "^4.5.3",
+    "node-sass": "^4.13.1",
     "nodemon": "^1.11.0"
   },
   "scripts": {
